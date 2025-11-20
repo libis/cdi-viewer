@@ -10,11 +10,10 @@ import { getShaclShapesStore, getJsonData, setValidationReport } from './state.j
 import { jsonLdToN3Store } from './cdi-shacl-loader.js';
 
 // RDF factory for creating RDF/JS compliant datasets
+// Simply use rdfDataModel as the factory and add the dataset method
 const rdf = {
   ...rdfDataModel,
-  dataset: rdfDataset.dataset,
-  fromTerm: (term) => term,
-  defaultGraph: () => rdfDataModel.defaultGraph()
+  dataset: rdfDataset.dataset
 };
 
 /**
@@ -23,16 +22,8 @@ const rdf = {
 function storeToDataset(store) {
   const dataset = rdf.dataset();
   store.getQuads(null, null, null, null).forEach((q) => {
-    dataset.add(
-      rdf.quad(
-        rdf.fromTerm(q.subject),
-        rdf.fromTerm(q.predicate),
-        rdf.fromTerm(q.object),
-        q.graph && q.graph.termType !== "DefaultGraph"
-          ? rdf.fromTerm(q.graph)
-          : rdf.defaultGraph()
-      )
-    );
+    // N3.js quads are already RDF/JS compliant, can add directly
+    dataset.add(q);
   });
   return dataset;
 }
