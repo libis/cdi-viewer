@@ -141,7 +141,6 @@ export function setupEventHandlers() {
   // Save changes
   $("#save-btn").click(function () {
     // Validate before saving
-    const savedValidationStatus = $("#validation-status").html();
     validateData();
 
     // Check if validation passed

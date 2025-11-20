@@ -186,7 +186,7 @@ function buildViewerContext(data) {
  * Load and cache the local DDI-CDI context from ddi-cdi.jsonld.
  * This provides a fallback when external contexts fail to load.
  */
-async function loadLocalContext() {
+async function _loadLocalContext() {
   if (cachedLocalContext) {
     return cachedLocalContext;
   }

@@ -391,7 +391,7 @@ export function createPropertySuggestionsSection(suggestions, nodeId, bodyElemen
   return section;
 }
 
-export function addComplexPropertyToNode(nodeId, suggestion, bodyElement) {
+export function addComplexPropertyToNode(nodeId, suggestion, _bodyElement) {
   const jsonData = getJsonData();
   
   // Create a new node in the @graph

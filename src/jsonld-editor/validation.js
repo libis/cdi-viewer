@@ -136,7 +136,7 @@ export async function validateData() {
       // Show violations list (initially hidden)
       let detailsHtml =
         '<div class="validation-violations" style="display: none;"><h4>Validation Violations:</h4><ul>';
-      violations.forEach((v, i) => {
+      violations.forEach((v) => {
         const nodeId = v.focusNode.split("/").pop();
         detailsHtml += `<li><strong>${nodeId}</strong> - ${v.path}: ${v.message}</li>`;
       });

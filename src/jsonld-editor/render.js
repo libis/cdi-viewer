@@ -15,7 +15,6 @@ const renderedNodes = new Set();
 
 export function renderData() {
   const jsonData = getJsonData();
-  const isEditMode = getIsEditMode();
   
   console.log("🎨 RENDER START");
 
@@ -29,7 +28,6 @@ export function renderData() {
   }
 
   // Build tree structure: find which nodes are referenced by others
-  const allNodeIds = new Set(jsonData["@graph"].map((n) => n["@id"]));
   const referencedIds = new Set();
 
   jsonData["@graph"].forEach((node) => {
@@ -56,7 +54,6 @@ export function renderData() {
 
 // Extract all @id references from a value (handles arrays, nested objects, and string references)
 export function extractNodeReferences(value) {
-  const jsonData = getJsonData();
   const refs = [];
   if (Array.isArray(value)) {
     value.forEach((item) => {

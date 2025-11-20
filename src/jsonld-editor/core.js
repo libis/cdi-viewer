@@ -19,7 +19,7 @@ import {
   getJsonData
 } from './state.js';
 import { normalizeToGraphFormat } from './cdi-json-ld-helpers.js';
-import { loadShapes, jsonLdToN3Store } from './cdi-shacl-loader.js';
+import { loadShapes } from './cdi-shacl-loader.js';
 import { renderData } from './render.js';
 import { setupEventHandlers } from './event-handlers.js';
 
@@ -28,7 +28,6 @@ $(document).ready(async function () {
   try {
     // Get file URL from query parameters
     const urlParams = new URLSearchParams(window.location.search);
-    let fileUrl;
     let datasetMetadataUrl = null;
     
     // Check for shacl parameter (e.g., ?shacl=ddi-cdi-official)
@@ -103,7 +102,7 @@ $(document).ready(async function () {
           // Find the file in the files array by matching fileId
           const files = metadata.data.files || [];
           const fileInfo = files.find(
-            (f) => f.dataFile && f.dataFile.id == fileId
+            (f) => f.dataFile && f.dataFile.id === fileId
           );
           if (fileInfo && fileInfo.dataFile && fileInfo.dataFile.filename) {
             setOriginalFileName(fileInfo.dataFile.filename);
@@ -128,7 +127,7 @@ $(document).ready(async function () {
     }
 
     // Load from Dataverse API
-    fileUrl = siteUrl + "/api/access/datafile/" + fileId;
+    const fileUrl = siteUrl + "/api/access/datafile/" + fileId;
 
     // Load JSON-LD data
     const response = await fetch(fileUrl);
