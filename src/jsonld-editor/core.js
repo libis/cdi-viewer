@@ -15,7 +15,8 @@ import {
   setSiteUrl,
   setOriginalFileName,
   getFileId,
-  getSiteUrl
+  getSiteUrl,
+  getJsonData
 } from './state.js';
 import { normalizeToGraphFormat } from './cdi-json-ld-helpers.js';
 import { loadShapes, jsonLdToN3Store } from './cdi-shacl-loader.js';
@@ -149,7 +150,7 @@ $(document).ready(async function () {
     let jsonText;
     try {
       jsonText = await response.text();
-      let parsedData = JSON.parse(jsonText);
+      const parsedData = JSON.parse(jsonText);
       setJsonData(parsedData);
     } catch (parseError) {
       throw new Error(

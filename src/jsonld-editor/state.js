@@ -17,7 +17,7 @@ export const LOG_LEVEL = {
 
 // Check URL parameter for debug mode
 const urlParams = new URLSearchParams(window.location.search);
-export let currentLogLevel =
+export const currentLogLevel =
   urlParams.get("debug") === "true" ? LOG_LEVEL.DEBUG : LOG_LEVEL.WARN;
 
 export function getCurrentLogLevel() {
@@ -182,55 +182,55 @@ if (typeof window !== 'undefined') {
   // Can be removed once all modules are migrated
   Object.defineProperty(window, 'jsonData', {
     get: () => state.jsonData,
-    set: (val) => state.jsonData = val
+    set: (val) => { state.jsonData = val; }
   });
   Object.defineProperty(window, 'shaclShapes', {
     get: () => state.shaclShapes,
-    set: (val) => state.shaclShapes = val
+    set: (val) => { state.shaclShapes = val; }
   });
   Object.defineProperty(window, 'shaclShapesStore', {
     get: () => state.shaclShapesStore,
-    set: (val) => state.shaclShapesStore = val
+    set: (val) => { state.shaclShapesStore = val; }
   });
   Object.defineProperty(window, 'isEditMode', {
     get: () => state.isEditMode,
-    set: (val) => state.isEditMode = val
+    set: (val) => { state.isEditMode = val; }
   });
   Object.defineProperty(window, 'originalData', {
     get: () => state.originalData,
-    set: (val) => state.originalData = val
+    set: (val) => { state.originalData = val; }
   });
   Object.defineProperty(window, 'validationReport', {
     get: () => state.validationReport,
-    set: (val) => state.validationReport = val
+    set: (val) => { state.validationReport = val; }
   });
   Object.defineProperty(window, 'fileId', {
     get: () => state.fileId,
-    set: (val) => state.fileId = val
+    set: (val) => { state.fileId = val; }
   });
   Object.defineProperty(window, 'siteUrl', {
     get: () => state.siteUrl,
-    set: (val) => state.siteUrl = val
+    set: (val) => { state.siteUrl = val; }
   });
   Object.defineProperty(window, 'originalFileName', {
     get: () => state.originalFileName,
-    set: (val) => state.originalFileName = val
+    set: (val) => { state.originalFileName = val; }
   });
   Object.defineProperty(window, 'expandedJsonLd', {
     get: () => state.expandedJsonLd,
-    set: (val) => state.expandedJsonLd = val
+    set: (val) => { state.expandedJsonLd = val; }
   });
   Object.defineProperty(window, 'currentShapeSource', {
     get: () => state.currentShapeSource,
-    set: (val) => state.currentShapeSource = val
+    set: (val) => { state.currentShapeSource = val; }
   });
   Object.defineProperty(window, 'hadOriginalGraph', {
     get: () => state.hadOriginalGraph,
-    set: (val) => state.hadOriginalGraph = val
+    set: (val) => { state.hadOriginalGraph = val; }
   });
   Object.defineProperty(window, 'defaultTypeNamespace', {
     get: () => state.defaultTypeNamespace,
-    set: (val) => state.defaultTypeNamespace = val
+    set: (val) => { state.defaultTypeNamespace = val; }
   });
   
   window.LOG_LEVEL = LOG_LEVEL;

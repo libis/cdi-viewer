@@ -11,7 +11,7 @@ import { classifyProperty } from './cdi-shacl-helpers.js';
 import { getPropertySuggestions, createPropertySuggestionsSection } from './property-suggestions.js';
 
 // Track which nodes have been rendered to avoid duplicates
-let renderedNodes = new Set();
+const renderedNodes = new Set();
 
 export function renderData() {
   const jsonData = getJsonData();
@@ -77,7 +77,7 @@ export function extractNodeReferences(value) {
 // Check if a string value looks like a node reference
 export function isNodeReference(str) {
   const jsonData = getJsonData();
-  if (typeof str !== "string") return false;
+  if (typeof str !== "string") {return false;}
   // Check if it starts with # or _: (common node ID patterns)
   if (str.startsWith("#") || str.startsWith("_:")) {
     // Verify this ID actually exists in the graph
@@ -377,7 +377,7 @@ function renderProperty(key, value, nodeId, nodeTypes) {
 
   // Helper: render a nested object value using a small inline node card
   function renderInlineObject(val) {
-    if (!val || typeof val !== "object" || Array.isArray(val)) return null;
+    if (!val || typeof val !== "object" || Array.isArray(val)) {return null;}
 
     const inlineCard = $("<div>").addClass("node-card inline-node-card").css({
       "margin-top": "5px",
@@ -424,7 +424,7 @@ function renderProperty(key, value, nodeId, nodeTypes) {
     }
 
     Object.keys(val).forEach((k) => {
-      if (k === "@id" || k === "@type" || k === "@context") return;
+      if (k === "@id" || k === "@type" || k === "@context") {return;}
       const nestedRow = renderProperty(
         k,
         val[k],
@@ -670,7 +670,7 @@ export function createValueInput(key, value, nodeId, arrayIndex, classification)
       });
 
       Object.keys(value).forEach((nestedKey) => {
-        if (nestedKey === "@id" || nestedKey === "@type") return; // Skip JSON-LD metadata for cleaner display
+        if (nestedKey === "@id" || nestedKey === "@type") {return;} // Skip JSON-LD metadata for cleaner display
 
         const nestedRow = $("<div>")
           .addClass("property-row nested-property")

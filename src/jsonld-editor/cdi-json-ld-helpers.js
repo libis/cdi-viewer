@@ -28,7 +28,7 @@ let cachedLocalContext = null;
  * @returns {string|null} - The namespace URI or null if not found
  */
 export function resolvePrefix(context, prefix) {
-  if (!context || !prefix) return null;
+  if (!context || !prefix) {return null;}
 
   // Handle string context (URL) - we can't resolve from it directly
   if (typeof context === "string") {
@@ -118,7 +118,7 @@ function buildViewerContext(data) {
   const originalContext = data["@context"];
 
   // No @context – nothing we can sensibly do here
-  if (!originalContext) return undefined;
+  if (!originalContext) {return undefined;}
 
   // Helper: convert a single context entry (URL/string or object) into a
   // local, viewer-usable object. For URLs we may substitute a local JSON-LD

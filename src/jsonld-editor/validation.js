@@ -10,11 +10,10 @@ import { getShaclShapesStore, getJsonData, setValidationReport } from './state.j
 import { jsonLdToN3Store } from './cdi-shacl-loader.js';
 
 // RDF factory for creating RDF/JS compliant datasets
-// Simply use rdfDataModel as the factory and add the dataset method
-const rdf = {
-  ...rdfDataModel,
+// Use rdfDataModel directly and add dataset method via Object.assign to preserve prototype
+const rdf = Object.assign(Object.create(Object.getPrototypeOf(rdfDataModel)), rdfDataModel, {
   dataset: rdfDataset.dataset
-};
+});
 
 /**
  * Convert N3 Store to RDF/JS Dataset

@@ -222,7 +222,7 @@ export function getPropertySuggestions(node, types) {
 
                   if (inQuads.length > 0) {
                     // sh:in points to an RDF list, get the first item
-                    let listNode = inQuads[0].object; // Use object, not value!
+                    const listNode = inQuads[0].object; // Use object, not value!
 
                     const firstQuads = shaclShapesStore.getQuads(
                       listNode,
@@ -289,8 +289,8 @@ export function createPropertySuggestionsSection(suggestions, nodeId, bodyElemen
 
   // Sort: required first, then alphabetically
   suggestions.sort((a, b) => {
-    if (a.required && !b.required) return -1;
-    if (!a.required && b.required) return 1;
+    if (a.required && !b.required) {return -1;}
+    if (!a.required && b.required) {return 1;}
     return a.label.localeCompare(b.label);
   });
 
@@ -313,9 +313,9 @@ export function createPropertySuggestionsSection(suggestions, nodeId, bodyElemen
       .data("suggestion", suggestion);
 
     let text = suggestion.label;
-    if (suggestion.required) text = "⚠ " + text + " (REQUIRED)";
-    if (suggestion.isComplex) text = text + " [object]";
-    if (suggestion.maxCount === 1) text = text + " (max 1)";
+    if (suggestion.required) {text = "⚠ " + text + " (REQUIRED)";}
+    if (suggestion.isComplex) {text = text + " [object]";}
+    if (suggestion.maxCount === 1) {text = text + " (max 1)";}
 
     option.text(text);
     dropdown.append(option);

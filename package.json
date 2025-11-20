@@ -9,8 +9,8 @@
     "dev:bundle": "npm run build && python3 -m http.server 8000",
     "build": "rollup -c",
     "build:watch": "rollup -c --watch",
-    "lint": "eslint js/**/*.js src/**/*.js",
-    "lint:fix": "eslint js/**/*.js src/**/*.js --fix",
+    "lint": "eslint src/**/*.js",
+    "lint:fix": "eslint src/**/*.js --fix",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"

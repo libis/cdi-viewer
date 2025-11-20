@@ -19,7 +19,7 @@ import { expandCompactIri } from './cdi-json-ld-helpers.js';
 
 // Expand a compact node ID (e.g., "xas:fe_c3d.001") to full URI (e.g., "http://www.cdi4exas.org/fe_c3d.001")
 export function getExpandedNodeId(compactNodeId) {
-  if (!compactNodeId) return null;
+  if (!compactNodeId) {return null;}
 
   // If it's already a full URI, return as-is
   if (
@@ -81,7 +81,7 @@ export function getExpandedPropertyUri(nodeId, propertyKey) {
 
   // Look through all properties to find one that might match
   for (const key in expandedNode) {
-    if (key === "@id" || key === "@type") continue;
+    if (key === "@id" || key === "@type") {continue;}
 
     // The expanded key is the full URI, extract the local part
     const localPart = key.split("/").pop().split("#").pop();
@@ -141,7 +141,7 @@ export function addRootNode() {
     const customType = prompt(
       "No SHACL shapes loaded. Enter a custom node type (e.g., Dataset, Study, Variable):"
     );
-    if (!customType) return;
+    if (!customType) {return;}
 
     createAndAddRootNode(customType);
     return;

@@ -40,11 +40,11 @@ export function setupEventHandlers() {
     .off("change")
     .on("change", async function (event) {
       const file = event.target.files && event.target.files[0];
-      if (!file) return;
+      if (!file) {return;}
 
       try {
         const fileText = await file.text();
-        let parsedData = JSON.parse(fileText);
+        const parsedData = JSON.parse(fileText);
 
         // Set filename for export
         setOriginalFileName(file.name);
