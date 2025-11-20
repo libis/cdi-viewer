@@ -7,11 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (November 21, 2025)
+
+**SPARQL Target Support**
+
+- Implemented SPARQL target support in vendored shacl-engine (~60 lines, 3 files modified)
+- Added `sh:target` detection in UI property classification and suggestions
+- Properties from SPARQL-targeted shapes now correctly identified as "SHACL-defined"
+- Updated CDIF Discovery shapes to use SPARQL targets for root-only dataset validation
+- Validation confirmed: 1 violation on root dataset, nested datasets correctly ignored
+
+**Build & Deployment**
+
+- GitHub Actions workflow for automated build and deployment
+- N3 and jsonld libraries now exposed globally (`window.N3`, `window.jsonld`)
+- KU Leuven favicon added
+- Vendored shacl-engine for deployment independence
+- Live deployment: https://libis.github.io/cdi-viewer/
+
+**Dataverse Integration**
+
+- Created optimized single bundle (1.2 MB) for dataverse-previewers
+- Updated CdiPreview.html to use bundle instead of individual JS files
+- Removed 10+ individual JS files (now bundled)
+- Updated CSS and SHACL shapes
+- Tested locally - validation working correctly with SPARQL targets
+
+### Technical
+
+- Modified shacl-engine files: `Validator.js`, `lib/Shape.js`, `lib/TargetResolver.js`
+- Vendored copy: `vendor/shacl-engine/` (~50 KB)
+- Bundle exposes: N3.js, jsonld.js, shacl-engine, all viewer modules
+- GitHub Actions builds fresh on every push to main
+
 ### Pending
 
 - End-to-end testing of all features
-- Dataverse integration testing
-- GitHub repository enhancements (topics, description)
+- Dataverse integration testing in production
+- Submit PR to rdf-ext/shacl-engine with SPARQL target support
 
 ## [1.0.0] - TBD
 

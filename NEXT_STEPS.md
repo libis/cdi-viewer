@@ -1,5 +1,27 @@
 # Next Steps
 
+## ✅ Recently Completed (November 2025)
+
+### SPARQL Target Support
+- ✅ Implemented SPARQL target support in shacl-engine (~60 lines, 3 files)
+- ✅ Added `sh:target` detection in UI for property classification
+- ✅ Properties from SPARQL-targeted shapes now show as "SHACL-defined" (blue badges)
+- ✅ Validated with CDIF Discovery shapes - working correctly in production
+
+### Deployment & Build
+- ✅ GitHub Actions workflow for automated builds and deployment
+- ✅ Vendored shacl-engine with SPARQL support for independence
+- ✅ N3 and jsonld exposed globally in bundle
+- ✅ Live deployment at https://libis.github.io/cdi-viewer/
+- ✅ KU Leuven favicon added
+
+### Dataverse Integration
+- ✅ Created single optimized bundle (1.2 MB) for dataverse-previewers
+- ✅ Updated CdiPreview.html to use bundle
+- ✅ Removed individual JS files (now bundled)
+- ✅ Updated CDIF shapes with SPARQL target support
+- ✅ Tested locally - working correctly
+
 ## 🧪 Testing Priority
 
 ### End-to-End Testing
@@ -10,58 +32,49 @@
 - **Test complex objects**: Create nested objects via modal, reference existing nodes
 - **Test edit pipeline**: Load → enable edit → modify properties → export → verify valid JSON-LD
 - **Test validation workflow**: Load file → validate → fix violations → re-validate
+- **Test SPARQL targets**: Verify CDIF shapes validate only root datasets (not nested)
 
 ### Dataverse Integration Testing
 
-- Launch with `?fileid=X&siteUrl=Y` parameters
-- Make edits and save to Dataverse API
+- Test with `?fileid=X&siteUrl=Y` parameters in production Dataverse
+- Make edits and save via Dataverse API
 - Verify MIME type is `application/ld+json`
-- Verify file updated in Dataverse
-
-## 🔧 Known Issues
-
-### CDIF Discovery Properties
-
-Some schema.org properties show as EXTRA instead of OPTIONAL/REQUIRED.
-
-**Possible causes:**
-
-- SHACL shape paths don't match JSON-LD property names
-- Namespace mismatch (http:// vs https://)
-- Context resolution issues
-
-**Next steps:**
-
-- Wait for user feedback on validation results
-- May need to adjust SHACL shapes or path matching logic
+- Verify file updates correctly in Dataverse
+- Test with various JSON-LD vocabularies (not just DDI-CDI)
 
 ## 📦 Deployment
 
 ### GitHub Repository
-
+- ✅ GitHub Actions CI/CD configured
+- ✅ Auto-build and deploy on push to main
 - Add GitHub topics for better discoverability
 - Update repository description
 - Consider adding Open Graph image
 
 ### Dataverse Integration
-
-- Create PR to dataverse-previewers with bundle
-- Copy `dist/cdi-viewer.bundle.js` to `previewers/betatest/lib/`
-- Update `CdiPreview.html` to use bundle
-- Test in real Dataverse environment
+- ✅ Bundle created and tested locally
+- PR to dataverse-previewers repository (in progress)
+- Deploy to production Dataverse instances
+- Update documentation with bundle workflow
 
 ## 🚀 Future Enhancements
 
-### Code Quality
+### SPARQL Target Support
+- Submit PR to rdf-ext/shacl-engine with SPARQL target implementation
+- Once merged and published, migrate from vendored to npm package
+- Document SPARQL target usage patterns for other projects
 
-- Add GitHub Actions workflow for CI/CD
+### Code Quality
+- ✅ GitHub Actions workflow added
 - Add pre-commit hooks (husky + lint-staged)
 - Consider mutation testing with Stryker
+- Increase test coverage for new SPARQL target code
 
 ### Features
-
 - Undo/Redo functionality
-- Export to different formats (Turtle, N-Triples)
+- Export to different formats (Turtle, N-Triples, RDF/XML)
 - Import from SPARQL endpoint
 - Batch editing capabilities
 - Advanced search and filter options
+- Property value autocomplete from ontologies
+- Visual graph view of references

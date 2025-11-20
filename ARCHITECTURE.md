@@ -10,7 +10,7 @@ The JSON-LD Viewer is a browser-based application for viewing, editing, and vali
 
 1. **Generic JSON-LD Support**: Works with any vocabulary via standard jsonld.flatten()
 2. **Dual Deployment**: Standalone (GitHub Pages) + Dataverse integration
-3. **Core SHACL Only**: No SPARQL dependencies (keeps bundle < 500KB)
+3. **SHACL with SPARQL Support**: Core SHACL + SPARQL targets (vendored shacl-engine)
 4. **Global State Pattern**: `window.*` properties for cross-file access
 5. **Client-Side Only**: No backend required, all processing in browser
 6. **Progressive Enhancement**: Works without JavaScript for static display
@@ -903,7 +903,36 @@ if (!window.shaclShapesStore) {
 
 - **N3.js:** https://github.com/rdfjs/N3.js
 - **jsonld.js:** https://github.com/digitalbazaar/jsonld.js
-- **shacl-engine:** https://github.com/semantifyit/shacl-engine
+- **shacl-engine:** https://github.com/rdf-ext/shacl-engine (vendored with SPARQL target support)
+
+### Vendored Dependencies
+
+**shacl-engine v1.0.2 + SPARQL Targets**
+
+Located in `vendor/shacl-engine/` - Modified version with SPARQL target support.
+
+**Why Vendored:**
+- Upstream doesn't yet support `sh:SPARQLTarget` (SHACL Advanced Features)
+- Required for CDIF Discovery shapes that validate only root datasets
+- Temporary until feature is merged upstream
+
+**Modifications (3 files, ~60 lines):**
+1. `Validator.js` - Added `sh:target` to shape detection
+2. `lib/Shape.js` - Made `resolveTargets()` async
+3. `lib/TargetResolver.js` - Implemented SPARQL target execution
+
+**Integration:**
+- `package.json`: `"shacl-engine": "file:./vendor/shacl-engine"`
+- `npm install` creates symlink: `node_modules/shacl-engine -> vendor/shacl-engine`
+- Rollup bundles from vendored source
+- Works on GitHub Actions (vendor/ committed to git)
+
+**Migration Path:**
+- Submit PR to rdf-ext/shacl-engine
+- Once merged and published, update to npm version
+- Remove vendor/ directory
+
+See `VENDORED_DEPENDENCIES.md` for details.
 
 ### Dataverse
 
@@ -913,6 +942,6 @@ if (!window.shaclShapesStore) {
 
 ---
 
-**Last Updated:** 2025-11-20
+**Last Updated:** 2025-11-21
 
 **Maintained By:** LIBIS @ KU Leuven
