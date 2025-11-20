@@ -10,7 +10,7 @@ import {
   getDefaultTypeNamespace
 } from './state.js';
 import { expandCompactIri } from './cdi-json-ld-helpers.js';
-import { renderData } from './render.js';
+import { renderData, humanizeKey } from './render.js';
 
 export function getPropertySuggestions(node, types) {
   const shaclShapesStore = getShaclShapesStore();
