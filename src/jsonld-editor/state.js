@@ -170,6 +170,7 @@ export const SHAPE_URLS = {
   "ddi-cdi-official":
     "https://ddi-cdi.github.io/m2t-ng/DDI-CDI_1-0/encoding/shacl/ddi-cdi.shacl.ttl",
   "cdif-core": "shapes/cdif-core.ttl",
+  "cdif-core-shacl": "shapes/cdif-core.ttl",
   "dcat-ap":
     "https://semiceu.github.io/DCAT-AP/releases/3.0.0/html/shacl/shapes.ttl",
   datacube:

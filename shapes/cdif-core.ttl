@@ -12,10 +12,6 @@ cdifd:CDIFDatasetMandatoryShape a sh:NodeShape ;
 # only apply to elements that are child of root dataset 
 	sh:target [
 	  a sh:SPARQLTarget ;
-	  sh:prefixes (
-         [ sh:prefix "schema" ; sh:namespace "http://schema.org/" ]
-         [ sh:prefix "ex" ; sh:namespace "https://example.org/" ]
-       );
 # do we need to deal with schema:Dataset with parent = @graph? pyshacl work with these rules 
 #  for graph serialization.
     sh:select """

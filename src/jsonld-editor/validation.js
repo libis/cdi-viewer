@@ -70,8 +70,15 @@ export async function validateData() {
       validations: sparqlValidations, // Enable SPARQL constraints
     });
 
+    // Debug: Log what shapes and targets are loaded
+    console.log("SHACL shapes loaded:", shapesDataset.size, "triples");
+    console.log("Data to validate:", dataDataset.size, "triples");
+
     // Run the validation process
     const report = await validator.validate({ dataset: dataDataset });
+
+    console.log("Validation report - conforms:", report.conforms);
+    console.log("Validation report - results count:", report.results.length);
 
     setValidationReport(report);
 
