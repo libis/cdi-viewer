@@ -22,13 +22,15 @@
 
 **Problem:** Complex properties are added to data correctly but render as reference buttons instead of editable inline nodes.
 
-**Root Cause:** 
+**Root Cause:**
+
 - Blank nodes created via `addComplexPropertyToNode` are sometimes rendered as root nodes first
 - They get added to `renderedNodes` set
 - When `renderPropertyTree` tries to render them inline, they're already marked as rendered
 - Shows as reference button instead of nested node card
 
 **Console Evidence:**
+
 ```javascript
 Adding complex property: {nodeId: '#Volume_Substantive_Value_Domain', path: 'SubstantiveValueDomain_isDescribedBy_ValueAndConceptDescription', nodeClass: '...'}
 Creating new node: {@id: '_:SubstantiveValueDomain_isDescribedBy_ValueAndConceptDescription_1763669645546', @type: 'ValueAndConceptDescription'}
@@ -38,6 +40,7 @@ Updated parent node: {...} // ✅ Property added correctly
 ```
 
 **Fix Options:**
+
 1. **Option A:** Change blank node detection logic in `renderData()` to never treat `_:` nodes as root nodes
 2. **Option B:** Force inline rendering for newly created blank nodes (ignore `renderedNodes` check for `_:` nodes)
 3. **Option C:** Use different ID pattern for newly created nodes so they're always treated as child nodes
@@ -51,6 +54,7 @@ Updated parent node: {...} // ✅ Property added correctly
 ## 🔴 CRITICAL: Array and Nested Property Support (60 minutes)
 
 **User Requirements:**
+
 1. ✅ Add simple properties (working)
 2. ✅ Add complex properties inline (implemented - needs testing)
 3. ✅ Convert single value ↔ array (implemented)
@@ -61,18 +65,21 @@ Updated parent node: {...} // ✅ Property added correctly
 ### ✅ Phase 1: Convert Single Value ↔ Array (IMPLEMENTED)
 
 **Added:**
+
 - ✅ "Convert to Array" button on single-value properties
 - ✅ "Convert to Single Value" button on array properties
 - ✅ Logic preserves value when converting single → array
 - ✅ Logic keeps first value when converting array → single
 
 **Functions added to `cdi-graph-helpers.js`:**
-- `convertPropertyToArray(nodeId, propertyKey)` 
+
+- `convertPropertyToArray(nodeId, propertyKey)`
 - `convertPropertyToSingle(nodeId, propertyKey)`
 
 ### ✅ Phase 2: Complex Property Support (IMPLEMENTED)
 
 **Added:**
+
 - ✅ "Add Reference/Object" button for both single values and arrays
 - ✅ Modal with two options:
   - Reference existing node (dropdown selector)
@@ -80,16 +87,19 @@ Updated parent node: {...} // ✅ Property added correctly
 - ✅ Works for both single properties and arrays
 
 **Functions added to `cdi-graph-helpers.js`:**
+
 - `getAllNodesForReference()` - Lists all available nodes
 - `addReferenceToProperty(nodeId, propertyKey, referenceId)` - Adds reference
 - `createAndReferenceNewNode(nodeId, propertyKey, nodeType, asArray)` - Creates and links new node
 
 **UI added to `render.js`:**
+
 - `showAddReferenceModal()` - Modal UI for selecting/creating references
 
 ### ✅ Phase 3: Array of References (IMPLEMENTED)
 
 **Added:**
+
 - ✅ "Add Reference/Object" button on array properties
 - ✅ Dropdown to select from existing nodes
 - ✅ Create new node option with type input
@@ -98,6 +108,7 @@ Updated parent node: {...} // ✅ Property added correctly
 ### 🧪 Phase 4: Testing & Polish (NEEDS TESTING)
 
 **Test scenarios:**
+
 - ✅ Add simple property → implemented
 - ❌ Convert simple property to array → **TEST NEEDED**
 - ❌ Add multiple values to array → **TEST NEEDED**
@@ -108,6 +119,7 @@ Updated parent node: {...} // ✅ Property added correctly
 - ❌ Verify nested nodes render as expandable cards → **TEST NEEDED**
 
 **Known Issues to Check:**
+
 1. Does blank node fix (`!n["@id"].startsWith("_:")`) work correctly?
 2. Do newly created blank nodes render inline and editable?
 3. Does the modal work with Bootstrap 3.3.7?

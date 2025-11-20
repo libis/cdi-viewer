@@ -408,4 +408,3 @@ export function createAndReferenceNewNode(
 
   return newNodeId;
 }
-

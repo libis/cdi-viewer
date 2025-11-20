@@ -15,6 +15,7 @@ Provides real-time validation, property classification, complex object editing, 
 **The problem:** Most JSON-LD editors are either too simple (plain text editors) or too complex (enterprise RDF tooling). Validating against SHACL shapes often requires command-line tools or separate validation services.
 
 **This solution:**
+
 - ✨ **Visual editing** - See and edit your JSON-LD structure as nested, collapsible cards
 - ✅ **Instant validation** - Real-time SHACL validation with color-coded feedback
 - 🎨 **Smart UI** - Input fields adapt to SHACL constraints (dates, numbers, enumerations)
@@ -24,6 +25,7 @@ Provides real-time validation, property classification, complex object editing, 
 - 🔌 **Extensible** - Integrate with Dataverse or use as standalone tool
 
 **Perfect for:**
+
 - Data curators working with schema.org Dataset markup
 - Researchers creating DDI-CDI metadata
 - Developers testing SHACL validation rules
@@ -74,6 +76,7 @@ Provides real-time validation, property classification, complex object editing, 
 **Live demo:** [https://libis.github.io/cdi-viewer/](https://libis.github.io/cdi-viewer/)
 
 **Quick workflow:**
+
 1. Click **"Load Local File"** → select any JSON-LD file
 2. Select SHACL shapes from dropdown or enter custom URL
 3. Click **"Enable Edit Mode"** to start editing
@@ -82,14 +85,14 @@ Provides real-time validation, property classification, complex object editing, 
 
 ### Common Use Cases
 
-| Vocabulary | Use Case | SHACL Shapes |
-|------------|----------|--------------|
-| **schema.org** | Dataset markup for Google Dataset Search | Built-in or custom |
-| **DDI-CDI** | Social science data documentation | `ddi-cdi-official` (built-in) |
-| **DCAT-AP** | EU open data catalog metadata | `dcat-ap-3.0` (built-in) |
-| **DataCube** | Statistical data cubes | `w3c-datacube` (built-in) |
-| **SKOS** | Thesauri and taxonomies | `skos` (built-in) |
-| **Custom** | Your own ontology | Provide SHACL URL |
+| Vocabulary     | Use Case                                 | SHACL Shapes                  |
+| -------------- | ---------------------------------------- | ----------------------------- |
+| **schema.org** | Dataset markup for Google Dataset Search | Built-in or custom            |
+| **DDI-CDI**    | Social science data documentation        | `ddi-cdi-official` (built-in) |
+| **DCAT-AP**    | EU open data catalog metadata            | `dcat-ap-3.0` (built-in)      |
+| **DataCube**   | Statistical data cubes                   | `w3c-datacube` (built-in)     |
+| **SKOS**       | Thesauri and taxonomies                  | `skos` (built-in)             |
+| **Custom**     | Your own ontology                        | Provide SHACL URL             |
 
 ### Example Workflow: Editing schema.org Dataset
 
@@ -216,8 +219,11 @@ This loads `dist/cdi-viewer.min.js` (44KB minified) instead of individual JS fil
 
 Comprehensive documentation is available in the `docs/` directory:
 
-- **[CDI_PREVIEWER.md](docs/CDI_PREVIEWER.md)** - Complete feature guide, usage instructions, customization
+- **[GENERIC_USAGE.md](docs/GENERIC_USAGE.md)** - Complete guide for using with any JSON-LD vocabulary (schema.org, DCAT, etc.)
+- **[CDI_PREVIEWER.md](docs/CDI_PREVIEWER.md)** - DDI-CDI specific features, usage instructions, and customization
 - **[CDIF_DISCOVERY_SHAPES_FIX.md](docs/CDIF_DISCOVERY_SHAPES_FIX.md)** - SHACL shapes implementation and Core SHACL conversion patterns
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - Technical architecture and design decisions
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Development workflow and contribution guidelines
 
 ## 🔧 Technical Stack
 
@@ -512,11 +518,15 @@ Part of the broader Dataverse ecosystem:
 
 - **Live Demo:** https://libis.github.io/cdi-viewer/
 - **GitHub Repository:** https://github.com/libis/cdi-viewer
+- **Documentation:** [Generic Usage Guide](docs/GENERIC_USAGE.md) | [DDI-CDI Guide](docs/CDI_PREVIEWER.md)
 - **JSON-LD Specification:** https://json-ld.org/
 - **SHACL Specification:** https://www.w3.org/TR/shacl/
+- **Semantic Web Resources:** [JSON-LD Playground](https://json-ld.org/playground/) | [SHACL Playground](https://shacl.org/playground/)
 - **DDI-CDI Specification:** https://ddi-cdi.github.io/
 - **LIBIS:** https://www.libis.be/
 
 ---
 
 **Made with ❤️ by LIBIS @ KU Leuven**
+
+_Originally built for DDI-CDI metadata, evolved into a powerful general-purpose JSON-LD editor. Works with any RDF vocabulary!_
