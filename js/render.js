@@ -3,7 +3,7 @@
 // === CDI Previewer: Tree Rendering & Node/Property Display ===
 
 // Track which nodes have been rendered to avoid duplicates
-const renderedNodes = new Set();
+let renderedNodes = new Set();
 
 function renderData() {
   console.log("🎨 RENDER START");
@@ -17,28 +17,8 @@ function renderData() {
     return;
   }
 
-  // Add "Add Root Node" button at top of content if in edit mode
-  if (isEditMode) {
-    const addNodeSection = $("<div>").css({
-      "margin-bottom": "20px",
-      padding: "15px",
-      background: "#f8f9fa",
-      border: "2px dashed #007bff",
-      "border-radius": "4px",
-      "text-align": "center",
-    });
-
-    const addNodeBtn = $("<button>")
-      .attr("id", "add-root-node-btn")
-      .addClass("btn btn-primary btn-lg")
-      .html('<span class="glyphicon glyphicon-plus-sign"></span> Add Root Node')
-      .css("margin", "0");
-
-    addNodeSection.append(addNodeBtn);
-    content.append(addNodeSection);
-  }
-
   // Build tree structure: find which nodes are referenced by others
+  const allNodeIds = new Set(jsonData["@graph"].map((n) => n["@id"]));
   const referencedIds = new Set();
 
   jsonData["@graph"].forEach((node) => {
@@ -84,7 +64,7 @@ function extractNodeReferences(value) {
 
 // Check if a string value looks like a node reference
 function isNodeReference(str) {
-  if (typeof str !== "string") {return false;}
+  if (typeof str !== "string") return false;
   // Check if it starts with # or _: (common node ID patterns)
   if (str.startsWith("#") || str.startsWith("_:")) {
     // Verify this ID actually exists in the graph
@@ -377,7 +357,7 @@ function renderProperty(key, value, nodeId, nodeTypes) {
 
   // Helper: render a nested object value using a small inline node card
   function renderInlineObject(val) {
-    if (!val || typeof val !== "object" || Array.isArray(val)) {return null;}
+    if (!val || typeof val !== "object" || Array.isArray(val)) return null;
 
     const inlineCard = $("<div>").addClass("node-card inline-node-card").css({
       "margin-top": "5px",
@@ -403,8 +383,8 @@ function renderProperty(key, value, nodeId, nodeTypes) {
     const nestedTypes = Array.isArray(val["@type"])
       ? val["@type"]
       : val["@type"]
-        ? [val["@type"]]
-        : [];
+      ? [val["@type"]]
+      : [];
     nestedTypes.forEach((t) => {
       if (t) {
         leftSide.append($("<span>").addClass("node-type").text(t));
@@ -424,7 +404,7 @@ function renderProperty(key, value, nodeId, nodeTypes) {
     }
 
     Object.keys(val).forEach((k) => {
-      if (k === "@id" || k === "@type" || k === "@context") {return;}
+      if (k === "@id" || k === "@type" || k === "@context") return;
       const nestedRow = renderProperty(
         k,
         val[k],
@@ -670,7 +650,7 @@ function createValueInput(key, value, nodeId, arrayIndex, classification) {
       });
 
       Object.keys(value).forEach((nestedKey) => {
-        if (nestedKey === "@id" || nestedKey === "@type") {return;} // Skip JSON-LD metadata for cleaner display
+        if (nestedKey === "@id" || nestedKey === "@type") return; // Skip JSON-LD metadata for cleaner display
 
         const nestedRow = $("<div>")
           .addClass("property-row nested-property")

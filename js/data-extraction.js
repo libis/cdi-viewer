@@ -90,10 +90,10 @@ function collectChangesFromDOM() {
 
   console.log("collectChangesFromDOM: Complete. Updated jsonData:", jsonData);
   // jsonData['@graph'] is already updated in place - no need to replace it
-
+  
   // Clear the 'changed' class from all rows after collecting changes
   $(".property-row.changed").removeClass("changed");
-
+  
   // Update the save button state
   updateSaveButton();
 }
@@ -130,7 +130,7 @@ async function saveToDataverse() {
 
     // Create form data
     const formData = new FormData();
-    formData.append("file", blob, window.originalFileName);
+    formData.append("file", blob, originalFileName);
     formData.append(
       "jsonData",
       JSON.stringify({
@@ -148,7 +148,7 @@ async function saveToDataverse() {
       );
 
     // Call Dataverse API to replace file
-    const response = await fetch(`${window.siteUrl}/api/files/${window.fileId}/replace`, {
+    const response = await fetch(`${siteUrl}/api/files/${fileId}/replace`, {
       method: "POST",
       headers: {
         "X-Dataverse-key": apiToken,

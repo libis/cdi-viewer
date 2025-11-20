@@ -14,7 +14,7 @@
 
 // Parse RDF list from sh:in to extract enumeration values
 function parseRdfList(listNodeOrUri) {
-  if (!shaclShapesStore) {return [];}
+  if (!shaclShapesStore) return [];
 
   const values = [];
   let currentNode = listNodeOrUri;
@@ -62,7 +62,7 @@ function parseRdfList(listNodeOrUri) {
       null
     );
 
-    if (restQuads.length === 0) {break;}
+    if (restQuads.length === 0) break;
     currentNode = restQuads[0].object;
   }
 
@@ -82,7 +82,7 @@ function extractLabelFromUri(uri) {
 
 // Get enumeration values from a NodeShape that has sh:in
 function getEnumerationValues(nodeShapeUri) {
-  if (!shaclShapesStore) {return null;}
+  if (!shaclShapesStore) return null;
 
   // Query for sh:in on this NodeShape
   const inQuads = shaclShapesStore.getQuads(
@@ -92,7 +92,7 @@ function getEnumerationValues(nodeShapeUri) {
     null
   );
 
-  if (inQuads.length === 0) {return null;}
+  if (inQuads.length === 0) return null;
 
   // Parse the RDF list
   return parseRdfList(inQuads[0].object);
@@ -119,7 +119,7 @@ function classifyProperty(nodeTypes, propertyKey, nodeId = null) {
     nodeClass: null,
   };
 
-  if (!shaclShapesStore || nodeTypes.length === 0) {return result;}
+  if (!shaclShapesStore || nodeTypes.length === 0) return result;
 
   // Try to get the expanded URI for this property
   const expandedUri = nodeId
@@ -132,10 +132,7 @@ function classifyProperty(nodeTypes, propertyKey, nodeId = null) {
     const expanded = expandCompactIri(jsonData["@context"], propertyKey);
     if (expanded) {
       expandedPropertyKey = expanded;
-      log(
-        LOG_LEVEL.DEBUG,
-        `Expanded property ${propertyKey} → ${expandedPropertyKey}`
-      );
+      log(LOG_LEVEL.DEBUG, `Expanded property ${propertyKey} → ${expandedPropertyKey}`);
     }
   }
 
@@ -237,7 +234,7 @@ function classifyProperty(nodeTypes, propertyKey, nodeId = null) {
       );
 
       if (
-        window.currentLogLevel >= LOG_LEVEL.DEBUG &&
+        currentLogLevel >= LOG_LEVEL.DEBUG &&
         nodeId === "xas:485749" &&
         propertyKey === "name"
       ) {

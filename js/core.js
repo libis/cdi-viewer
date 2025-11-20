@@ -14,12 +14,11 @@ const LOG_LEVEL = {
 
 // Check URL parameter for debug mode
 const urlParams = new URLSearchParams(window.location.search);
-// Make currentLogLevel global so other files can access it
-window.currentLogLevel =
+let currentLogLevel =
   urlParams.get("debug") === "true" ? LOG_LEVEL.DEBUG : LOG_LEVEL.WARN;
 
 function log(level, ...args) {
-  if (level <= window.currentLogLevel) {
+  if (level <= currentLogLevel) {
     switch (level) {
       case LOG_LEVEL.ERROR:
         console.error(...args);
@@ -37,22 +36,21 @@ function log(level, ...args) {
   }
 }
 
-// Global variables - make them window properties so they're accessible across all script files
-window.jsonData = null;
-window.shaclShapes = null;
-window.shaclShapesStore = null;
-window.isEditMode = false;
-window.originalData = null;
-window.validationReport = null;
-window.fileId = null;
-window.siteUrl = null;
-window.originalFileName = "cdi-metadata.jsonld"; // Default filename
-window.expandedJsonLd = null; // Store expanded JSON-LD for property URI lookup
-window.currentShapeSource = "ddi-cdi-official"; // Track currently loaded shape source
-window.hadOriginalGraph = true; // Track if original data had @graph (for export preservation)
+let jsonData = null;
+let shaclShapes = null;
+let shaclShapesStore = null;
+let isEditMode = false;
+let originalData = null;
+let validationReport = null;
+let fileId = null;
+let siteUrl = null;
+let originalFileName = "cdi-metadata.jsonld"; // Default filename
+let expandedJsonLd = null; // Store expanded JSON-LD for property URI lookup
+let currentShapeSource = "ddi-cdi-official"; // Track currently loaded shape source
+let hadOriginalGraph = true; // Track if original data had @graph (for export preservation)
 
 // SHACL shape URLs (Core SHACL only - no SPARQL support)
-window.SHAPE_URLS = {
+const SHAPE_URLS = {
   "ddi-cdi-official":
     "https://ddi-cdi.github.io/m2t-ng/DDI-CDI_1-0/encoding/shacl/ddi-cdi.shacl.ttl",
   "cdif-core": "shapes/cdif-core.ttl",
@@ -84,8 +82,8 @@ $(document).ready(async function () {
 
       // Extract parameters from the response
       const queryParams = paramsData.data.queryParameters || {};
-      window.fileId = queryParams.fileid;
-      window.siteUrl = queryParams.siteUrl;
+      fileId = queryParams.fileid;
+      siteUrl = queryParams.siteUrl;
 
       // Get the dataset metadata signed URL if available
       const signedUrls = paramsData.data.signedUrls || [];
@@ -97,12 +95,12 @@ $(document).ready(async function () {
       }
     } else {
       // Direct parameters (for testing)
-      window.fileId = urlParams.get("fileid");
-      window.siteUrl = urlParams.get("siteUrl");
+      fileId = urlParams.get("fileid");
+      siteUrl = urlParams.get("siteUrl");
     }
 
     // Check required parameters
-    if (!window.fileId || !window.siteUrl) {
+    if (!fileId || !siteUrl) {
       // Show load local file button instead of error
       $("#load-local-btn").show();
       $("#content").html(`
@@ -124,15 +122,15 @@ $(document).ready(async function () {
           // Find the file in the files array by matching fileId
           const files = metadata.data.files || [];
           const fileInfo = files.find(
-            (f) => f.dataFile && f.dataFile.id === window.fileId
+            (f) => f.dataFile && f.dataFile.id == fileId
           );
           if (fileInfo && fileInfo.dataFile && fileInfo.dataFile.filename) {
-            window.originalFileName = fileInfo.dataFile.filename;
+            originalFileName = fileInfo.dataFile.filename;
           }
         }
       } else {
         // Fallback: try direct file API
-        const metadataResponse = await fetch(`${window.siteUrl}/api/files/${window.fileId}`);
+        const metadataResponse = await fetch(`${siteUrl}/api/files/${fileId}`);
         if (metadataResponse.ok) {
           const metadata = await metadataResponse.json();
           if (
@@ -140,7 +138,7 @@ $(document).ready(async function () {
             metadata.data.dataFile &&
             metadata.data.dataFile.filename
           ) {
-            window.originalFileName = metadata.data.dataFile.filename;
+            originalFileName = metadata.data.dataFile.filename;
           }
         }
       }
@@ -149,7 +147,7 @@ $(document).ready(async function () {
     }
 
     // Load from Dataverse API
-    fileUrl = window.siteUrl + "/api/access/datafile/" + window.fileId;
+    fileUrl = siteUrl + "/api/access/datafile/" + fileId;
 
     // Load JSON-LD data
     const response = await fetch(fileUrl);
@@ -171,7 +169,7 @@ $(document).ready(async function () {
     let jsonText;
     try {
       jsonText = await response.text();
-      window.jsonData = JSON.parse(jsonText);
+      jsonData = JSON.parse(jsonText);
     } catch (parseError) {
       throw new Error(
         `Failed to parse JSON: ${parseError.message}. This file may not be valid JSON-LD.`
@@ -180,7 +178,7 @@ $(document).ready(async function () {
 
     // Normalize to @graph format if needed
     try {
-      window.jsonData = await normalizeToGraphFormat(window.jsonData);
+      jsonData = await normalizeToGraphFormat(jsonData);
     } catch (normalizeError) {
       throw new Error(
         `Failed to normalize JSON-LD structure: ${normalizeError.message}`
@@ -188,13 +186,13 @@ $(document).ready(async function () {
     }
 
     // Verify we now have @graph (should always be true after normalization)
-    if (!window.jsonData["@graph"]) {
+    if (!jsonData["@graph"]) {
       throw new Error(
         "Internal error: Normalization did not produce @graph structure."
       );
     }
 
-    window.originalData = JSON.parse(JSON.stringify(window.jsonData)); // Deep clone
+    originalData = JSON.parse(JSON.stringify(jsonData)); // Deep clone
 
     // Load local context cache for fallback (non-blocking)
     loadLocalContext().catch((e) =>
@@ -203,11 +201,11 @@ $(document).ready(async function () {
 
     // Expand JSON-LD to get full property URIs
     try {
-      window.expandedJsonLd = await jsonld.expand(window.jsonData);
+      expandedJsonLd = await jsonld.expand(jsonData);
       console.log("Expanded JSON-LD for property URI mapping");
     } catch (expandError) {
       console.warn("Could not expand JSON-LD:", expandError);
-      window.expandedJsonLd = null;
+      expandedJsonLd = null;
     }
 
     // Load SHACL shapes - use the selected shape from dropdown

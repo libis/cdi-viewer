@@ -57,7 +57,7 @@ async function validateData() {
     const validator = new SHACLValidator(shapesDataset, { factory: rdf });
     const report = await validator.validate(dataDataset);
 
-    window.validationReport = report;
+    validationReport = report;
 
     const violations = [];
 
@@ -128,7 +128,7 @@ async function validateData() {
       // Show violations list (initially hidden)
       let detailsHtml =
         '<div class="validation-violations" style="display: none;"><h4>Validation Violations:</h4><ul>';
-      violations.forEach((v) => {
+      violations.forEach((v, i) => {
         const nodeId = v.focusNode.split("/").pop();
         detailsHtml += `<li><strong>${nodeId}</strong> - ${v.path}: ${v.message}</li>`;
       });

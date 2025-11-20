@@ -12,7 +12,7 @@
 
 // Expand a compact node ID (e.g., "xas:fe_c3d.001") to full URI (e.g., "http://www.cdi4exas.org/fe_c3d.001")
 function getExpandedNodeId(compactNodeId) {
-  if (!compactNodeId) {return null;}
+  if (!compactNodeId) return null;
 
   // If it's already a full URI, return as-is
   if (
@@ -27,8 +27,8 @@ function getExpandedNodeId(compactNodeId) {
     const node = jsonData["@graph"].find((n) => n["@id"] === compactNodeId);
     if (node && node["@id"]) {
       // Check if we have expanded JSON-LD
-      if (window.expandedJsonLd && Array.isArray(window.expandedJsonLd)) {
-        const expanded = window.expandedJsonLd.find((n) => {
+      if (expandedJsonLd && Array.isArray(expandedJsonLd)) {
+        const expanded = expandedJsonLd.find((n) => {
           // The expanded @id should be the full URI
           return (
             n["@id"] &&
@@ -57,19 +57,19 @@ function getExpandedNodeId(compactNodeId) {
 
 // Get the expanded URI for a property from the expanded JSON-LD
 function getExpandedPropertyUri(nodeId, propertyKey) {
-  if (!window.expandedJsonLd || !Array.isArray(window.expandedJsonLd)) {
+  if (!expandedJsonLd || !Array.isArray(expandedJsonLd)) {
     return null;
   }
 
   // Find the node in expanded JSON-LD
-  const expandedNode = window.expandedJsonLd.find((n) => n["@id"] === nodeId);
+  const expandedNode = expandedJsonLd.find((n) => n["@id"] === nodeId);
   if (!expandedNode) {
     return null;
   }
 
   // Look through all properties to find one that might match
   for (const key in expandedNode) {
-    if (key === "@id" || key === "@type") {continue;}
+    if (key === "@id" || key === "@type") continue;
 
     // The expanded key is the full URI, extract the local part
     const localPart = key.split("/").pop().split("#").pop();
@@ -127,7 +127,7 @@ function addRootNode() {
     const customType = prompt(
       "No SHACL shapes loaded. Enter a custom node type (e.g., Dataset, Study, Variable):"
     );
-    if (!customType) {return;}
+    if (!customType) return;
 
     createAndAddRootNode(customType);
     return;

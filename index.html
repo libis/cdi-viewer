@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CDI Data Viewer & Editor</title>
     
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/dataverse-previewers/favicon.ico">
+    
     <!-- External CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" href="css/cdi-preview.css">
@@ -18,6 +21,9 @@
             </button>
             <button id="save-btn" class="btn btn-success hidden">
                 <span class="glyphicon glyphicon-floppy-disk"></span> Save Changes
+            </button>
+            <button id="add-root-node-btn" class="btn btn-primary hidden">
+                <span class="glyphicon glyphicon-plus-sign"></span> Add Root Node
             </button>
             <button id="validate-btn" class="btn btn-info">
                 <span class="glyphicon glyphicon-ok-circle"></span> Validate
@@ -136,8 +142,6 @@
     </div>
 
     <!-- External JavaScript Libraries -->
-    <!-- NOTE: For standalone mode, we load from CDN to keep deployment simple -->
-    <!-- For Dataverse integration, these are already provided by the Dataverse environment -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/n3/browser/n3.min.js"></script>
@@ -147,18 +151,16 @@
     <script src="lib/rdf-validate-shacl.bundle.min.js"></script>
     
     <!-- Application JavaScript -->
-    <!-- NOTE: These individual files are for development. -->
-    <!-- For production, use dist/cdi-viewer.min.js bundle instead -->
-    <script src="js/cdi-shacl-loader.js"></script>
-    <script src="js/core.js"></script>
-    <script src="js/cdi-json-ld-helpers.js"></script>
+    <script src="js/cdi-preview/cdi-shacl-loader.js"></script>
+    <script src="js/cdi-preview/core.js"></script>
+    <script src="js/cdi-preview/cdi-json-ld-helpers.js"></script>
     <!-- SHACL UI helpers (classifyProperty, enums) used by render & suggestions -->
-    <script src="js/cdi-shacl-helpers.js"></script>
-    <script src="js/validation.js"></script>
-    <script src="js/render.js"></script>
-    <script src="js/property-suggestions.js"></script>
-    <script src="js/data-extraction.js"></script>
-    <script src="js/event-handlers.js"></script>
-    <script src="js/cdi-graph-helpers.js"></script>
+    <script src="js/cdi-preview/cdi-shacl-helpers.js"></script>
+    <script src="js/cdi-preview/validation.js"></script>
+    <script src="js/cdi-preview/render.js"></script>
+    <script src="js/cdi-preview/property-suggestions.js"></script>
+    <script src="js/cdi-preview/data-extraction.js"></script>
+    <script src="js/cdi-preview/event-handlers.js"></script>
+    <script src="js/cdi-preview/cdi-graph-helpers.js"></script>
 </body>
 </html>

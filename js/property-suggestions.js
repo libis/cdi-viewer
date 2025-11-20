@@ -81,7 +81,10 @@ function getPropertySuggestions(node, types) {
 
       // If no path found and it's a named node reference (not blank node),
       // it might be referencing a named property shape definition
-      if (pathQuads.length === 0 && propertyShapeRef.termType === "NamedNode") {
+      if (
+        pathQuads.length === 0 &&
+        propertyShapeRef.termType === "NamedNode"
+      ) {
         // This is a reference like cdifd:nameProperty
         // The referenced shape should have the actual sh:path
         pathQuads = shaclShapesStore.getQuads(
@@ -203,7 +206,7 @@ function getPropertySuggestions(node, types) {
 
                   if (inQuads.length > 0) {
                     // sh:in points to an RDF list, get the first item
-                    const listNode = inQuads[0].object; // Use object, not value!
+                    let listNode = inQuads[0].object; // Use object, not value!
 
                     const firstQuads = shaclShapesStore.getQuads(
                       listNode,
@@ -270,8 +273,8 @@ function createPropertySuggestionsSection(suggestions, nodeId, bodyElement) {
 
   // Sort: required first, then alphabetically
   suggestions.sort((a, b) => {
-    if (a.required && !b.required) {return -1;}
-    if (!a.required && b.required) {return 1;}
+    if (a.required && !b.required) return -1;
+    if (!a.required && b.required) return 1;
     return a.label.localeCompare(b.label);
   });
 
@@ -294,9 +297,9 @@ function createPropertySuggestionsSection(suggestions, nodeId, bodyElement) {
       .data("suggestion", suggestion);
 
     let text = suggestion.label;
-    if (suggestion.required) {text = "⚠ " + text + " (REQUIRED)";}
-    if (suggestion.isComplex) {text = text + " [object]";}
-    if (suggestion.maxCount === 1) {text = text + " (max 1)";}
+    if (suggestion.required) text = "⚠ " + text + " (REQUIRED)";
+    if (suggestion.isComplex) text = text + " [object]";
+    if (suggestion.maxCount === 1) text = text + " (max 1)";
 
     option.text(text);
     dropdown.append(option);
@@ -321,9 +324,7 @@ function createPropertySuggestionsSection(suggestions, nodeId, bodyElement) {
 
       if (suggestion.isComplex) {
         // Always create a separate node and reference it
-        // TODO: Implement complex property creation with node references
-        console.warn("Complex property addition not yet implemented:", suggestion);
-        addPropertyToNode(nodeId, suggestion.path, { "@id": "_:blank" }, bodyElement);
+        addComplexPropertyToNode(nodeId, suggestion, bodyElement);
       } else {
         // Add simple property with empty string as initial value
         addPropertyToNode(nodeId, suggestion.path, "", bodyElement);

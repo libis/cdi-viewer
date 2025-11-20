@@ -5,16 +5,16 @@
 // Load SHACL shapes from a URL with fallback to local
 async function loadShapes(shapeSource, customUrl = null) {
   let shapeUrl;
-  let fallbackUrl = window.SHAPE_URLS["local-fallback"];
+  let fallbackUrl = SHAPE_URLS["local-fallback"];
 
   // Determine the URL based on the shape source
   if (shapeSource === "custom" && customUrl) {
     shapeUrl = customUrl;
-  } else if (window.SHAPE_URLS[shapeSource]) {
-    shapeUrl = window.SHAPE_URLS[shapeSource];
+  } else if (SHAPE_URLS[shapeSource]) {
+    shapeUrl = SHAPE_URLS[shapeSource];
   } else {
     console.error("Unknown shape source:", shapeSource);
-    shapeUrl = window.SHAPE_URLS["local-fallback"];
+    shapeUrl = SHAPE_URLS["local-fallback"];
     fallbackUrl = null; // Already using fallback
   }
 
@@ -37,7 +37,7 @@ async function loadShapes(shapeSource, customUrl = null) {
       LOG_LEVEL.INFO,
       `Successfully loaded SHACL shapes from ${shapeUrl}, quad count: ${shaclShapesStore.size}`
     );
-    window.currentShapeSource = shapeSource;
+    currentShapeSource = shapeSource;
 
     return true;
   } catch (error) {
@@ -61,7 +61,7 @@ async function loadShapes(shapeSource, customUrl = null) {
           `Successfully loaded fallback SHACL shapes, quad count:`,
           shaclShapesStore.size
         );
-        window.currentShapeSource = "local-fallback";
+        currentShapeSource = "local-fallback";
 
         // Update dropdown to reflect fallback
         $("#shape-selector").val("local-fallback");
@@ -86,13 +86,13 @@ async function loadShapes(shapeSource, customUrl = null) {
 
 // Parse SHACL shapes text into N3 store
 async function parseShapes(shapesText) {
-  window.shaclShapes = shapesText;
+  shaclShapes = shapesText;
   shaclShapesStore = new N3.Store();
 
   const parser = new N3.Parser();
 
   return new Promise((resolve, reject) => {
-    parser.parse(shapesText, (error, quad) => {
+    parser.parse(shapesText, (error, quad, prefixes) => {
       if (error) {
         reject(error);
       } else if (quad) {
@@ -123,7 +123,7 @@ async function jsonLdToN3Store(jsonLdData) {
 
       const WORKING_URL =
         "https://ddi-cdi.github.io/m2t-ng/DDI-CDI_1-0/encoding/json-ld/ddi-cdi.jsonld";
-
+      
       const LOCAL_FALLBACK = "shapes/ddi-cdi.jsonld";
 
       // If this is a DDI-CDI context URL, try working URL first, then local fallback
@@ -140,21 +140,15 @@ async function jsonLdToN3Store(jsonLdData) {
             };
           }
         } catch (error) {
-          console.warn(
-            `Failed to load from ${WORKING_URL}, trying local fallback:`,
-            error
-          );
+          console.warn(`Failed to load from ${WORKING_URL}, trying local fallback:`, error);
         }
-
+        
         // Fallback to local copy
         try {
           const response = await fetch(LOCAL_FALLBACK);
           if (response.ok) {
             const doc = await response.json();
-            log(
-              LOG_LEVEL.INFO,
-              `Using local DDI-CDI context: ${LOCAL_FALLBACK}`
-            );
+            log(LOG_LEVEL.INFO, `Using local DDI-CDI context: ${LOCAL_FALLBACK}`);
             return {
               contextUrl: null,
               document: doc,
@@ -162,13 +156,8 @@ async function jsonLdToN3Store(jsonLdData) {
             };
           }
         } catch (error) {
-          console.error(
-            `Failed to load local fallback ${LOCAL_FALLBACK}:`,
-            error
-          );
-          throw new Error(
-            `Could not load DDI-CDI context from network or local fallback`
-          );
+          console.error(`Failed to load local fallback ${LOCAL_FALLBACK}:`, error);
+          throw new Error(`Could not load DDI-CDI context from network or local fallback`);
         }
       }
 
@@ -176,12 +165,12 @@ async function jsonLdToN3Store(jsonLdData) {
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-
+        
         const response = await fetch(url, {
           headers: { Accept: "application/ld+json, application/json" },
           signal: controller.signal,
         });
-
+        
         clearTimeout(timeoutId);
 
         if (!response.ok) {
@@ -217,7 +206,7 @@ async function jsonLdToN3Store(jsonLdData) {
     const parser = new N3.Parser({ format: "N-Quads" });
 
     return new Promise((resolve, reject) => {
-      parser.parse(nquads, (error, quad) => {
+      parser.parse(nquads, (error, quad, prefixes) => {
         if (error) {
           reject(error);
         } else if (quad) {

@@ -16,14 +16,14 @@ function setupEventHandlers() {
     .off("change")
     .on("change", async function (event) {
       const file = event.target.files && event.target.files[0];
-      if (!file) {return;}
+      if (!file) return;
 
       try {
         const fileText = await file.text();
-        const parsedData = JSON.parse(fileText);
+        let parsedData = JSON.parse(fileText);
 
         // Set filename for export
-        window.originalFileName = file.name;
+        originalFileName = file.name;
 
         // Normalize to @graph format
         jsonData = await normalizeToGraphFormat(parsedData);
@@ -32,14 +32,14 @@ function setupEventHandlers() {
           throw new Error("Failed to normalize JSON-LD structure.");
         }
 
-        window.originalData = JSON.parse(JSON.stringify(jsonData));
+        originalData = JSON.parse(JSON.stringify(jsonData));
 
         // Expand JSON-LD
         try {
-          window.expandedJsonLd = await jsonld.expand(jsonData);
+          expandedJsonLd = await jsonld.expand(jsonData);
         } catch (expandError) {
           console.warn("Could not expand JSON-LD:", expandError);
-          window.expandedJsonLd = null;
+          expandedJsonLd = null;
         }
 
         // Load SHACL shapes if not already loaded
@@ -72,7 +72,7 @@ function setupEventHandlers() {
   $("#toggle-edit-btn").click(function () {
     // Collect any changes before switching modes
     collectChangesFromDOM();
-
+    
     isEditMode = !isEditMode;
 
     if (isEditMode) {
@@ -105,17 +105,13 @@ function setupEventHandlers() {
   // Save changes
   $("#save-btn").click(function () {
     // Validate before saving
-      const _savedValidationStatus = $("#validation-status").html();
+    const savedValidationStatus = $("#validation-status").html();
     validateData();
 
     // Check if validation passed
     setTimeout(() => {
-      if (window.validationReport && !window.validationReport.conforms) {
-        if (
-          !confirm(
-            "Your data has validation errors. Do you want to save anyway?"
-          )
-        ) {
+      if (validationReport && !validationReport.conforms) {
+        if (!confirm("Your data has validation errors. Do you want to save anyway?")) {
           return;
         }
       }
