@@ -25,11 +25,13 @@
 Some schema.org properties show as EXTRA instead of OPTIONAL/REQUIRED.
 
 **Possible causes:**
+
 - SHACL shape paths don't match JSON-LD property names
 - Namespace mismatch (http:// vs https://)
 - Context resolution issues
 
 **Next steps:**
+
 - Wait for user feedback on validation results
 - May need to adjust SHACL shapes or path matching logic
 

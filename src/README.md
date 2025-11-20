@@ -1,27 +1,94 @@
-# CDI Viewer Source Modules
+# Source Code - ES6 Modules
 
-This directory contains modern ES6 modules that are bundled for browser use.
+This directory contains modern ES6 modules for the cdi-viewer application.
 
-## Current Status
+## Module Structure
 
-**Migration in Progress** - Hybrid architecture:
-- ✅ **validation.js** - Fully migrated to ES6 with proper imports
-  ```javascript
-  import Validator from 'shacl-engine/Validator.js';
-  import { validations as sparqlValidations } from 'shacl-engine/sparql.js';
-  ```
-- 🔄 **Other modules** - Still in `js/` as legacy scripts (being bundled as-is)
+```
+src/
+├── index.js                    # Entry point - imports all modules
+└── jsonld-editor/
+    ├── state.js                # Centralized state management
+    ├── core.js                 # Initialization & configuration
+    ├── validation.js           # SHACL validation (shacl-engine)
+    ├── cdi-shacl-loader.js     # SHACL shape loading
+    ├── cdi-shacl-helpers.js    # Property classification logic
+    ├── cdi-json-ld-helpers.js  # JSON-LD normalization
+    ├── cdi-graph-helpers.js    # Graph manipulation
+    ├── render.js               # UI rendering
+    ├── property-suggestions.js # Property suggestion UI
+    ├── data-extraction.js      # Export pipeline
+    └── event-handlers.js       # Event wiring
+```
 
-## Build Output
+## Key Modules
+
+### state.js
+Central state management with getters/setters:
+- `getJsonData()`, `setJsonData()` - Current JSON-LD data
+- `getShaclShapesStore()`, `setShaclShapesStore()` - Loaded SHACL shapes
+- `getIsEditMode()`, `setIsEditMode()` - Edit mode state
+- Configuration constants (LOG_LEVEL, SHAPE_URLS)
+
+### core.js
+Application initialization:
+- URL parameter parsing
+- Default DDI-CDI mode or `?shacl=generic`
+- Dataverse integration detection
+- Shape auto-loading logic
+
+### validation.js
+SHACL validation using shacl-engine:
+- Full SPARQL support
+- Advanced constraint validation
+- Violation reporting
+
+### render.js
+UI rendering:
+- Node card rendering
+- Property row rendering with classification
+- Array and reference UI components
+
+### cdi-graph-helpers.js
+Graph manipulation:
+- Add/delete nodes
+- Add/edit properties
+- Convert single↔array
+- Create and reference nodes
+
+## Building
 
 ```bash
-npm run build  # Build both bundles
+# Build bundle
+npm run build
 
-# Output:
-dist/
-├── cdi-validation.bundle.js  # 1.1MB - SHACL validation with SPARQL support
-└── cdi-app.bundle.js         # 38KB - Application logic (legacy scripts)
+# Output: dist/cdi-viewer.bundle.js (1.2MB)
 ```
+
+## Development
+
+All modules use ES6 imports/exports. No global variables except through Rollup's IIFE wrapper for browser compatibility.
+
+Example module pattern:
+```javascript
+// Import dependencies
+import { getJsonData, setJsonData } from './state.js';
+import { renderData } from './render.js';
+
+// Define functions
+export function myFunction() {
+  const data = getJsonData();
+  // ... logic
+  setJsonData(newData);
+  renderData();
+}
+```
+
+## Documentation
+
+- **ARCHITECTURE.md** - Complete technical documentation
+- **CONTRIBUTING.md** - Development workflow
+- **.ai/context.md** - AI assistant context
 
 ## Structure
 
