@@ -10,6 +10,7 @@ import {
   getDefaultTypeNamespace
 } from './state.js';
 import { expandCompactIri } from './cdi-json-ld-helpers.js';
+import { renderData } from './render.js';
 
 export function getPropertySuggestions(node, types) {
   const shaclShapesStore = getShaclShapesStore();
@@ -279,7 +280,7 @@ export function getPropertySuggestions(node, types) {
   return unique;
 }
 
-export function createPropertySuggestionsSection(suggestions, nodeId, bodyElement) {
+export function createPropertySuggestionsSection(suggestions, nodeId) {
   const section = $("<div>").addClass("add-property-section");
   section.append(
     $("<h4>")
@@ -340,10 +341,12 @@ export function createPropertySuggestionsSection(suggestions, nodeId, bodyElemen
 
       if (suggestion.isComplex) {
         // Always create a separate node and reference it
-        addComplexPropertyToNode(nodeId, suggestion, bodyElement);
+        addComplexPropertyToNode(nodeId, suggestion);
       } else {
-        // Add simple property with empty string as initial value
-        addPropertyToNode(nodeId, suggestion.path, "", bodyElement);
+        // TODO: Implement addPropertyToNode for simple properties
+        // For now, just re-render to update the UI
+        console.warn('addPropertyToNode not yet implemented in ES6 migration');
+        renderData();
       }
 
       // Remove from dropdown if maxCount = 1
@@ -363,7 +366,8 @@ export function createPropertySuggestionsSection(suggestions, nodeId, bodyElemen
     .click(function () {
       const propName = prompt("Enter custom property name:");
       if (propName) {
-        addPropertyToNode(nodeId, propName, "", bodyElement);
+        // TODO: Implement addPropertyToNode for custom properties
+        console.warn('addPropertyToNode not yet implemented in ES6 migration');
       }
     });
 
@@ -391,7 +395,7 @@ export function createPropertySuggestionsSection(suggestions, nodeId, bodyElemen
   return section;
 }
 
-export function addComplexPropertyToNode(nodeId, suggestion, _bodyElement) {
+export function addComplexPropertyToNode(nodeId, suggestion) {
   const jsonData = getJsonData();
   
   // Create a new node in the @graph
@@ -438,7 +442,6 @@ export function addComplexPropertyToNode(nodeId, suggestion, _bodyElement) {
 
   // Re-render everything
   renderData();
-  updateSaveButton();
 
   // Scroll to new node
   setTimeout(() => {
