@@ -1,0 +1,76 @@
+{
+  "name": "cdi-viewer",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Interactive viewer and editor for DDI-CDI and CDIF metadata with SHACL validation",
+  "main": "index.html",
+  "scripts": {
+    "dev": "python3 -m http.server 8000",
+    "build": "rollup -c",
+    "lint": "eslint js/**/*.js",
+    "lint:fix": "eslint js/**/*.js --fix",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libis/cdi-viewer.git"
+  },
+  "keywords": [
+    "ddi-cdi",
+    "cdif",
+    "metadata",
+    "shacl",
+    "json-ld",
+    "rdf",
+    "validation",
+    "dataverse"
+  ],
+  "author": "LIBIS @ KU Leuven",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/libis/cdi-viewer/issues"
+  },
+  "homepage": "https://libis.github.io/cdi-viewer/",
+  "dependencies": {
+    "jsonld": "^8.3.2",
+    "n3": "^1.16.4",
+    "rdf-validate-shacl": "^0.5.5"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "^0.4.4",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-jest": "^27.6.3",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "prettier": "^3.2.5",
+    "rollup": "^4.9.6",
+    "rollup-plugin-concat": "^1.0.4"
+  },
+  "peerDependencies": {
+    "bootstrap": "3.3.7",
+    "jquery": "3.6.0"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": [
+      "<rootDir>/tests/setup.js"
+    ],
+    "collectCoverageFrom": [
+      "js/**/*.js",
+      "!js/**/*.test.js"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 50,
+        "functions": 50,
+        "lines": 50,
+        "statements": 50
+      }
+    }
+  }
+}
