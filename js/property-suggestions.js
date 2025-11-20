@@ -40,8 +40,13 @@ function getPropertySuggestions(node, types) {
         return;
       }
     } else {
-      // No prefix, assume DDI-CDI namespace
-      typeUri = "http://ddialliance.org/Specification/DDI-CDI/1.0/RDF/" + type;
+      // No prefix - check if default namespace is configured
+      if (window.defaultTypeNamespace) {
+        typeUri = window.defaultTypeNamespace + type;
+      } else {
+        // No default namespace - skip this type
+        return;
+      }
     }
 
     // Look for NodeShapes with sh:targetClass matching this type

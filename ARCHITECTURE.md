@@ -1,18 +1,20 @@
-# CDI Viewer Architecture
+# JSON-LD Viewer Architecture
 
 ## Overview
 
-The CDI Viewer is a browser-based application for viewing, editing, and validating DDI-CDI and CDIF metadata in JSON-LD format. It uses SHACL shapes for validation and property classification.
+The JSON-LD Viewer is a browser-based application for viewing, editing, and validating **any JSON-LD metadata** with SHACL shapes. It works with any RDF vocabulary including DDI-CDI, schema.org, DCAT, BIBFRAME, and custom ontologies.
 
 **Critical:** This document preserves architectural decisions to prevent AI context drift during development.
 
 ## Core Principles
 
-1. **Dual Deployment**: Standalone (GitHub Pages) + Dataverse integration
-2. **Core SHACL Only**: No SPARQL dependencies (keeps bundle < 500KB)
-3. **Global State Pattern**: `window.*` properties for cross-file access
-4. **Client-Side Only**: No backend required, all processing in browser
-5. **Progressive Enhancement**: Works without JavaScript for static display
+1. **Generic JSON-LD Support**: Works with any vocabulary via standard jsonld.flatten()
+2. **Dual Deployment**: Standalone (GitHub Pages) + Dataverse integration
+3. **Core SHACL Only**: No SPARQL dependencies (keeps bundle < 500KB)
+4. **Global State Pattern**: `window.*` properties for cross-file access
+5. **Client-Side Only**: No backend required, all processing in browser
+6. **Progressive Enhancement**: Works without JavaScript for static display
+7. **Configurable Defaults**: Optional namespace and context mappings
 
 ## Application Flow
 
@@ -59,6 +61,40 @@ window.currentShapeSource    // Currently loaded shape source
 window.hadOriginalGraph      // Track if original data had @graph
 window.SHAPE_URLS            // Map of shape source names to URLs
 window.currentLogLevel       // Logging level (ERROR/WARN/INFO/DEBUG)
+window.defaultTypeNamespace  // Default namespace for unprefixed types (configurable)
+```
+
+**Configuration Variables:**
+```javascript
+// Default namespace for types without prefixes
+// Automatically configured via detectAndConfigureDDICDIMode() when SHACL shapes load
+// Can be manually overridden:
+window.defaultTypeNamespace = "http://ddialliance.org/Specification/DDI-CDI/1.0/RDF/"; // DDI-CDI
+window.defaultTypeNamespace = "http://schema.org/"; // Schema.org
+window.defaultTypeNamespace = "http://www.w3.org/ns/dcat#"; // DCAT
+window.defaultTypeNamespace = null; // Generic mode (default before shapes load)
+```
+
+**Auto-Detection (js/cdi-shacl-loader.js):**
+```javascript
+// Automatically enable DDI-CDI mode when loading DDI-CDI shapes
+// Detection is version-agnostic (1.0, 2.0, etc.) and protocol-agnostic (http/https)
+function detectAndConfigureDDICDIMode(shapesText) {
+  const isDDICDI = /ddialliance\.org\/Specification\/DDI-CDI/i.test(shapesText);
+  if (isDDICDI) {
+    window.defaultTypeNamespace = "http://ddialliance.org/Specification/DDI-CDI/1.0/RDF/";
+    // Enables: legacy context handling, DDICDIModels normalization
+  }
+}
+```
+
+**Legacy Context Mappings (js/cdi-json-ld-helpers.js):**
+```javascript
+// Map legacy context URLs to local copies
+const LEGACY_CONTEXT_URLS = {
+  "https://old-url.org/context.jsonld": "shapes/local-context.jsonld",
+  // Add more mappings as needed
+};
 ```
 
 **Why window.*?**

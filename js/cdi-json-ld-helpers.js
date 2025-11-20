@@ -6,11 +6,15 @@
 // Used for internal viewer behavior (expansion, suggestions, SHACL classification).
 // Does NOT modify the original data when exporting.
 
-// Legacy DDI-CDI JSON-LD context URL that we want to handle via a local copy
-const LEGACY_CDI_CONTEXT_URL =
-  "https://ddi-alliance.bitbucket.io/DDI-CDI/DDI-CDI_v1.0-rc1/encoding/json-ld/ddi-cdi.jsonld";
+// Legacy/external context URLs that we want to handle via local copies
+// Add entries here if you have local cached versions of external contexts
+const LEGACY_CONTEXT_URLS = {
+  // DDI-CDI legacy context (optional - only if working with DDI-CDI data)
+  "https://ddi-alliance.bitbucket.io/DDI-CDI/DDI-CDI_v1.0-rc1/encoding/json-ld/ddi-cdi.jsonld":
+    "shapes/ddi-cdi.jsonld",
+};
 
-// Cached local context from ddi-cdi.jsonld for fallback
+// Cached local context for fallback (optional)
 let cachedLocalContext = null;
 
 /**
@@ -102,9 +106,8 @@ function expandCompactIri(context, compactIri) {
 // NOTE: This is used **only** for internal viewer/editor behavior (expansion,
 // suggestions, SHACL classification). We DO NOT rewrite the original data when
 // exporting – the source JSON-LD stays as-is.
-const LOCAL_CONTEXT_MAP = {
-  [LEGACY_CDI_CONTEXT_URL]: "shapes/ddi-cdi.jsonld",
-};
+// Uses LEGACY_CONTEXT_URLS defined above (configurable)
+const LOCAL_CONTEXT_MAP = LEGACY_CONTEXT_URLS;
 
 // Apply viewer-local context normalization/merging without mutating the
 // original data structure. Returns a shallow-cloned object with a
@@ -217,9 +220,10 @@ async function normalizeToGraphFormat(data) {
   log(LOG_LEVEL.DEBUG, "Data does not have @graph, normalizing...");
   hadOriginalGraph = false;
 
-  // Special handling for DDI-CDI format with DDICDIModels and @included
+  // Special handling for legacy DDI-CDI format with DDICDIModels and @included
+  // This is an optional convenience - if your JSON-LD uses standard @graph, this won't trigger
   if (data["DDICDIModels"] && Array.isArray(data["DDICDIModels"])) {
-    log(LOG_LEVEL.DEBUG, "Detected DDI-CDI format with DDICDIModels");
+    log(LOG_LEVEL.DEBUG, "Detected legacy DDI-CDI format with DDICDIModels property");
 
     // Combine DDICDIModels and @included into @graph
     let graphNodes = [...data["DDICDIModels"]];

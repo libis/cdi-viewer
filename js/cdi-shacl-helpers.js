@@ -170,9 +170,20 @@ function classifyProperty(nodeTypes, propertyKey, nodeId = null) {
           return;
         }
       } else {
-        // No prefix, assume DDI-CDI namespace
-        typeUri =
-          "http://ddialliance.org/Specification/DDI-CDI/1.0/RDF/" + type;
+        // No prefix - check if default namespace is configured
+        if (window.defaultTypeNamespace) {
+          typeUri = window.defaultTypeNamespace + type;
+          log(
+            LOG_LEVEL.DEBUG,
+            `Using default namespace for type: ${typeUri}`
+          );
+        } else {
+          log(
+            LOG_LEVEL.WARN,
+            `Type "${type}" has no prefix and no default namespace configured - skipping`
+          );
+          return;
+        }
       }
 
       const targetClassQuads = shaclShapesStore.getQuads(

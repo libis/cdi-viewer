@@ -100,10 +100,30 @@ async function parseShapes(shapesText) {
       } else {
         // Parsing complete
         log(LOG_LEVEL.DEBUG, "SHACL shapes parsed successfully");
+        
+        // Auto-detect DDI-CDI mode based on namespace in SHACL shapes
+        detectAndConfigureDDICDIMode(shapesText);
+        
         resolve();
       }
     });
   });
+}
+
+// Detect if SHACL shapes are DDI-CDI related and enable DDI-CDI mode
+function detectAndConfigureDDICDIMode(shapesText) {
+  // Check for DDI-CDI namespace (version-agnostic, protocol-agnostic)
+  const isDDICDI = /ddialliance\.org\/Specification\/DDI-CDI/i.test(shapesText);
+  
+  if (isDDICDI) {
+    // Enable DDI-CDI mode
+    window.defaultTypeNamespace = "http://ddialliance.org/Specification/DDI-CDI/1.0/RDF/";
+    log(LOG_LEVEL.INFO, "DDI-CDI shapes detected - enabling DDI-CDI mode");
+  } else {
+    // Disable DDI-CDI mode for other vocabularies
+    window.defaultTypeNamespace = null;
+    log(LOG_LEVEL.INFO, "Generic JSON-LD mode (no DDI-CDI namespace detected)");
+  }
 }
 
 // Convert JSON-LD to N3 Store for validation

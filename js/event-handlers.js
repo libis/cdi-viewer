@@ -44,14 +44,21 @@ function setupEventHandlers() {
 
         // Load SHACL shapes if not already loaded
         if (!shaclShapesStore) {
-          try {
-            await loadShapes("ddi-cdi-official");
-          } catch (shapeError) {
-            console.error("Failed to load SHACL shapes:", shapeError);
+          const selectedShape = $("#shape-selector").val();
+          if (selectedShape) {
+            try {
+              await loadShapes(selectedShape);
+              log(LOG_LEVEL.INFO, "SHACL shapes loaded for validation");
+            } catch (shapeError) {
+              console.error("Failed to load SHACL shapes:", shapeError);
+              alert("Warning: Failed to load SHACL shapes. Continuing in generic mode.\n\n" + shapeError.message);
+            }
+          } else {
+            log(LOG_LEVEL.INFO, "No SHACL shapes selected - rendering in generic JSON-LD mode");
           }
         }
 
-        // Render the data
+        // Render the data (always, even without shapes)
         renderData();
 
         $("#content").prepend(`
@@ -228,6 +235,26 @@ function setupEventHandlers() {
       // Show custom URL input
       $("#custom-shape-url").show();
       return; // Wait for user to enter URL and press Enter
+    } else if (selectedSource === "") {
+      // Deselected - clear shapes and go to generic mode
+      $("#custom-shape-url").hide().val("");
+      shaclShapesStore = null;
+      shaclShapes = null;
+      window.defaultTypeNamespace = null;
+      log(LOG_LEVEL.INFO, "SHACL shapes cleared - generic JSON-LD mode");
+      
+      // Re-render to remove shape classifications if data is loaded
+      if (jsonData) {
+        renderData();
+      }
+      
+      $("#validation-status").html(
+        '<span class="label label-warning">No shapes loaded - generic mode</span>'
+      );
+      setTimeout(() => {
+        $("#validation-status").html("");
+      }, 2000);
+      return;
     } else {
       // Hide custom URL input
       $("#custom-shape-url").hide().val("");

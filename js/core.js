@@ -46,14 +46,26 @@ let fileId = null;
 let siteUrl = null;
 let originalFileName = "cdi-metadata.jsonld"; // Default filename
 let expandedJsonLd = null; // Store expanded JSON-LD for property URI lookup
-let currentShapeSource = "ddi-cdi-official"; // Track currently loaded shape source
+let currentShapeSource = null; // Track currently loaded shape source (null = no shapes loaded yet)
 let hadOriginalGraph = true; // Track if original data had @graph (for export preservation)
 
+// Configuration: Default namespace for types without prefix
+// Automatically configured based on loaded SHACL shapes (DDI-CDI detection)
+// Can be manually overridden:
+// window.defaultTypeNamespace = "http://ddialliance.org/Specification/DDI-CDI/1.0/RDF/"; // DDI-CDI
+// window.defaultTypeNamespace = "http://schema.org/"; // Schema.org
+// window.defaultTypeNamespace = "http://www.w3.org/ns/dcat#"; // DCAT
+window.defaultTypeNamespace = null; // Auto-configured when SHACL shapes load
+
 // SHACL shape URLs (Core SHACL only - no SPARQL support)
+// These are examples - users can load any SHACL shapes via custom URL
 const SHAPE_URLS = {
   "ddi-cdi-official":
     "https://ddi-cdi.github.io/m2t-ng/DDI-CDI_1-0/encoding/shacl/ddi-cdi.shacl.ttl",
   "cdif-core": "shapes/cdif-core.ttl",
+  "dcat-ap": "https://semiceu.github.io/DCAT-AP/releases/3.0.0/html/shacl/shapes.ttl",
+  "datacube": "https://raw.githubusercontent.com/w3c/shacl/master/shapes/datacube.shapes.ttl",
+  "skos": "https://raw.githubusercontent.com/skohub-io/skohub-shapes/main/skos.shacl.ttl",
   "local-fallback": "shapes/ddi-cdi-official.ttl",
 };
 
@@ -64,6 +76,18 @@ $(document).ready(async function () {
     const urlParams = new URLSearchParams(window.location.search);
     let fileUrl;
     let datasetMetadataUrl = null;
+    
+    // Check for shacl parameter (e.g., ?shacl=ddi-cdi-official)
+    const shaclParam = urlParams.get("shacl");
+    if (shaclParam && SHAPE_URLS[shaclParam]) {
+      $("#shape-selector").val(shaclParam);
+      try {
+        await loadShapes(shaclParam);
+        log(LOG_LEVEL.INFO, `Loaded shapes from URL parameter: ${shaclParam}`);
+      } catch (error) {
+        console.error("Failed to load shapes from URL parameter:", error);
+      }
+    }
 
     // Check if we have a callback parameter (external tool invocation)
     const callbackParam = urlParams.get("callback");
@@ -209,17 +233,20 @@ $(document).ready(async function () {
     }
 
     // Load SHACL shapes - use the selected shape from dropdown
-    try {
-      const selectedShape = $("#shape-selector").val() || "ddi-cdi-official";
-      await loadShapes(selectedShape);
-    } catch (shapeError) {
-      console.error("Failed to load SHACL shapes:", shapeError);
-      throw new Error(
-        `Failed to load validation shapes: ${shapeError.message}`
-      );
+    const selectedShape = $("#shape-selector").val();
+    if (selectedShape) {
+      try {
+        await loadShapes(selectedShape);
+        log(LOG_LEVEL.INFO, "SHACL shapes loaded for validation");
+      } catch (shapeError) {
+        console.error("Failed to load SHACL shapes:", shapeError);
+        console.warn("Continuing without SHACL validation");
+      }
+    } else {
+      log(LOG_LEVEL.INFO, "No SHACL shapes selected - rendering in generic JSON-LD mode");
     }
 
-    // Render the data
+    // Render the data (always, even without shapes)
     renderData();
 
     // Setup event handlers

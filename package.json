@@ -6,7 +6,9 @@
   "main": "index.html",
   "scripts": {
     "dev": "python3 -m http.server 8000",
+    "dev:bundle": "npm run build && python3 -m http.server 8000",
     "build": "rollup -c",
+    "build:watch": "rollup -c --watch",
     "lint": "eslint js/**/*.js",
     "lint:fix": "eslint js/**/*.js --fix",
     "test": "jest",

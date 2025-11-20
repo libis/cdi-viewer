@@ -1,6 +1,8 @@
-# AI Context for CDI Viewer Development
+# AI Context for JSON-LD Viewer Development
 
-**Purpose:** This file provides essential context for AI assistants (GitHub Copilot, Cursor, etc.) working on the CDI Viewer codebase. It prevents context drift and ensures consistent code quality.
+**Purpose:** This file provides essential context for AI assistants (GitHub Copilot, Cursor, etc.) working on the JSON-LD Viewer codebase. It prevents context drift and ensures consistent code quality.
+
+**Note:** This is a generic JSON-LD viewer that works with any RDF vocabulary (DDI-CDI, schema.org, DCAT, etc.), not just DDI-CDI.
 
 **Last Updated:** 2025-11-20
 
@@ -8,7 +10,51 @@
 
 ## Critical Architectural Decisions
 
-### 1. Global State Pattern (window.*)
+### 1. Generic JSON-LD Support
+
+**Decision:** Support any JSON-LD vocabulary via standard jsonld.flatten() and custom SHACL shapes with automatic DDI-CDI mode detection.
+
+**Why:**
+- Uses standard JSON-LD processing (jsonld.js library)
+- Works with any RDF vocabulary (DDI-CDI, schema.org, DCAT, BIBFRAME, custom ontologies)
+- SHACL shapes loaded dynamically via URL
+- No hardcoded vocabulary assumptions
+
+**Auto-Detection (js/cdi-shacl-loader.js):**
+```javascript
+// DDI-CDI mode automatically enabled when loading SHACL shapes
+// Detection: Version-agnostic, protocol-agnostic regex match
+function detectAndConfigureDDICDIMode(shapesText) {
+  const isDDICDI = /ddialliance\.org\/Specification\/DDI-CDI/i.test(shapesText);
+  if (isDDICDI) {
+    window.defaultTypeNamespace = "http://ddialliance.org/Specification/DDI-CDI/1.0/RDF/";
+    // Also enables: legacy context handling, DDICDIModels normalization
+  } else {
+    window.defaultTypeNamespace = null; // Generic mode
+  }
+}
+```
+
+**Manual Override (Optional, js/core.js):**
+```javascript
+window.defaultTypeNamespace = "http://schema.org/"; // Schema.org mode
+window.defaultTypeNamespace = "http://www.w3.org/ns/dcat#"; // DCAT mode
+window.defaultTypeNamespace = null; // Generic mode (no assumptions)
+```
+
+**Legacy Context Mappings (js/cdi-json-ld-helpers.js):**
+```javascript
+// Optional: Map legacy context URLs to local copies
+const LEGACY_CONTEXT_URLS = {
+  "https://old-url.org/context.jsonld": "shapes/local-context.jsonld",
+};
+```
+
+**DDI-CDI Specific Features (Optional):**
+- `DDICDIModels` normalization: Only triggers if property exists in data
+- Legacy context mapping: Configurable via LEGACY_CONTEXT_URLS
+
+### 2. Global State Pattern (window.*)
 
 **Decision:** Use `window.*` for all shared state across modules.
 
@@ -24,6 +70,7 @@
 window.jsonData = { ... };
 window.isEditMode = false;
 window.shaclShapesStore = null;
+window.defaultTypeNamespace = null; // Configuration
 
 // ❌ WRONG
 let jsonData = { ... };        // Not accessible across files
@@ -38,10 +85,11 @@ var editMode = false;          // Missing window. prefix causes undefined errors
 - `window.currentLogLevel` - Logging level (ERROR/WARN/INFO/DEBUG)
 - `window.originalData` - Original JSON-LD for reset
 - `window.validationReport` - Latest SHACL validation report
+- `window.defaultTypeNamespace` - Default namespace for unprefixed types (configurable)
 
 **Future:** Will migrate to ES6 modules with proper imports/exports (Phase 11.1)
 
-### 2. Core SHACL Only (No SPARQL)
+### 3. Core SHACL Only (No SPARQL)
 
 **Decision:** Support only Core SHACL features, exclude SPARQL-based constraints.
 
