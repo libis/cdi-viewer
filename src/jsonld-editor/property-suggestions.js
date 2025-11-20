@@ -4,19 +4,19 @@
 //
 // Generates property suggestions based on SHACL shapes and node types.
 
-import { 
+import {
   getShaclShapesStore,
   getJsonData,
-  getDefaultTypeNamespace
-} from './state.js';
-import { expandCompactIri } from './cdi-json-ld-helpers.js';
-import { renderData, humanizeKey } from './render.js';
-import { addPropertyToNode } from './cdi-graph-helpers.js';
+  getDefaultTypeNamespace,
+} from "./state.js";
+import { expandCompactIri } from "./cdi-json-ld-helpers.js";
+import { renderData, humanizeKey } from "./render.js";
+import { addPropertyToNode } from "./cdi-graph-helpers.js";
 
 export function getPropertySuggestions(node, types) {
   const shaclShapesStore = getShaclShapesStore();
   const jsonData = getJsonData();
-  
+
   if (!shaclShapesStore || types.length === 0) {
     return [];
   }
@@ -99,10 +99,7 @@ export function getPropertySuggestions(node, types) {
 
       // If no path found and it's a named node reference (not blank node),
       // it might be referencing a named property shape definition
-      if (
-        pathQuads.length === 0 &&
-        propertyShapeRef.termType === "NamedNode"
-      ) {
+      if (pathQuads.length === 0 && propertyShapeRef.termType === "NamedNode") {
         // This is a reference like cdifd:nameProperty
         // The referenced shape should have the actual sh:path
         pathQuads = shaclShapesStore.getQuads(
@@ -291,8 +288,12 @@ export function createPropertySuggestionsSection(suggestions, nodeId) {
 
   // Sort: required first, then alphabetically
   suggestions.sort((a, b) => {
-    if (a.required && !b.required) {return -1;}
-    if (!a.required && b.required) {return 1;}
+    if (a.required && !b.required) {
+      return -1;
+    }
+    if (!a.required && b.required) {
+      return 1;
+    }
     return a.label.localeCompare(b.label);
   });
 
@@ -315,9 +316,15 @@ export function createPropertySuggestionsSection(suggestions, nodeId) {
       .data("suggestion", suggestion);
 
     let text = suggestion.label;
-    if (suggestion.required) {text = "⚠ " + text + " (REQUIRED)";}
-    if (suggestion.isComplex) {text = text + " [object]";}
-    if (suggestion.maxCount === 1) {text = text + " (max 1)";}
+    if (suggestion.required) {
+      text = "⚠ " + text + " (REQUIRED)";
+    }
+    if (suggestion.isComplex) {
+      text = text + " [object]";
+    }
+    if (suggestion.maxCount === 1) {
+      text = text + " (max 1)";
+    }
 
     option.text(text);
     dropdown.append(option);
@@ -397,7 +404,7 @@ export function createPropertySuggestionsSection(suggestions, nodeId) {
 
 export function addComplexPropertyToNode(nodeId, suggestion) {
   const jsonData = getJsonData();
-  
+
   // Create a new node in the @graph
   const newNodeId = `_:${suggestion.path}_${Date.now()}`;
 

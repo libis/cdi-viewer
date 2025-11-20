@@ -10,12 +10,14 @@ Provides real-time validation, property classification, and complex object editi
 ## ✨ Features
 
 ### 🌐 Generic JSON-LD Support
+
 - **Any JSON-LD vocabulary** - Not limited to DDI-CDI
 - **Custom SHACL shapes** - Load validation shapes from any URL
 - **Standard JSON-LD processing** - Uses W3C JSON-LD algorithms
 - **Vocabulary-agnostic editing** - Works with any ontology
 
 ### 🔍 Data Display
+
 - **Complete visibility** of all nodes and properties in JSON-LD `@graph`
 - **Visual classification** with color-coded badges:
   - 🔵 Blue: SHACL-defined properties
@@ -24,6 +26,7 @@ Provides real-time validation, property classification, and complex object editi
   - 🔷 Teal: Modified properties
 
 ### ✏️ Editing Capabilities
+
 - **Smart input types** based on SHACL datatype constraints
 - **Complex object support** with nested node creation
 - **Property management** with searchable dropdowns
@@ -31,12 +34,14 @@ Provides real-time validation, property classification, and complex object editi
 - **Delete protection** for required fields
 
 ### ✅ Validation
+
 - **Real-time SHACL validation** using Core SHACL features
 - **Visual indicators** showing validation status
 - **Detailed reports** with actionable feedback
 - **Property suggestions** for missing fields
 
 ### 💾 Data Management
+
 - **Load local files** for standalone editing
 - **Export JSON-LD** with all modifications
 - **Dataverse integration** for direct API saves
@@ -56,6 +61,7 @@ Provides real-time validation, property classification, and complex object editi
 ### Example Files
 
 The demo includes DDI-CDI examples in the `examples/cdi/` directory:
+
 - `SimpleSample.jsonld` - Minimal DDI-CDI example
 - `se_na2so4-XDI-CDI-CDIF.jsonld` - X-ray spectroscopy data
 - `ESS11-subset_DDICDI.jsonld` - Comprehensive example
@@ -78,7 +84,8 @@ You can manually override the default namespace in `js/core.js` if needed:
 
 ```javascript
 // For DDI-CDI:
-window.defaultTypeNamespace = "http://ddialliance.org/Specification/DDI-CDI/1.0/RDF/";
+window.defaultTypeNamespace =
+  "http://ddialliance.org/Specification/DDI-CDI/1.0/RDF/";
 
 // For schema.org:
 window.defaultTypeNamespace = "http://schema.org/";
@@ -129,6 +136,7 @@ npm run dev
 ### Development with Example File
 
 Load test files via URL parameter:
+
 ```
 # Generic mode (no shapes preloaded)
 http://localhost:8000/
@@ -146,6 +154,7 @@ http://localhost:8000/?shacl=local-fallback
 ### Testing the Production Bundle
 
 The project includes a test page for the bundled version:
+
 ```
 http://localhost:8000/test-bundle.html
 ```
@@ -162,6 +171,7 @@ Comprehensive documentation is available in the `docs/` directory:
 ## 🔧 Technical Stack
 
 ### Libraries
+
 - **jQuery 3.7.1** - DOM manipulation
 - **Bootstrap 3.3.7** - UI components
 - **N3.js v1.16.x** (~150KB) - RDF/Turtle parsing
@@ -169,12 +179,14 @@ Comprehensive documentation is available in the `docs/` directory:
 - **shacl-engine** (~1.1MB) - Core SHACL + SPARQL validation
 
 ### Development Tools
+
 - **Jest** - Testing framework with JSDOM
 - **Rollup** - Module bundler (44KB output)
 - **ESLint + Prettier** - Code quality and formatting
 - **npm scripts** - Build automation
 
 ### NPM Scripts
+
 ```bash
 npm run dev           # Start development server (port 8000)
 npm run build         # Build production bundle (dist/cdi-viewer.min.js)
@@ -185,6 +197,7 @@ npm run lint          # Check code quality (ESLint + Prettier)
 ```
 
 ### Architecture
+
 - **Core SHACL + SPARQL** - Full SHACL validation with SPARQL constraints (~1.1MB)
 - **ES6 modules** - Modern code with proper imports (like shacl-engine examples)
 - **Dual bundles** - Validation (1.1MB) + App logic (38KB)
@@ -222,21 +235,27 @@ cdi-viewer/
 ## 🎯 Use Cases
 
 ### Any JSON-LD Vocabulary
+
 Perfect for:
+
 - **Research data metadata** - DDI-CDI, DCAT, DataCite
 - **Schema.org datasets** - Validate and edit Dataset markup
 - **Library metadata** - BIBFRAME, Dublin Core
 - **Domain-specific ontologies** - Any RDF vocabulary with SHACL shapes
 
 ### Standalone Mode
+
 Perfect for:
+
 - Exploring any JSON-LD metadata files offline
 - Testing SHACL validation with custom shapes
 - Educational purposes (learning JSON-LD, SHACL)
 - Quick metadata inspection and editing
 
 ### Dataverse Integration
+
 Ideal for:
+
 - Direct editing within Dataverse installations
 - API-based metadata updates for any vocabulary
 - Production metadata management
@@ -295,6 +314,7 @@ The **Custom URL** option allows you to load SHACL shapes for any vocabulary:
 3. Click "Load Custom Shapes"
 
 **Popular standards with published SHACL shapes:**
+
 - **DCAT-AP 3.0:** https://semiceu.github.io/DCAT-AP/releases/3.0.0/html/shacl/shapes.ttl (built-in)
 - **DataCube:** https://raw.githubusercontent.com/w3c/shacl/master/shapes/datacube.shapes.ttl (built-in)
 - **SKOS:** https://raw.githubusercontent.com/skohub-io/skohub-shapes/main/skos.shacl.ttl (built-in)
@@ -309,25 +329,30 @@ The **Custom URL** option allows you to load SHACL shapes for any vocabulary:
 If you need to create your own SHACL shapes for validation:
 
 **Learn SHACL:**
+
 - [W3C SHACL Specification](https://www.w3.org/TR/shacl/) - Official specification
 - [SHACL Playground](https://shacl.org/playground/) - Interactive editor and validator
 - [SHACL Tutorial](https://www.w3.org/2014/data-shapes/wiki/SHACL_Tutorial) - Step-by-step guide
 
 **Generate SHACL from Ontologies:**
+
 - [Astrea](https://astrea.linkeddata.es/) - Generate SHACL shapes from OWL ontologies
 - [SHACL Shape Generator](https://github.com/semantifyit/shacl-shape-generator) - Automated shape generation
 
 **Validate Your Shapes:**
+
 - [SHACL Play!](https://shacl-play.sparna.fr/play/) - Online SHACL validator
 - [pySHACL](https://github.com/RDFLib/pySHACL) - Python-based validator
 
 **Publishing Your Shapes:**
+
 - Host the `.ttl` file on GitHub Pages (free, static hosting)
 - Use raw GitHub URLs: `https://raw.githubusercontent.com/username/repo/main/shapes.ttl`
 - Ensure CORS is enabled for browser access
 - Use permanent URLs when possible (DOI, w3id.org, etc.)
 
 **Requirements:**
+
 - Save as Turtle format (`.ttl`)
 - Use only Core SHACL features (no SPARQL constraints)
 - Test with pySHACL or SHACL Play! before publishing
@@ -336,6 +361,7 @@ If you need to create your own SHACL shapes for validation:
 ### Debug Mode
 
 Enable detailed logging with `?debug=true`:
+
 ```
 https://libis.github.io/cdi-viewer/?debug=true
 ```
@@ -378,6 +404,7 @@ dist/                   # Built bundles for browser
 ```
 
 **Build Process:**
+
 ```bash
 # Write code with ES6 imports (like validation.js)
 import Validator from 'shacl-engine/Validator.js';
@@ -391,6 +418,7 @@ npm run build
 ```
 
 **Why ES6 Modules?**
+
 - ✅ Write clean Node.js-style code with `import`/`export`
 - ✅ Same pattern as shacl-engine, jsonld.js, n3.js
 - ✅ Better IDE support, type checking, debugging
@@ -402,6 +430,7 @@ See `src/README.md` for details on the ES6 module structure and migration plan.
 ### Architecture Documentation
 
 For detailed technical documentation, see:
+
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** - Comprehensive technical guide
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Development workflow and guidelines
 - **[docs/CDI_PREVIEWER.md](docs/CDI_PREVIEWER.md)** - Feature documentation
@@ -417,6 +446,7 @@ Developed by **LIBIS @ KU Leuven** (Katholieke Universiteit Leuven)
 Originally created for DDI-CDI metadata, but designed as a **generic JSON-LD viewer and editor** that works with any vocabulary and SHACL shapes.
 
 Part of the broader Dataverse ecosystem:
+
 - [Dataverse Project](https://dataverse.org/)
 - [GDCC Dataverse Previewers](https://github.com/gdcc/dataverse-previewers)
 - [DDI-CDI Specification](https://ddi-cdi.github.io/)

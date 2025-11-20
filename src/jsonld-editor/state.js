@@ -2,7 +2,7 @@
 
 /**
  * Application State Management
- * 
+ *
  * Centralized state store for all application data.
  * Replaces global variables with a proper module system.
  */
@@ -170,69 +170,97 @@ export const SHAPE_URLS = {
   "ddi-cdi-official":
     "https://ddi-cdi.github.io/m2t-ng/DDI-CDI_1-0/encoding/shacl/ddi-cdi.shacl.ttl",
   "cdif-core": "shapes/cdif-core.ttl",
-  "dcat-ap": "https://semiceu.github.io/DCAT-AP/releases/3.0.0/html/shacl/shapes.ttl",
-  "datacube": "https://raw.githubusercontent.com/w3c/shacl/master/shapes/datacube.shapes.ttl",
-  "skos": "https://raw.githubusercontent.com/skohub-io/skohub-shapes/main/skos.shacl.ttl",
+  "dcat-ap":
+    "https://semiceu.github.io/DCAT-AP/releases/3.0.0/html/shacl/shapes.ttl",
+  datacube:
+    "https://raw.githubusercontent.com/w3c/shacl/master/shapes/datacube.shapes.ttl",
+  skos: "https://raw.githubusercontent.com/skohub-io/skohub-shapes/main/skos.shacl.ttl",
   "local-fallback": "shapes/ddi-cdi-official.ttl",
 };
 
 // For backward compatibility during migration, expose state on window
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   // This allows legacy code to still access window.jsonData etc.
   // Can be removed once all modules are migrated
-  Object.defineProperty(window, 'jsonData', {
+  Object.defineProperty(window, "jsonData", {
     get: () => state.jsonData,
-    set: (val) => { state.jsonData = val; }
+    set: (val) => {
+      state.jsonData = val;
+    },
   });
-  Object.defineProperty(window, 'shaclShapes', {
+  Object.defineProperty(window, "shaclShapes", {
     get: () => state.shaclShapes,
-    set: (val) => { state.shaclShapes = val; }
+    set: (val) => {
+      state.shaclShapes = val;
+    },
   });
-  Object.defineProperty(window, 'shaclShapesStore', {
+  Object.defineProperty(window, "shaclShapesStore", {
     get: () => state.shaclShapesStore,
-    set: (val) => { state.shaclShapesStore = val; }
+    set: (val) => {
+      state.shaclShapesStore = val;
+    },
   });
-  Object.defineProperty(window, 'isEditMode', {
+  Object.defineProperty(window, "isEditMode", {
     get: () => state.isEditMode,
-    set: (val) => { state.isEditMode = val; }
+    set: (val) => {
+      state.isEditMode = val;
+    },
   });
-  Object.defineProperty(window, 'originalData', {
+  Object.defineProperty(window, "originalData", {
     get: () => state.originalData,
-    set: (val) => { state.originalData = val; }
+    set: (val) => {
+      state.originalData = val;
+    },
   });
-  Object.defineProperty(window, 'validationReport', {
+  Object.defineProperty(window, "validationReport", {
     get: () => state.validationReport,
-    set: (val) => { state.validationReport = val; }
+    set: (val) => {
+      state.validationReport = val;
+    },
   });
-  Object.defineProperty(window, 'fileId', {
+  Object.defineProperty(window, "fileId", {
     get: () => state.fileId,
-    set: (val) => { state.fileId = val; }
+    set: (val) => {
+      state.fileId = val;
+    },
   });
-  Object.defineProperty(window, 'siteUrl', {
+  Object.defineProperty(window, "siteUrl", {
     get: () => state.siteUrl,
-    set: (val) => { state.siteUrl = val; }
+    set: (val) => {
+      state.siteUrl = val;
+    },
   });
-  Object.defineProperty(window, 'originalFileName', {
+  Object.defineProperty(window, "originalFileName", {
     get: () => state.originalFileName,
-    set: (val) => { state.originalFileName = val; }
+    set: (val) => {
+      state.originalFileName = val;
+    },
   });
-  Object.defineProperty(window, 'expandedJsonLd', {
+  Object.defineProperty(window, "expandedJsonLd", {
     get: () => state.expandedJsonLd,
-    set: (val) => { state.expandedJsonLd = val; }
+    set: (val) => {
+      state.expandedJsonLd = val;
+    },
   });
-  Object.defineProperty(window, 'currentShapeSource', {
+  Object.defineProperty(window, "currentShapeSource", {
     get: () => state.currentShapeSource,
-    set: (val) => { state.currentShapeSource = val; }
+    set: (val) => {
+      state.currentShapeSource = val;
+    },
   });
-  Object.defineProperty(window, 'hadOriginalGraph', {
+  Object.defineProperty(window, "hadOriginalGraph", {
     get: () => state.hadOriginalGraph,
-    set: (val) => { state.hadOriginalGraph = val; }
+    set: (val) => {
+      state.hadOriginalGraph = val;
+    },
   });
-  Object.defineProperty(window, 'defaultTypeNamespace', {
+  Object.defineProperty(window, "defaultTypeNamespace", {
     get: () => state.defaultTypeNamespace,
-    set: (val) => { state.defaultTypeNamespace = val; }
+    set: (val) => {
+      state.defaultTypeNamespace = val;
+    },
   });
-  
+
   window.LOG_LEVEL = LOG_LEVEL;
   window.log = log;
   window.SHAPE_URLS = SHAPE_URLS;

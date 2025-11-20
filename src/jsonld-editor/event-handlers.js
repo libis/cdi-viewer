@@ -4,7 +4,7 @@
 //
 // Handles all user interactions: file loading, shape selection, edit mode, validation, etc.
 
-import { 
+import {
   LOG_LEVEL,
   log,
   setOriginalFileName,
@@ -18,15 +18,20 @@ import {
   setShaclShapesStore,
   setShaclShapes,
   setDefaultTypeNamespace,
-  getValidationReport
-} from './state.js';
-import { normalizeToGraphFormat } from './cdi-json-ld-helpers.js';
-import { loadShapes } from './cdi-shacl-loader.js';
-import { renderData } from './render.js';
-import { validateData } from './validation.js';
-import { collectChangesFromDOM, saveChanges, saveToDataverse, exportData } from './data-extraction.js';
-import { addRootNode } from './cdi-graph-helpers.js';
-import { highlightText } from './render.js';
+  getValidationReport,
+} from "./state.js";
+import { normalizeToGraphFormat } from "./cdi-json-ld-helpers.js";
+import { loadShapes } from "./cdi-shacl-loader.js";
+import { renderData } from "./render.js";
+import { validateData } from "./validation.js";
+import {
+  collectChangesFromDOM,
+  saveChanges,
+  saveToDataverse,
+  exportData,
+} from "./data-extraction.js";
+import { addRootNode } from "./cdi-graph-helpers.js";
+import { highlightText } from "./render.js";
 
 export function setupEventHandlers() {
   // Load local file button
@@ -40,7 +45,9 @@ export function setupEventHandlers() {
     .off("change")
     .on("change", async function (event) {
       const file = event.target.files && event.target.files[0];
-      if (!file) {return;}
+      if (!file) {
+        return;
+      }
 
       try {
         const fileText = await file.text();
@@ -78,10 +85,16 @@ export function setupEventHandlers() {
               log(LOG_LEVEL.INFO, "SHACL shapes loaded for validation");
             } catch (shapeError) {
               console.error("Failed to load SHACL shapes:", shapeError);
-              alert("Warning: Failed to load SHACL shapes. Continuing in generic mode.\n\n" + shapeError.message);
+              alert(
+                "Warning: Failed to load SHACL shapes. Continuing in generic mode.\n\n" +
+                  shapeError.message
+              );
             }
           } else {
-            log(LOG_LEVEL.INFO, "No SHACL shapes selected - rendering in generic JSON-LD mode");
+            log(
+              LOG_LEVEL.INFO,
+              "No SHACL shapes selected - rendering in generic JSON-LD mode"
+            );
           }
         }
 
@@ -106,7 +119,7 @@ export function setupEventHandlers() {
   $("#toggle-edit-btn").click(function () {
     // Collect any changes before switching modes
     collectChangesFromDOM();
-    
+
     const currentEditMode = getIsEditMode();
     setIsEditMode(!currentEditMode);
     const isEditMode = getIsEditMode();
@@ -147,7 +160,11 @@ export function setupEventHandlers() {
     setTimeout(() => {
       const validationReport = getValidationReport();
       if (validationReport && !validationReport.conforms) {
-        if (!confirm("Your data has validation errors. Do you want to save anyway?")) {
+        if (
+          !confirm(
+            "Your data has validation errors. Do you want to save anyway?"
+          )
+        ) {
           return;
         }
       }
@@ -271,12 +288,12 @@ export function setupEventHandlers() {
       setShaclShapes(null);
       setDefaultTypeNamespace(null);
       log(LOG_LEVEL.INFO, "SHACL shapes cleared - generic JSON-LD mode");
-      
+
       // Re-render to remove shape classifications if data is loaded
       if (getJsonData()) {
         renderData();
       }
-      
+
       $("#validation-status").html(
         '<span class="label label-warning">No shapes loaded - generic mode</span>'
       );

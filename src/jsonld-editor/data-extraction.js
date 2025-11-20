@@ -4,7 +4,12 @@
 //
 // Handles collecting user edits from the DOM and exporting JSON-LD data.
 
-import { getJsonData, getSiteUrl, getFileId, getOriginalFileName } from './state.js';
+import {
+  getJsonData,
+  getSiteUrl,
+  getFileId,
+  getOriginalFileName,
+} from "./state.js";
 
 export function updateSaveButton() {
   const hasChanges = $(".property-row.changed").length > 0;
@@ -13,7 +18,7 @@ export function updateSaveButton() {
 
 export function collectChangesFromDOM() {
   const jsonData = getJsonData();
-  
+
   // Check if there are any actual changes
   const hasChanges = $(".property-row.changed").length > 0;
   console.log("collectChangesFromDOM: Found", hasChanges, "changed rows");
@@ -94,10 +99,10 @@ export function collectChangesFromDOM() {
 
   console.log("collectChangesFromDOM: Complete. Updated jsonData:", jsonData);
   // jsonData['@graph'] is already updated in place - no need to replace it
-  
+
   // Clear the 'changed' class from all rows after collecting changes
   $(".property-row.changed").removeClass("changed");
-  
+
   // Update the save button state
   updateSaveButton();
 }
@@ -116,7 +121,7 @@ export async function saveToDataverse() {
   const siteUrl = getSiteUrl();
   const fileId = getFileId();
   const originalFileName = getOriginalFileName();
-  
+
   const apiToken = $("#apiTokenInput").val().trim();
 
   if (!apiToken) {
@@ -197,7 +202,7 @@ export async function saveToDataverse() {
 
 export function exportData() {
   const jsonData = getJsonData();
-  
+
   // Collect any changes from DOM before exporting
   collectChangesFromDOM();
 

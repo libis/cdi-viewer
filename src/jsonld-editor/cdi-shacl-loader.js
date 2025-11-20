@@ -2,15 +2,15 @@
 
 // === SHACL Shape Loading (Core SHACL Only) ===
 
-import { 
-  LOG_LEVEL, 
-  log, 
+import {
+  LOG_LEVEL,
+  log,
   SHAPE_URLS,
   setShaclShapes,
   setShaclShapesStore,
   setCurrentShapeSource,
-  setDefaultTypeNamespace
-} from './state.js';
+  setDefaultTypeNamespace,
+} from "./state.js";
 
 // Load SHACL shapes from a URL with fallback to local
 export async function loadShapes(shapeSource, customUrl = null) {
@@ -43,10 +43,7 @@ export async function loadShapes(shapeSource, customUrl = null) {
     // Parse into N3 store (Core SHACL only)
     await parseShapes(shapesText);
 
-    log(
-      LOG_LEVEL.INFO,
-      `Successfully loaded SHACL shapes from ${shapeUrl}`
-    );
+    log(LOG_LEVEL.INFO, `Successfully loaded SHACL shapes from ${shapeUrl}`);
     setCurrentShapeSource(shapeSource);
 
     return true;
@@ -67,9 +64,7 @@ export async function loadShapes(shapeSource, customUrl = null) {
         const fallbackShapesText = await fallbackResponse.text();
         await parseShapes(fallbackShapesText);
 
-        console.log(
-          `Successfully loaded fallback SHACL shapes`
-        );
+        console.log(`Successfully loaded fallback SHACL shapes`);
         setCurrentShapeSource("local-fallback");
 
         // Update dropdown to reflect fallback
@@ -111,10 +106,10 @@ async function parseShapes(shapesText) {
         // Parsing complete - set the store after all quads added
         setShaclShapesStore(store);
         log(LOG_LEVEL.DEBUG, "SHACL shapes parsed successfully");
-        
+
         // Auto-detect DDI-CDI mode based on namespace in SHACL shapes
         detectAndConfigureDDICDIMode(shapesText);
-        
+
         resolve();
       }
     });
@@ -125,10 +120,12 @@ async function parseShapes(shapesText) {
 function detectAndConfigureDDICDIMode(shapesText) {
   // Check for DDI-CDI namespace (version-agnostic, protocol-agnostic)
   const isDDICDI = /ddialliance\.org\/Specification\/DDI-CDI/i.test(shapesText);
-  
+
   if (isDDICDI) {
     // Enable DDI-CDI mode
-    setDefaultTypeNamespace("http://ddialliance.org/Specification/DDI-CDI/1.0/RDF/");
+    setDefaultTypeNamespace(
+      "http://ddialliance.org/Specification/DDI-CDI/1.0/RDF/"
+    );
     log(LOG_LEVEL.INFO, "DDI-CDI shapes detected - enabling DDI-CDI mode");
   } else {
     // Disable DDI-CDI mode for other vocabularies
@@ -154,7 +151,7 @@ export async function jsonLdToN3Store(jsonLdData) {
 
       const WORKING_URL =
         "https://ddi-cdi.github.io/m2t-ng/DDI-CDI_1-0/encoding/json-ld/ddi-cdi.jsonld";
-      
+
       const LOCAL_FALLBACK = "shapes/ddi-cdi.jsonld";
 
       // If this is a DDI-CDI context URL, try working URL first, then local fallback
@@ -171,15 +168,21 @@ export async function jsonLdToN3Store(jsonLdData) {
             };
           }
         } catch (error) {
-          console.warn(`Failed to load from ${WORKING_URL}, trying local fallback:`, error);
+          console.warn(
+            `Failed to load from ${WORKING_URL}, trying local fallback:`,
+            error
+          );
         }
-        
+
         // Fallback to local copy
         try {
           const response = await fetch(LOCAL_FALLBACK);
           if (response.ok) {
             const doc = await response.json();
-            log(LOG_LEVEL.INFO, `Using local DDI-CDI context: ${LOCAL_FALLBACK}`);
+            log(
+              LOG_LEVEL.INFO,
+              `Using local DDI-CDI context: ${LOCAL_FALLBACK}`
+            );
             return {
               contextUrl: null,
               document: doc,
@@ -187,8 +190,13 @@ export async function jsonLdToN3Store(jsonLdData) {
             };
           }
         } catch (error) {
-          console.error(`Failed to load local fallback ${LOCAL_FALLBACK}:`, error);
-          throw new Error(`Could not load DDI-CDI context from network or local fallback`);
+          console.error(
+            `Failed to load local fallback ${LOCAL_FALLBACK}:`,
+            error
+          );
+          throw new Error(
+            `Could not load DDI-CDI context from network or local fallback`
+          );
         }
       }
 
@@ -196,12 +204,12 @@ export async function jsonLdToN3Store(jsonLdData) {
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-        
+
         const response = await fetch(url, {
           headers: { Accept: "application/ld+json, application/json" },
           signal: controller.signal,
         });
-        
+
         clearTimeout(timeoutId);
 
         if (!response.ok) {

@@ -2,18 +2,26 @@
 
 // === CDI Previewer: SHACL Validation Logic (using shacl-engine with SPARQL support) ===
 
-import rdfDataModel from '@rdfjs/data-model';
-import rdfDataset from '@rdfjs/dataset';
-import Validator from 'shacl-engine/Validator.js';
-import { validations as sparqlValidations } from 'shacl-engine/sparql.js';
-import { getShaclShapesStore, getJsonData, setValidationReport } from './state.js';
-import { jsonLdToN3Store } from './cdi-shacl-loader.js';
+import rdfDataModel from "@rdfjs/data-model";
+import rdfDataset from "@rdfjs/dataset";
+import Validator from "shacl-engine/Validator.js";
+import { validations as sparqlValidations } from "shacl-engine/sparql.js";
+import {
+  getShaclShapesStore,
+  getJsonData,
+  setValidationReport,
+} from "./state.js";
+import { jsonLdToN3Store } from "./cdi-shacl-loader.js";
 
 // RDF factory for creating RDF/JS compliant datasets
 // Use rdfDataModel directly and add dataset method via Object.assign to preserve prototype
-const rdf = Object.assign(Object.create(Object.getPrototypeOf(rdfDataModel)), rdfDataModel, {
-  dataset: rdfDataset.dataset
-});
+const rdf = Object.assign(
+  Object.create(Object.getPrototypeOf(rdfDataModel)),
+  rdfDataModel,
+  {
+    dataset: rdfDataset.dataset,
+  }
+);
 
 /**
  * Convert N3 Store to RDF/JS Dataset
@@ -57,11 +65,11 @@ export async function validateData() {
     const dataDataset = storeToDataset(tempStore);
 
     // Create validator instance for the shapes in the dataset
-    const validator = new Validator(shapesDataset, { 
+    const validator = new Validator(shapesDataset, {
       factory: rdf,
-      validations: sparqlValidations  // Enable SPARQL constraints
+      validations: sparqlValidations, // Enable SPARQL constraints
     });
-    
+
     // Run the validation process
     const report = await validator.validate({ dataset: dataDataset });
 

@@ -2,20 +2,19 @@
 
 // === CDI Previewer: Tree Rendering & Node/Property Display ===
 
-import { 
-  getJsonData,
-  getIsEditMode,
-  getShaclShapesStore
-} from './state.js';
-import { classifyProperty } from './cdi-shacl-helpers.js';
-import { getPropertySuggestions, createPropertySuggestionsSection } from './property-suggestions.js';
+import { getJsonData, getIsEditMode, getShaclShapesStore } from "./state.js";
+import { classifyProperty } from "./cdi-shacl-helpers.js";
+import {
+  getPropertySuggestions,
+  createPropertySuggestionsSection,
+} from "./property-suggestions.js";
 
 // Track which nodes have been rendered to avoid duplicates
 const renderedNodes = new Set();
 
 export function renderData() {
   const jsonData = getJsonData();
-  
+
   console.log("🎨 RENDER START");
 
   const content = $("#content");
@@ -74,7 +73,9 @@ export function extractNodeReferences(value) {
 // Check if a string value looks like a node reference
 export function isNodeReference(str) {
   const jsonData = getJsonData();
-  if (typeof str !== "string") {return false;}
+  if (typeof str !== "string") {
+    return false;
+  }
   // Check if it starts with # or _: (common node ID patterns)
   if (str.startsWith("#") || str.startsWith("_:")) {
     // Verify this ID actually exists in the graph
@@ -86,7 +87,7 @@ export function isNodeReference(str) {
 export function renderNodeTree(node, index, depth) {
   const isEditMode = getIsEditMode();
   const shaclShapesStore = getShaclShapesStore();
-  
+
   const id = node["@id"] || `_:blank${index}`;
   const types = Array.isArray(node["@type"]) ? node["@type"] : [node["@type"]];
 
@@ -183,7 +184,7 @@ export function renderNodeTree(node, index, depth) {
 export function renderNode(node, index) {
   const isEditMode = getIsEditMode();
   const shaclShapesStore = getShaclShapesStore();
-  
+
   const id = node["@id"] || `_:blank${index}`;
   const types = Array.isArray(node["@type"]) ? node["@type"] : [node["@type"]];
 
@@ -374,7 +375,9 @@ function renderProperty(key, value, nodeId, nodeTypes) {
 
   // Helper: render a nested object value using a small inline node card
   function renderInlineObject(val) {
-    if (!val || typeof val !== "object" || Array.isArray(val)) {return null;}
+    if (!val || typeof val !== "object" || Array.isArray(val)) {
+      return null;
+    }
 
     const inlineCard = $("<div>").addClass("node-card inline-node-card").css({
       "margin-top": "5px",
@@ -400,8 +403,8 @@ function renderProperty(key, value, nodeId, nodeTypes) {
     const nestedTypes = Array.isArray(val["@type"])
       ? val["@type"]
       : val["@type"]
-      ? [val["@type"]]
-      : [];
+        ? [val["@type"]]
+        : [];
     nestedTypes.forEach((t) => {
       if (t) {
         leftSide.append($("<span>").addClass("node-type").text(t));
@@ -421,7 +424,9 @@ function renderProperty(key, value, nodeId, nodeTypes) {
     }
 
     Object.keys(val).forEach((k) => {
-      if (k === "@id" || k === "@type" || k === "@context") {return;}
+      if (k === "@id" || k === "@type" || k === "@context") {
+        return;
+      }
       const nestedRow = renderProperty(
         k,
         val[k],
@@ -534,7 +539,13 @@ function renderProperty(key, value, nodeId, nodeTypes) {
   return row;
 }
 
-export function createValueInput(key, value, nodeId, arrayIndex, classification) {
+export function createValueInput(
+  key,
+  value,
+  nodeId,
+  arrayIndex,
+  classification
+) {
   // Check if value is a reference to another node (has @id)
   if (typeof value === "object" && value !== null && value["@id"]) {
     const refId = value["@id"];
@@ -667,7 +678,9 @@ export function createValueInput(key, value, nodeId, arrayIndex, classification)
       });
 
       Object.keys(value).forEach((nestedKey) => {
-        if (nestedKey === "@id" || nestedKey === "@type") {return;} // Skip JSON-LD metadata for cleaner display
+        if (nestedKey === "@id" || nestedKey === "@type") {
+          return;
+        } // Skip JSON-LD metadata for cleaner display
 
         const nestedRow = $("<div>")
           .addClass("property-row nested-property")

@@ -43,52 +43,59 @@ Export or Save to Dataverse
 ## Module Structure
 
 ### js/core.js
+
 **Purpose:** Global configuration, initialization, Dataverse integration
 
-**Global Variables (window.*):**
+**Global Variables (window.\*):**
+
 ```javascript
-window.jsonData              // Current JSON-LD data (@graph format)
-window.shaclShapes           // Raw SHACL shapes (Turtle string)
-window.shaclShapesStore      // N3.Store with parsed SHACL triples
-window.isEditMode            // Boolean: edit mode enabled?
-window.originalData          // Original JSON-LD (for reset)
-window.validationReport      // Latest SHACL validation report
-window.fileId                // Dataverse file ID
-window.siteUrl               // Dataverse instance URL
-window.originalFileName      // File name for export
-window.expandedJsonLd        // Fully expanded JSON-LD (for URI lookup)
-window.currentShapeSource    // Currently loaded shape source
-window.hadOriginalGraph      // Track if original data had @graph
-window.SHAPE_URLS            // Map of shape source names to URLs
-window.currentLogLevel       // Logging level (ERROR/WARN/INFO/DEBUG)
-window.defaultTypeNamespace  // Default namespace for unprefixed types (configurable)
+window.jsonData; // Current JSON-LD data (@graph format)
+window.shaclShapes; // Raw SHACL shapes (Turtle string)
+window.shaclShapesStore; // N3.Store with parsed SHACL triples
+window.isEditMode; // Boolean: edit mode enabled?
+window.originalData; // Original JSON-LD (for reset)
+window.validationReport; // Latest SHACL validation report
+window.fileId; // Dataverse file ID
+window.siteUrl; // Dataverse instance URL
+window.originalFileName; // File name for export
+window.expandedJsonLd; // Fully expanded JSON-LD (for URI lookup)
+window.currentShapeSource; // Currently loaded shape source
+window.hadOriginalGraph; // Track if original data had @graph
+window.SHAPE_URLS; // Map of shape source names to URLs
+window.currentLogLevel; // Logging level (ERROR/WARN/INFO/DEBUG)
+window.defaultTypeNamespace; // Default namespace for unprefixed types (configurable)
 ```
 
 **Configuration Variables:**
+
 ```javascript
 // Default namespace for types without prefixes
 // Automatically configured via detectAndConfigureDDICDIMode() when SHACL shapes load
 // Can be manually overridden:
-window.defaultTypeNamespace = "http://ddialliance.org/Specification/DDI-CDI/1.0/RDF/"; // DDI-CDI
+window.defaultTypeNamespace =
+  "http://ddialliance.org/Specification/DDI-CDI/1.0/RDF/"; // DDI-CDI
 window.defaultTypeNamespace = "http://schema.org/"; // Schema.org
 window.defaultTypeNamespace = "http://www.w3.org/ns/dcat#"; // DCAT
 window.defaultTypeNamespace = null; // Generic mode (default before shapes load)
 ```
 
 **Auto-Detection (js/cdi-shacl-loader.js):**
+
 ```javascript
 // Automatically enable DDI-CDI mode when loading DDI-CDI shapes
 // Detection is version-agnostic (1.0, 2.0, etc.) and protocol-agnostic (http/https)
 function detectAndConfigureDDICDIMode(shapesText) {
   const isDDICDI = /ddialliance\.org\/Specification\/DDI-CDI/i.test(shapesText);
   if (isDDICDI) {
-    window.defaultTypeNamespace = "http://ddialliance.org/Specification/DDI-CDI/1.0/RDF/";
+    window.defaultTypeNamespace =
+      "http://ddialliance.org/Specification/DDI-CDI/1.0/RDF/";
     // Enables: legacy context handling, DDICDIModels normalization
   }
 }
 ```
 
 **Legacy Context Mappings (js/cdi-json-ld-helpers.js):**
+
 ```javascript
 // Map legacy context URLs to local copies
 const LEGACY_CONTEXT_URLS = {
@@ -97,13 +104,15 @@ const LEGACY_CONTEXT_URLS = {
 };
 ```
 
-**Why window.*?**
+**Why window.\*?**
+
 - All JS files loaded via `<script>` tags (no ES6 modules yet)
 - Variables must be truly global for cross-file access
 - Alternative patterns (IIFE, namespaces) didn't work in iframe context
 - Future: Will be refactored to ES6 modules with imports
 
 **Initialization:**
+
 1. Parse URL parameters (fileId, siteUrl, testfile, debug)
 2. Set logging level based on ?debug=true
 3. Load JSON-LD file (from Dataverse API or local file)
@@ -113,15 +122,18 @@ const LEGACY_CONTEXT_URLS = {
 7. Render initial UI
 
 ### js/cdi-json-ld-helpers.js
+
 **Purpose:** JSON-LD processing and context resolution
 
 **Key Functions:**
+
 - `normalizeToGraph(jsonLd)` - Convert any JSON-LD to @graph format
 - `resolvePrefix(context, prefix)` - Resolve prefix to namespace URI
 - `expandCompactIri(context, compactIri)` - Expand "schema:Dataset" to full URI
 - `loadLocalContext()` - Load and cache local DDI-CDI context
 
 **Critical Pattern:**
+
 ```javascript
 // ✅ CORRECT: Handle array contexts
 function resolvePrefix(context, prefix) {
@@ -137,24 +149,29 @@ function resolvePrefix(context, prefix) {
 ```
 
 **Common Pitfall:**
+
 - JSON-LD `@context` can be string, object, or array
 - Must check all contexts in array before returning null
 - External ontologies (prov, dcterms) may not be in main context
 
 ### js/cdi-shacl-loader.js
+
 **Purpose:** Load and parse SHACL shapes from various sources
 
 **Shape Sources:**
+
 1. **DDI-CDI Official** - ddi-cdi.github.io (300+ types, Core SHACL)
 2. **CDIF Discovery Core** - Local shapes/cdif-core.ttl (20 properties)
 3. **Local Fallback** - Built-in shapes/ddi-cdi-official.ttl
 4. **Custom URL** - User-provided Turtle file
 
 **Key Functions:**
+
 - `loadShaclShapes(source)` - Load shapes from source
 - `customDocumentLoader(url)` - Handle context loading with fallback
 
 **Document Loader Pattern:**
+
 ```javascript
 // Handle external contexts gracefully
 async function customDocumentLoader(url) {
@@ -174,21 +191,25 @@ async function customDocumentLoader(url) {
 **Critical:** Only Core SHACL supported (no `sh:SPARQLTarget`, `sh:SPARQLConstraint`)
 
 ### js/cdi-shacl-helpers.js
+
 **Purpose:** Property classification and SHACL constraint extraction
 
 **Key Functions:**
+
 - `classifyProperty(nodeId, propertyName, shaclShapesStore, expandedJsonLd)` - Returns "SHACL-defined" or "EXTRA"
 - `findNodeShape(nodeId, expandedJsonLd, shaclShapesStore)` - Find matching sh:NodeShape
 - `findPropertyShape(nodeShapeId, propertyUri, shaclShapesStore)` - Get property constraints
 - `getEnumValues(propertyShapeId, shaclShapesStore)` - Extract sh:in list values
 
 **Classification Logic:**
+
 1. Get node type(s) from expandedJsonLd (full URIs)
 2. Find NodeShape(s) with matching `sh:targetClass`
 3. For each property, check if `sh:path` matches property URI
 4. Return "SHACL-defined" if found, "EXTRA" otherwise
 
 **Critical Pattern - N3.js Term Objects:**
+
 ```javascript
 // ❌ WRONG: Using string URIs
 const pathQuads = store.getQuads(propertyShapeRef.value, ...)
@@ -198,11 +219,13 @@ const pathQuads = store.getQuads(propertyShapeRef, ...)
 ```
 
 **Why This Matters:**
+
 - N3.js requires term objects (NamedNode, Literal), not strings
 - Passing `propertyShapeRef.value` (string) causes lookups to fail silently
 - This caused the "all properties marked EXTRA" bug
 
 **Named Property Shapes:**
+
 ```turtle
 # CDIF shapes use this pattern:
 cdifd:DatasetShape
@@ -216,22 +239,25 @@ cdifd:nameProperty
 When resolving: pass term object, not URI string.
 
 ### js/render.js
+
 **Purpose:** UI rendering and tree visualization
 
 **Key Functions:**
+
 - `renderData()` - Main render loop for all nodes
 - `renderNode(node, nodeTypes, nodeId)` - Render single node card
 - `renderProperty(nodeId, key, value, nodeTypes)` - Render property row with badge
 
 **Rendering Pattern:**
+
 ```javascript
 // 1. Clear content
-$('#content').empty();
+$("#content").empty();
 
 // 2. Render nodes
-jsonData['@graph'].forEach(node => {
+jsonData["@graph"].forEach((node) => {
   const html = renderNode(node, nodeTypes, nodeId);
-  $('#content').append(html);
+  $("#content").append(html);
 });
 
 // 3. Attach event handlers (NOT inside render functions)
@@ -239,23 +265,28 @@ attachEventHandlers();
 ```
 
 **Property Badges:**
+
 - 🔵 Blue "SHACL-defined" - Property in SHACL shapes
 - 🟡 Yellow "EXTRA" - Property not in shapes
 - 🔴 Red text - Required but missing
 - 🔷 Teal border - Modified value
 
 **Add Root Node Button:**
+
 - Only shown in edit mode
 - Appears at top of content area (not toolbar)
 - Prominent styling with dashed border box
 
 ### js/validation.js
+
 **Purpose:** SHACL validation execution and UI updates
 
 **Key Function:**
+
 - `validateData()` - Run SHACL validation and show results
 
 **Validation Flow:**
+
 1. Convert JSON-LD to RDF (jsonld.toRDF)
 2. Parse RDF with N3.js into dataset
 3. Run shacl-engine validator (with SPARQL support)
@@ -264,6 +295,7 @@ attachEventHandlers();
 6. Highlight invalid properties in red
 
 **SHACL Severity Levels:**
+
 - `sh:Violation` (ERROR) - Missing required properties, datatype mismatches
 - `sh:Warning` (WARNING) - Missing recommended properties
 - `sh:Info` (INFO) - Suggestions
@@ -271,24 +303,30 @@ attachEventHandlers();
 **Critical:** Only Core SHACL constraints validated (no SPARQL)
 
 ### js/property-suggestions.js
+
 **Purpose:** Suggest missing SHACL-defined properties
 
 **Key Function:**
+
 - `suggestProperties(nodeId, nodeTypes)` - Return array of missing properties
 
 **Logic:**
+
 1. Find all property shapes for node's types
 2. Filter out properties already in data
 3. Return suggestions with descriptions
 
 **Used By:**
+
 - Property dropdown in edit mode
 - "Add Custom Property" feature
 
 ### js/event-handlers.js
+
 **Purpose:** All UI event handlers
 
 **Attached Events:**
+
 - Toggle Edit Mode button
 - Save to Dataverse button
 - Validate button
@@ -302,13 +340,16 @@ attachEventHandlers();
 - Value edit inputs
 
 **Critical Pattern:**
+
 ```javascript
 // ✅ CORRECT: Attach handlers AFTER rendering
 function attachEventHandlers() {
-  $('#toggle-edit-btn').off('click').on('click', function() {
-    window.isEditMode = !window.isEditMode;
-    // ...
-  });
+  $("#toggle-edit-btn")
+    .off("click")
+    .on("click", function () {
+      window.isEditMode = !window.isEditMode;
+      // ...
+    });
 }
 
 // ❌ WRONG: Handlers inside render functions
@@ -316,12 +357,15 @@ function attachEventHandlers() {
 ```
 
 ### js/data-extraction.js
+
 **Purpose:** Extract modified data from DOM and prepare for export
 
 **Key Function:**
+
 - `extractDataFromDom()` - Read all input values from DOM back into JSON-LD
 
 **Flow:**
+
 1. Clone originalData
 2. For each node in DOM
 3. Read all input values
@@ -330,26 +374,31 @@ function attachEventHandlers() {
 6. Return modified JSON-LD
 
 **Preserves:**
+
 - Original @context
 - @graph vs flat structure (via `hadOriginalGraph` flag)
 - Blank nodes and references
 
 ### js/cdi-graph-helpers.js
+
 **Purpose:** Graph manipulation and node management
 
 **Key Functions:**
+
 - `getAvailableNodeTypes(shaclShapesStore)` - List all sh:targetClass types
 - `createNewNode(type)` - Create blank node with @id and @type
 - `addNodeToGraph(node)` - Add node to window.jsonData['@graph']
 - `deleteNode(nodeId)` - Remove node and clean up references
 
 **Node ID Generation:**
+
 ```javascript
 // Create unique blank node IDs
 const nodeId = `_:node-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 ```
 
 **Reference Handling:**
+
 ```javascript
 // Properties with sh:node or sh:class create references
 {
@@ -363,6 +412,7 @@ const nodeId = `_:node-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 ### JSON-LD Structure
 
 **Input (flexible):**
+
 ```json
 {
   "@context": {...},
@@ -372,6 +422,7 @@ const nodeId = `_:node-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 ```
 
 **Normalized to @graph:**
+
 ```json
 {
   "@context": {...},
@@ -386,6 +437,7 @@ const nodeId = `_:node-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 ```
 
 **Why @graph format?**
+
 - Allows multiple disconnected nodes
 - Preserves references between nodes
 - Standard format for RDF datasets
@@ -395,6 +447,7 @@ const nodeId = `_:node-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 **Purpose:** Full URI resolution for property matching
 
 **Example:**
+
 ```json
 // Compact
 { "schema:name": "Example" }
@@ -404,6 +457,7 @@ const nodeId = `_:node-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 ```
 
 **Usage:**
+
 - Property classification (match full URIs)
 - Context-independent comparison
 - SHACL shape path matching
@@ -445,6 +499,7 @@ const nodeId = `_:node-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
    - Modals
 
 **Why external?**
+
 - Dataverse already loads these
 - Avoids duplication in iframe
 - Keeps bundle small
@@ -458,6 +513,7 @@ const nodeId = `_:node-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 **Root Cause:** Variable not on window object
 
 **Solution:**
+
 ```javascript
 // ❌ WRONG
 let editMode = false;
@@ -473,12 +529,13 @@ window.isEditMode = false;
 **Root Cause:** Context is array but code only checks object
 
 **Solution:**
+
 ```javascript
 // ❌ WRONG
 const ns = context[prefix];
 
 // ✅ CORRECT
-const ns = resolvePrefix(context, prefix);  // Handles arrays
+const ns = resolvePrefix(context, prefix); // Handles arrays
 ```
 
 ### 3. N3.js Term Objects
@@ -488,6 +545,7 @@ const ns = resolvePrefix(context, prefix);  // Handles arrays
 **Root Cause:** Passing string URI instead of term object
 
 **Solution:**
+
 ```javascript
 // ❌ WRONG
 const quads = store.getQuads(uri.value, ...);
@@ -503,6 +561,7 @@ const quads = store.getQuads(uri, ...);  // uri is NamedNode
 **Root Cause:** Handlers attached inside render functions
 
 **Solution:**
+
 ```javascript
 // ❌ WRONG
 function renderNode() {
@@ -528,6 +587,7 @@ function attachHandlers() {
 **Root Cause:** Mixed http:// and https:// namespaces
 
 **Solution:**
+
 - Use `http://schema.org/` consistently (not https)
 - schema.org canonical namespace is http://
 - Check both data and shapes use same namespace
@@ -541,14 +601,17 @@ function attachHandlers() {
 **Output:** `dist/cdi-viewer.min.js` (single bundle)
 
 **Bundled:**
+
 - All application JS files
 - N3.js, jsonld.js, shacl-engine
 
 **External:**
+
 - jQuery (provided by Dataverse)
 - Bootstrap (provided by Dataverse)
 
 **Minification:**
+
 - Terser plugin
 - Keep console logs (drop_console: false)
 - Mangle names except jQuery references
@@ -556,6 +619,7 @@ function attachHandlers() {
 ### Deployment Modes
 
 **Standalone (GitHub Pages):**
+
 ```html
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
@@ -563,6 +627,7 @@ function attachHandlers() {
 ```
 
 **Dataverse Integration:**
+
 ```html
 <!-- jQuery/Bootstrap already loaded by Dataverse -->
 <script src="lib/cdi-viewer.min.js"></script>
@@ -575,6 +640,7 @@ function attachHandlers() {
 **Focus:** Individual functions in isolation
 
 **Examples:**
+
 - Property classification logic
 - Context resolution
 - Node ID generation
@@ -585,6 +651,7 @@ function attachHandlers() {
 **Focus:** Module interactions
 
 **Examples:**
+
 - Load JSON-LD → normalize → render
 - Edit property → extract → validate
 - Load shapes → classify properties → show badges
@@ -594,6 +661,7 @@ function attachHandlers() {
 **Critical:** Prevent bugs from recurring
 
 **Examples:**
+
 - window.isEditMode defined (not editMode)
 - window.currentLogLevel accessible
 - N3.js term objects used correctly
@@ -606,6 +674,7 @@ function attachHandlers() {
 ### XSS Prevention
 
 **Input Sanitization:**
+
 - All user input escaped before rendering
 - jQuery `.text()` instead of `.html()` for untrusted content
 - Property names validated against SHACL
@@ -613,6 +682,7 @@ function attachHandlers() {
 ### API Token Handling
 
 **Dataverse Save:**
+
 - API token in password input (not visible)
 - Token not stored in localStorage
 - HTTPS required for production
@@ -620,6 +690,7 @@ function attachHandlers() {
 ### External Content
 
 **SHACL Shapes:**
+
 - Loaded from trusted sources only
 - Validate Turtle syntax before parsing
 - Timeout on external requests (10s)
@@ -628,7 +699,7 @@ function attachHandlers() {
 
 ### ES6 Modules (Priority: High)
 
-**Current:** Script tags with window.* globals
+**Current:** Script tags with window.\* globals
 
 **Future:** ES6 modules with imports
 
@@ -642,6 +713,7 @@ import { config, jsonData } from './core.js';
 ```
 
 **Benefits:**
+
 - Proper dependency management
 - Tree shaking (smaller bundles)
 - Better IDE support
@@ -650,11 +722,13 @@ import { config, jsonData } from './core.js';
 ### TypeScript Migration (Priority: Medium)
 
 **Add type definitions:**
+
 - Function parameters
 - Return types
 - Global state interfaces
 
 **Benefits:**
+
 - Catch bugs at compile time
 - Better IDE autocomplete
 - Self-documenting code
@@ -662,6 +736,7 @@ import { config, jsonData } from './core.js';
 ### Controlled Vocabularies (Priority: Medium)
 
 **sh:in constraints as dropdowns:**
+
 ```javascript
 // Currently: text input
 // Future: dropdown with sh:in values
@@ -675,6 +750,7 @@ import { config, jsonData } from './core.js';
 ### Undo/Redo (Priority: Low)
 
 **State management:**
+
 - Track edit history
 - Undo button restores previous state
 - Redo button replays changes
@@ -684,11 +760,13 @@ import { config, jsonData } from './core.js';
 ### Enable Debug Mode
 
 Add `?debug=true` to URL:
+
 ```
 https://libis.github.io/cdi-viewer/?debug=true
 ```
 
 **Shows:**
+
 - Shape loading details
 - Property classification decisions
 - Validation execution logs
@@ -697,42 +775,50 @@ https://libis.github.io/cdi-viewer/?debug=true
 ### Common Debug Checks
 
 **1. Check global variables:**
+
 ```javascript
-console.log('isEditMode:', window.isEditMode);
-console.log('jsonData:', window.jsonData);
-console.log('shaclShapesStore:', window.shaclShapesStore);
+console.log("isEditMode:", window.isEditMode);
+console.log("jsonData:", window.jsonData);
+console.log("shaclShapesStore:", window.shaclShapesStore);
 ```
 
 **2. Check shape loading:**
+
 ```javascript
-console.log('Current shape source:', window.currentShapeSource);
-console.log('Shape URLs:', window.SHAPE_URLS);
-console.log('Shapes loaded:', window.shaclShapes ? 'Yes' : 'No');
+console.log("Current shape source:", window.currentShapeSource);
+console.log("Shape URLs:", window.SHAPE_URLS);
+console.log("Shapes loaded:", window.shaclShapes ? "Yes" : "No");
 ```
 
 **3. Check property classification:**
+
 ```javascript
-const classification = classifyProperty(nodeId, propertyName, 
-  window.shaclShapesStore, window.expandedJsonLd);
+const classification = classifyProperty(
+  nodeId,
+  propertyName,
+  window.shaclShapesStore,
+  window.expandedJsonLd
+);
 console.log(`Property ${propertyName}:`, classification);
 ```
 
 ### Browser Console
 
 **Useful commands:**
+
 ```javascript
 // View all nodes
-window.jsonData['@graph']
+window.jsonData["@graph"];
 
 // View expanded JSON-LD
-window.expandedJsonLd
+window.expandedJsonLd;
 
 // Re-render UI
-renderData()
+renderData();
 
 // Extract current data
-const data = extractDataFromDom()
-console.log(JSON.stringify(data, null, 2))
+const data = extractDataFromDom();
+console.log(JSON.stringify(data, null, 2));
 ```
 
 ## Performance Considerations
@@ -742,10 +828,12 @@ console.log(JSON.stringify(data, null, 2))
 **Target:** < 500KB minified
 
 **Current:** ~1.14MB (App 38KB + Validation 1.1MB)
+
 - Validation bundle includes shacl-engine with SPARQL support
 - App bundle contains all application logic
 
 **Optimization:**
+
 - Core SHACL only (no SPARQL = saves 1.9MB)
 - External jQuery/Bootstrap (saves ~100KB)
 - Terser minification
@@ -756,6 +844,7 @@ console.log(JSON.stringify(data, null, 2))
 **Current Limit:** ~100 nodes perform well
 
 **For larger files:**
+
 - Consider pagination
 - Virtual scrolling
 - Lazy loading of nodes
@@ -768,7 +857,7 @@ console.log(JSON.stringify(data, null, 2))
 ```javascript
 // Load shapes once, reuse
 if (!window.shaclShapesStore) {
-  await loadShaclShapes('ddi-cdi-official');
+  await loadShaclShapes("ddi-cdi-official");
 }
 ```
 

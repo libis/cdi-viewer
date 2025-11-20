@@ -6,21 +6,23 @@
 //  - classifyProperty: determine REQUIRED / OPTIONAL / EXTRA, datatype, enums, etc.
 //  - parseRdfList, extractLabelFromUri, getEnumerationValues: helpers for sh:in and enums.
 
-import { 
-  LOG_LEVEL, 
-  log, 
+import {
+  LOG_LEVEL,
+  log,
   getShaclShapesStore,
   getJsonData,
   getCurrentLogLevel,
-  getDefaultTypeNamespace
-} from './state.js';
-import { getExpandedPropertyUri } from './cdi-graph-helpers.js';
-import { expandCompactIri } from './cdi-json-ld-helpers.js';
+  getDefaultTypeNamespace,
+} from "./state.js";
+import { getExpandedPropertyUri } from "./cdi-graph-helpers.js";
+import { expandCompactIri } from "./cdi-json-ld-helpers.js";
 
 // Parse RDF list from sh:in to extract enumeration values
 export function parseRdfList(listNodeOrUri) {
   const shaclShapesStore = getShaclShapesStore();
-  if (!shaclShapesStore) {return [];}
+  if (!shaclShapesStore) {
+    return [];
+  }
 
   const values = [];
   let currentNode = listNodeOrUri;
@@ -68,7 +70,9 @@ export function parseRdfList(listNodeOrUri) {
       null
     );
 
-    if (restQuads.length === 0) {break;}
+    if (restQuads.length === 0) {
+      break;
+    }
     currentNode = restQuads[0].object;
   }
 
@@ -89,7 +93,9 @@ export function extractLabelFromUri(uri) {
 // Get enumeration values from a NodeShape that has sh:in
 export function getEnumerationValues(nodeShapeUri) {
   const shaclShapesStore = getShaclShapesStore();
-  if (!shaclShapesStore) {return null;}
+  if (!shaclShapesStore) {
+    return null;
+  }
 
   // Query for sh:in on this NodeShape
   const inQuads = shaclShapesStore.getQuads(
@@ -99,7 +105,9 @@ export function getEnumerationValues(nodeShapeUri) {
     null
   );
 
-  if (inQuads.length === 0) {return null;}
+  if (inQuads.length === 0) {
+    return null;
+  }
 
   // Parse the RDF list
   return parseRdfList(inQuads[0].object);
@@ -128,8 +136,10 @@ export function classifyProperty(nodeTypes, propertyKey, nodeId = null) {
 
   const shaclShapesStore = getShaclShapesStore();
   const jsonData = getJsonData();
-  
-  if (!shaclShapesStore || nodeTypes.length === 0) {return result;}
+
+  if (!shaclShapesStore || nodeTypes.length === 0) {
+    return result;
+  }
 
   // Try to get the expanded URI for this property
   const expandedUri = nodeId
@@ -142,7 +152,10 @@ export function classifyProperty(nodeTypes, propertyKey, nodeId = null) {
     const expanded = expandCompactIri(jsonData["@context"], propertyKey);
     if (expanded) {
       expandedPropertyKey = expanded;
-      log(LOG_LEVEL.DEBUG, `Expanded property ${propertyKey} → ${expandedPropertyKey}`);
+      log(
+        LOG_LEVEL.DEBUG,
+        `Expanded property ${propertyKey} → ${expandedPropertyKey}`
+      );
     }
   }
 
@@ -184,10 +197,7 @@ export function classifyProperty(nodeTypes, propertyKey, nodeId = null) {
         const defaultTypeNamespace = getDefaultTypeNamespace();
         if (defaultTypeNamespace) {
           typeUri = defaultTypeNamespace + type;
-          log(
-            LOG_LEVEL.DEBUG,
-            `Using default namespace for type: ${typeUri}`
-          );
+          log(LOG_LEVEL.DEBUG, `Using default namespace for type: ${typeUri}`);
         } else {
           log(
             LOG_LEVEL.WARN,

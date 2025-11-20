@@ -16,12 +16,12 @@ import {
   setOriginalFileName,
   getFileId,
   getSiteUrl,
-  getJsonData
-} from './state.js';
-import { normalizeToGraphFormat } from './cdi-json-ld-helpers.js';
-import { loadShapes } from './cdi-shacl-loader.js';
-import { renderData } from './render.js';
-import { setupEventHandlers } from './event-handlers.js';
+  getJsonData,
+} from "./state.js";
+import { normalizeToGraphFormat } from "./cdi-json-ld-helpers.js";
+import { loadShapes } from "./cdi-shacl-loader.js";
+import { renderData } from "./render.js";
+import { setupEventHandlers } from "./event-handlers.js";
 
 // Initialize
 $(document).ready(async function () {
@@ -29,7 +29,7 @@ $(document).ready(async function () {
     // Get file URL from query parameters
     const urlParams = new URLSearchParams(window.location.search);
     let datasetMetadataUrl = null;
-    
+
     // Check for shacl parameter (e.g., ?shacl=ddi-cdi-official)
     const shaclParam = urlParams.get("shacl");
     if (shaclParam && SHAPE_URLS[shaclParam]) {
@@ -79,7 +79,7 @@ $(document).ready(async function () {
     // Check required parameters
     const fileId = getFileId();
     const siteUrl = getSiteUrl();
-    
+
     if (!fileId || !siteUrl) {
       // Show load local file button instead of error
       $("#load-local-btn").show();
@@ -199,7 +199,10 @@ $(document).ready(async function () {
         console.warn("Continuing without SHACL validation");
       }
     } else {
-      log(LOG_LEVEL.INFO, "No SHACL shapes selected - rendering in generic JSON-LD mode");
+      log(
+        LOG_LEVEL.INFO,
+        "No SHACL shapes selected - rendering in generic JSON-LD mode"
+      );
     }
 
     // Render the data (always, even without shapes)

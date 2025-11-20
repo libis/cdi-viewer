@@ -11,6 +11,8 @@
     "build:watch": "rollup -c --watch",
     "lint": "eslint src/**/*.js",
     "lint:fix": "eslint src/**/*.js --fix",
+    "fmt": "prettier --write \"src/**/*.js\" \"*.{json,md,html,css}\"",
+    "fmt:check": "prettier --check \"src/**/*.js\" \"*.{json,md,html,css}\"",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"

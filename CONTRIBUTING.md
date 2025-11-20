@@ -14,25 +14,30 @@ Thank you for your interest in contributing to the CDI Viewer! This document pro
 ### Getting Started
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/libis/cdi-viewer.git
    cd cdi-viewer
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Run tests**
+
    ```bash
    npm test
    ```
 
 4. **Start development server**
+
    ```bash
    npm run dev
    ```
+
    Then open http://localhost:8000 in your browser.
 
 5. **Build for production**
@@ -69,6 +74,7 @@ cdi-viewer/
 ### Making Changes
 
 1. **Create a feature branch**
+
    ```bash
    git checkout -b feature/your-feature-name
    ```
@@ -79,6 +85,7 @@ cdi-viewer/
    - Add/update tests in `tests/`
 
 3. **Test your changes**
+
    ```bash
    npm test           # Run all tests
    npm run lint       # Check code style
@@ -87,11 +94,12 @@ cdi-viewer/
    ```
 
 4. **Commit your changes**
+
    ```bash
    git add .
    git commit -m "feat: description of your changes"
    ```
-   
+
    Follow [Conventional Commits](https://www.conventionalcommits.org/):
    - `feat:` new feature
    - `fix:` bug fix
@@ -126,17 +134,23 @@ cdi-viewer/
 ### Comments
 
 - **JSDoc** for all functions:
+
   ```javascript
   /**
    * Classify a property as SHACL-defined or EXTRA
-   * 
+   *
    * @param {Array<string>} nodeTypes - Node types to check
    * @param {string} propertyName - Property name to classify
    * @param {N3.Store} shaclShapesStore - SHACL shapes store
    * @param {Array} expandedJsonLd - Expanded JSON-LD
    * @returns {Object} Classification result
    */
-  function classifyProperty(nodeTypes, propertyName, shaclShapesStore, expandedJsonLd) {
+  function classifyProperty(
+    nodeTypes,
+    propertyName,
+    shaclShapesStore,
+    expandedJsonLd
+  ) {
     // ...
   }
   ```
@@ -151,21 +165,32 @@ cdi-viewer/
 Tests live in `tests/` directory. Use Jest with JSDOM.
 
 **Example test:**
+
 ```javascript
-describe('classifyProperty', () => {
+describe("classifyProperty", () => {
   beforeEach(() => {
     // Set up test environment
     window.shaclShapesStore = new N3.Store();
     // ... load test shapes
   });
 
-  test('should mark SHACL-defined properties correctly', () => {
-    const result = classifyProperty(['Dataset'], 'name', window.shaclShapesStore, []);
+  test("should mark SHACL-defined properties correctly", () => {
+    const result = classifyProperty(
+      ["Dataset"],
+      "name",
+      window.shaclShapesStore,
+      []
+    );
     expect(result.isInShape).toBe(true);
   });
 
-  test('should mark extra properties', () => {
-    const result = classifyProperty(['Dataset'], 'customField', window.shaclShapesStore, []);
+  test("should mark extra properties", () => {
+    const result = classifyProperty(
+      ["Dataset"],
+      "customField",
+      window.shaclShapesStore,
+      []
+    );
     expect(result.isInShape).toBe(false);
   });
 });
@@ -190,39 +215,43 @@ npm run test:coverage # Generate coverage report
 ### Critical Patterns
 
 1. **Global Variables**
+
    ```javascript
    // ✅ CORRECT
    window.jsonData = { ... };
-   
+
    // ❌ WRONG
    let jsonData = { ... };  // Not accessible across files
    ```
 
 2. **N3.js Term Objects**
+
    ```javascript
    // ✅ CORRECT
    const quads = store.getQuads(termObject, ...);
-   
+
    // ❌ WRONG
    const quads = store.getQuads(termObject.value, ...);  // String, not term
    ```
 
 3. **Context Resolution**
+
    ```javascript
    // ✅ CORRECT
-   const ns = resolvePrefix(context, prefix);  // Handles arrays
-   
+   const ns = resolvePrefix(context, prefix); // Handles arrays
+
    // ❌ WRONG
-   const ns = context[prefix];  // Only works for objects
+   const ns = context[prefix]; // Only works for objects
    ```
 
 4. **Event Handlers**
+
    ```javascript
    // ✅ CORRECT
    function attachHandlers() {
-     $('.btn').off('click').on('click', handler);
+     $(".btn").off("click").on("click", handler);
    }
-   
+
    // ❌ WRONG (creates duplicate handlers on re-render)
    function renderButton() {
      return '<button onclick="handler()">Click</button>';
@@ -279,11 +308,13 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) section "Common Pitfalls & Solutions" for
 ### Enable Debug Mode
 
 Add `?debug=true` to URL:
+
 ```
 http://localhost:8000/?debug=true
 ```
 
 Shows detailed logs for:
+
 - Shape loading
 - Property classification
 - Validation execution
@@ -292,6 +323,7 @@ Shows detailed logs for:
 ### Browser Console
 
 Useful commands:
+
 ```javascript
 // View current data
 console.log(window.jsonData);
@@ -303,7 +335,12 @@ console.log(window.expandedJsonLd);
 renderData();
 
 // Test property classification
-classifyProperty(['Dataset'], 'name', window.shaclShapesStore, window.expandedJsonLd);
+classifyProperty(
+  ["Dataset"],
+  "name",
+  window.shaclShapesStore,
+  window.expandedJsonLd
+);
 ```
 
 ## Getting Help

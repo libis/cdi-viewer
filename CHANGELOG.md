@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Initial Repository Setup
+
 - Moved CDI Previewer code from [dataverse-previewers](https://github.com/gdcc/dataverse-previewers) to standalone repository
 - Set up professional development infrastructure
 - Created comprehensive documentation
@@ -15,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - TBD
 
 ### Added
+
 - **Build System**: Rollup configuration with custom concatenation plugin
   - Single minified bundle: `dist/cdi-viewer.min.js` (44KB)
   - Source maps for debugging
@@ -50,6 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Dataverse integration ready: Bundle compatible with Dataverse-provided jQuery/Bootstrap
 
 ### Core Features (Migrated from dataverse-previewers)
+
 - **Data Display**:
   - Complete visibility of all nodes and properties in JSON-LD `@graph`
   - Visual classification with color-coded badges (SHACL-defined, Extra, Missing, Modified)
@@ -74,6 +77,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Change tracking with visual indicators
 
 ### Technical Stack
+
 - jQuery 3.7.1
 - Bootstrap 3.3.7
 - N3.js 1.16.x (~150KB)
@@ -84,18 +88,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ESLint 8.57.0 + Prettier 3.2.5 (code quality)
 
 ### Dependencies
+
 - **Production**: All loaded from CDN (no bundled dependencies)
 - **Development**: 496 npm packages installed
 - **Total bundle size**: 44KB (app code only)
 - **Total deployment size**: ~400KB including all CDN dependencies
 
 ### Quality Metrics
+
 - **Tests**: 26/26 passing (0 failures)
 - **Linting**: 0 errors, 22 warnings (expected - functions called from HTML)
 - **Bundle size**: 44KB (minified), 153KB (source map)
 - **Load time**: Fast - minimal bundle, CDN-cached dependencies
 
 ### Repository Structure
+
 ```
 cdi-viewer/
 ├── index.html              # Main entry (standalone mode)
@@ -119,9 +126,11 @@ cdi-viewer/
 ```
 
 ### Credits
+
 Developed by **LIBIS @ KU Leuven** (Katholieke Universiteit Leuven)
 
 ### License
+
 Apache License 2.0
 
 ---
@@ -129,6 +138,7 @@ Apache License 2.0
 ## Migration Notes
 
 This project was extracted from the [dataverse-previewers](https://github.com/gdcc/dataverse-previewers) repository to provide:
+
 1. **Better maintainability**: Standalone repository with proper build system
 2. **Professional infrastructure**: Testing, linting, documentation
 3. **Dual deployment**: Standalone (GitHub Pages) + Dataverse integration
@@ -137,9 +147,11 @@ This project was extracted from the [dataverse-previewers](https://github.com/gd
 The bundle (`dist/cdi-viewer.min.js`) will be integrated back into dataverse-previewers via PR, allowing both repositories to benefit from professional development practices while maintaining a single source of truth.
 
 ### Breaking Changes
+
 None - This is the initial standalone release. Full backward compatibility with dataverse-previewers maintained.
 
 ### Migration Path for dataverse-previewers
+
 1. Copy `dist/cdi-viewer.min.js` to `previewers/betatest/lib/`
 2. Update `CdiPreview.html` to load bundle instead of individual JS files
 3. Keep SHACL shapes and CSS files

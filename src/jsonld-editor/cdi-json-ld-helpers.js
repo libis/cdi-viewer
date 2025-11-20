@@ -6,7 +6,7 @@
 // Used for internal viewer behavior (expansion, suggestions, SHACL classification).
 // Does NOT modify the original data when exporting.
 
-import { LOG_LEVEL, log, setHadOriginalGraph } from './state.js';
+import { LOG_LEVEL, log, setHadOriginalGraph } from "./state.js";
 
 // Legacy/external context URLs that we want to handle via local copies
 // Add entries here if you have local cached versions of external contexts
@@ -22,13 +22,15 @@ let cachedLocalContext = null;
 /**
  * Safely resolve a prefix to its namespace URI from a JSON-LD context.
  * Handles arrays, objects, and external URLs robustly.
- * 
+ *
  * @param {*} context - The @context value (can be string, object, or array)
  * @param {string} prefix - The prefix to resolve (e.g., "schema", "cdi")
  * @returns {string|null} - The namespace URI or null if not found
  */
 export function resolvePrefix(context, prefix) {
-  if (!context || !prefix) {return null;}
+  if (!context || !prefix) {
+    return null;
+  }
 
   // Handle string context (URL) - we can't resolve from it directly
   if (typeof context === "string") {
@@ -53,12 +55,12 @@ export function resolvePrefix(context, prefix) {
     // Iterate through array elements (later entries override earlier ones)
     for (let i = context.length - 1; i >= 0; i--) {
       const entry = context[i];
-      
+
       // Skip string URLs
       if (typeof entry === "string") {
         continue;
       }
-      
+
       // Check object entries
       if (entry && typeof entry === "object" && entry[prefix]) {
         const namespace = entry[prefix];
@@ -67,7 +69,7 @@ export function resolvePrefix(context, prefix) {
         }
       }
     }
-    
+
     // Fallback to cached local context
     if (cachedLocalContext && cachedLocalContext[prefix]) {
       return cachedLocalContext[prefix];
@@ -79,7 +81,7 @@ export function resolvePrefix(context, prefix) {
 
 /**
  * Expand a compact IRI (prefix:localPart) to a full URI using the context.
- * 
+ *
  * @param {*} context - The @context value
  * @param {string} compactIri - The compact IRI (e.g., "schema:Dataset")
  * @returns {string|null} - The expanded URI or null if can't expand
@@ -88,19 +90,19 @@ export function expandCompactIri(context, compactIri) {
   if (!compactIri || !compactIri.includes(":")) {
     return null;
   }
-  
+
   // Already a full URI
   if (compactIri.startsWith("http://") || compactIri.startsWith("https://")) {
     return compactIri;
   }
-  
+
   const [prefix, localPart] = compactIri.split(":", 2);
   const namespace = resolvePrefix(context, prefix);
-  
+
   if (namespace) {
     return namespace + localPart;
   }
-  
+
   return null;
 }
 
@@ -118,7 +120,9 @@ function buildViewerContext(data) {
   const originalContext = data["@context"];
 
   // No @context – nothing we can sensibly do here
-  if (!originalContext) {return undefined;}
+  if (!originalContext) {
+    return undefined;
+  }
 
   // Helper: convert a single context entry (URL/string or object) into a
   // local, viewer-usable object. For URLs we may substitute a local JSON-LD
@@ -190,7 +194,7 @@ async function _loadLocalContext() {
   if (cachedLocalContext) {
     return cachedLocalContext;
   }
-  
+
   try {
     const response = await fetch("shapes/ddi-cdi.jsonld");
     if (response.ok) {
@@ -205,7 +209,7 @@ async function _loadLocalContext() {
   } catch (error) {
     console.warn("Could not load local DDI-CDI context:", error);
   }
-  
+
   return null;
 }
 
@@ -225,7 +229,10 @@ export async function normalizeToGraphFormat(data) {
   // Special handling for legacy DDI-CDI format with DDICDIModels and @included
   // This is an optional convenience - if your JSON-LD uses standard @graph, this won't trigger
   if (data["DDICDIModels"] && Array.isArray(data["DDICDIModels"])) {
-    log(LOG_LEVEL.DEBUG, "Detected legacy DDI-CDI format with DDICDIModels property");
+    log(
+      LOG_LEVEL.DEBUG,
+      "Detected legacy DDI-CDI format with DDICDIModels property"
+    );
 
     // Combine DDICDIModels and @included into @graph
     let graphNodes = [...data["DDICDIModels"]];
