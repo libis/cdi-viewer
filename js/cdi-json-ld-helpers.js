@@ -1,3 +1,5 @@
+// Author: Eryk Kulikowski @ KU Leuven (2025). Apache 2.0 License
+
 // === CDI Previewer: JSON-LD Context Normalization ===
 //
 // Handles legacy DDI-CDI context URLs and local context resolution.

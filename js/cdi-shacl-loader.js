@@ -1,3 +1,5 @@
+// Author: Eryk Kulikowski @ KU Leuven (2025). Apache 2.0 License
+
 // === SHACL Shape Loading (Core SHACL Only) ===
 
 // Load SHACL shapes from a URL with fallback to local

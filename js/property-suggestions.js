@@ -1,3 +1,5 @@
+// Author: Eryk Kulikowski @ KU Leuven (2025). Apache 2.0 License
+
 // === CDI Previewer: Property Suggestions ===
 //
 // Generates property suggestions based on SHACL shapes and node types.

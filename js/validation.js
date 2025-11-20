@@ -1,3 +1,5 @@
+// Author: Eryk Kulikowski @ KU Leuven (2025). Apache 2.0 License
+
 // === CDI Previewer: SHACL Validation Logic (using rdf-validate-shacl) ===
 
 // Runs validation end-to-end on the current jsonData and updates #validation-status

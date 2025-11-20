@@ -1,3 +1,5 @@
+// Author: Eryk Kulikowski @ KU Leuven (2025). Apache 2.0 License
+
 // === CDI Previewer: Data Extraction and Save Logic ===
 //
 // Handles collecting user edits from the DOM and exporting JSON-LD data.

@@ -1,3 +1,5 @@
+// Author: Eryk Kulikowski @ KU Leuven (2025). Apache 2.0 License
+
 // === CDI Previewer: Event Handlers ===
 //
 // Handles all user interactions: file loading, shape selection, edit mode, validation, etc.
