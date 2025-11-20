@@ -7,6 +7,16 @@
  * All modules are bundled together into a single browser script.
  */
 
+// Import and expose bundled libraries to window
+import * as N3 from "n3";
+import * as jsonld from "jsonld";
+
+// Expose to global scope for compatibility with existing code
+if (typeof window !== "undefined") {
+  window.N3 = N3;
+  window.jsonld = jsonld;
+}
+
 // Import state module first (provides centralized state management)
 import "./jsonld-editor/state.js";
 
