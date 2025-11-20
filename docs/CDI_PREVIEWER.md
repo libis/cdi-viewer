@@ -1,8 +1,10 @@
-# CDI (Cross-Domain Integration) Previewer
+# JSON-LD Viewer & Editor - Feature Documentation
 
 ## Overview
 
-The CDI Previewer is a comprehensive viewer and editor for DDI-CDI (Data Documentation Initiative - Cross Domain Integration) metadata stored as JSON-LD. It provides professional-grade features for viewing, editing, and validating complex metadata structures against SHACL shapes.
+A comprehensive viewer and editor for JSON-LD metadata with SHACL validation. Works with any RDF vocabulary (DDI-CDI, schema.org, DCAT, DataCube, SKOS) and provides professional-grade features for viewing, editing, and validating complex metadata structures.
+
+**Live Demo:** [https://libis.github.io/cdi-viewer/](https://libis.github.io/cdi-viewer/)
 
 ## Features
 
@@ -32,10 +34,10 @@ The CDI Previewer is a comprehensive viewer and editor for DDI-CDI (Data Documen
 
 ### Validation
 - **Real-time SHACL Validation**: 
-  - Uses [rdf-validate-shacl](https://github.com/zazuko/rdf-validate-shacl) for Core SHACL validation
+  - Uses [shacl-engine](https://github.com/jeswr/shacl-engine) with SPARQL support
   - Visual indicators show validation status
   - Detailed validation reports available
-  - **Note**: Only Core SHACL features supported (no `sh:SPARQLConstraint`)
+  - Supports SPARQL-based constraints for advanced validation
 - **Property Suggestions**: Shows missing SHACL-defined properties with descriptions
 - **Constraint Enforcement**: Respects minCount, maxCount, datatype, and pattern constraints
 
@@ -56,72 +58,71 @@ The CDI Previewer is a comprehensive viewer and editor for DDI-CDI (Data Documen
 
 ## Technical Architecture
 
+### ES6 Module System
+
+**Modern Architecture:**
+- ES6 modules with proper imports/exports
+- Centralized state management (`src/jsonld-editor/state.js`)
+- Single bundle via Rollup (`dist/cdi-viewer.bundle.js` - 1.2MB)
+- No global scope pollution
+
 ### Libraries Used
 - **jQuery 3.7.1**: DOM manipulation and AJAX
-- **Bootstrap 3.3.7**: UI components and responsive grid (Dataverse standard)
+- **Bootstrap 3.3.7**: UI components and responsive design
 - **N3.js v1.16.x**: RDF/Turtle parsing for loading SHACL shapes
 - **jsonld.js**: JSON-LD normalization, expansion, and RDF conversion
-- **rdf-validate-shacl**: Core SHACL validation (no SPARQL support)
+- **shacl-engine**: SHACL validation with SPARQL support
 
 ### Code Quality
-- **Lightweight**: ~400KB total bundle (N3.js ~150KB, jsonld.js ~130KB, rdf-validate-shacl ~120KB)
-- **Core SHACL Only**: No SPARQL engine needed, keeping the previewer fast
-- **Logging System**: Configurable log levels (ERROR, WARN, INFO, DEBUG) with `?debug=true` URL parameter
-- **Production Ready**: Test code removed, debug logging behind feature flag
-- **Maintainable**: Separated HTML/CSS/JS structure
+- **0 ESLint errors/warnings**
+- **Prettier formatted code**
+- **Modular architecture**: 11 ES6 modules with clear separation of concerns
+- **Logging System**: Configurable log levels (ERROR, WARN, INFO, DEBUG)
+- **Maintainable**: Clean module boundaries and comprehensive documentation
 
-### File Structure
+### Module Structure
 ```
-previewers/betatest/
-├── CdiPreview.html          # Main HTML structure
-├── css/
-│   └── cdi-preview.css      # Styles
-├── js/
-│   └── cdi-preview/
-│       ├── core.js          # Core initialization and config
-│       ├── render.js        # UI rendering logic
-│       ├── edit.js          # Editing functionality
-│       ├── validation.js    # SHACL validation
-│       ├── cdi-shacl-loader.js    # Shape loading
-│       └── cdi-shacl-helpers.js   # Property classification
-└── shapes/
-    ├── ddi-cdi-official.ttl      # DDI-CDI official SHACL shapes (fallback)
-    └── cdif-core.ttl             # CDIF Discovery Core shapes (local)
-```
+src/jsonld-editor/
+├── state.js              # Centralized state management
+├── core.js               # Initialization & configuration
+├── validation.js         # SHACL validation
+├── cdi-shacl-loader.js   # Shape loading & N3 parsing
+├── cdi-shacl-helpers.js  # Property classification
+├── cdi-json-ld-helpers.js # JSON-LD normalization
+├── cdi-graph-helpers.js  # Graph manipulation (add/edit nodes)
+├── render.js             # UI rendering
+├── property-suggestions.js # Property suggestions UI
+├── data-extraction.js    # Export pipeline
+└── event-handlers.js     # jQuery event wiring
 
-**Benefits of Split Structure:**
-- **Maintainability**: Separate concerns (HTML/CSS/JS)
-- **Caching**: Browsers cache static assets independently
-- **Readability**: Easier to navigate and debug
-- **Modularity**: Similar to other previewers (video.js, preview.css pattern)
+dist/
+└── cdi-viewer.bundle.js  # Single 1.2MB bundle
+```
 
 ## Configuration
 
-### SHACL Shapes Location
-The previewer can load SHACL shapes from multiple sources (selectable via dropdown):
+### Default Behavior
 
-1. **DDI-CDI Official (Default)** - `https://ddi-cdi.github.io/m2t-ng/DDI-CDI_1-0/encoding/shacl/ddi-cdi.shacl.ttl`
-   - Full DDI-CDI 1.0 class definitions with `sh:targetClass`
-   - 300+ types covered
-   - Best for full DDI-CDI metadata files
+**DDI-CDI Mode (Default):**
+- Open `https://libis.github.io/cdi-viewer/`
+- DDI-CDI official shapes load automatically
+- Best for DDI-CDI metadata files
 
-2. **CDIF Discovery Core** - Local built-in shapes (`shapes/cdif-core.ttl`)
-   - Browser-compatible Core SHACL shapes for schema.org Dataset validation
-   - 20 properties (4 mandatory + 16 recommended)
-   - Converted from SPARQL-based shapes to Core SHACL
-   - Best for CDIF Discovery metadata files
+**Generic Mode:**
+- Add `?shacl=generic` parameter
+- No shapes preloaded
+- Load any SHACL shapes dynamically
+- Best for non-DDI-CDI vocabularies
 
-3. **Local Fallback** - `shapes/ddi-cdi-official.ttl`
-   - DDI-CDI official shapes cached locally
-   - Used when online shapes unavailable
+### SHACL Shapes
 
-4. **Custom URL** - User-provided SHACL shape URL
-   - Enter any accessible Turtle (.ttl) file URL
-   - **Must use Core SHACL only** (no `sh:SPARQLTarget` or `sh:SPARQLConstraint`)
+The viewer can load SHACL shapes from multiple sources (selectable via dropdown):
 
-**Recommendation**: Use "DDI-CDI Official" for files with DDI-CDI types. Use "CDIF Discovery Core" for schema.org Dataset validation.
-
-**Important**: Only Core SHACL features are supported. SPARQL-based features like `sh:SPARQLTarget` and `sh:SPARQLConstraint` are not supported. See [CDIF_DISCOVERY_SHAPES_FIX.md](CDIF_DISCOVERY_SHAPES_FIX.md) for conversion patterns.
+1. **DDI-CDI Official** - `https://ddi-cdi.github.io/m2t-ng/DDI-CDI_1-0/encoding/shacl/ddi-cdi.shacl.ttl`
+2. **DCAT-AP 3.0** - W3C Data Catalog vocabulary application profile
+3. **W3C DataCube** - RDF data cube vocabulary
+4. **SKOS** - Simple Knowledge Organization System
+5. **Custom URL** - User-provided SHACL shape URL (any Turtle .ttl file)
 
 ### Dataverse Integration
 The previewer expects these URL parameters:
@@ -134,29 +135,29 @@ The previewer expects these URL parameters:
 
 ### Example URLs
 ```
-# Production use with Dataverse
-CdiPreview.html?siteUrl=https://dataverse.example.edu&fileid=123&datasetid=456&datasetversion=1.0
+# Default DDI-CDI mode
+https://libis.github.io/cdi-viewer/
 
-# Standalone mode (no parameters)
-https://gdcc.github.io/dataverse-previewers/previewers/betatest/CdiPreview.html
-# or
-https://erykkul.github.io/dataverse-previewers/previewers/betatest/CdiPreview.html
+# Generic mode (no shapes preloaded)
+https://libis.github.io/cdi-viewer/?shacl=generic
 
-# Local testing
-CdiPreview.html?testfile=SimpleSample.jsonld
+# Specific vocabulary
+https://libis.github.io/cdi-viewer/?shacl=dcat-ap-3.0
+
+# Local testing with example file
+http://localhost:8000/?testfile=SimpleSample.jsonld
+
+# Dataverse integration
+https://libis.github.io/cdi-viewer/?siteUrl=https://dataverse.example.edu&fileid=123
 ```
 
 ## Usage Guide
 
-### Standalone Mode (No Dataverse)
-1. Open the previewer directly without parameters:
-   - GitHub Pages: `https://gdcc.github.io/dataverse-previewers/previewers/betatest/CdiPreview.html`
-   - Alternative: `https://erykkul.github.io/dataverse-previewers/previewers/betatest/CdiPreview.html`
-2. Click the "Load Local File" button in the toolbar
-3. Select a CDI JSON-LD file from your computer
-4. The file will be loaded, normalized, and displayed
-5. You can edit, validate, and export the data
-6. Note: "Save to Dataverse" is disabled in standalone mode (use "Export JSON-LD" instead)
+### Standalone Mode
+1. Open [https://libis.github.io/cdi-viewer/](https://libis.github.io/cdi-viewer/)
+2. DDI-CDI shapes load automatically (or add `?shacl=generic` for clean start)
+3. Click "Load Local File" to select a JSON-LD file
+4. Edit, validate, and export your data
 
 ### Viewing Data
 1. Load the previewer with a CDI JSON-LD file
@@ -220,25 +221,19 @@ ex:NodeShape
     .
 ```
 
-**Note**: SPARQL-based targets (`sh:SPARQLTarget`) are **not supported**. If you have shapes using SPARQL features, see [CDIF_DISCOVERY_SHAPES_FIX.md](CDIF_DISCOVERY_SHAPES_FIX.md) for Core SHACL conversion patterns.
+**Important Note**: SPARQL-based SHACL features (`sh:SPARQLTarget`, `sh:SPARQLConstraint`) are now fully supported via shacl-engine.
 
-## Customization
+### Customization
 
-### Styling
-Modify `css/cdi-preview.css`:
-- `.badge-shacl`: Blue badges for SHACL-defined properties
-- `.badge-extra`: Yellow badges for extra properties
-- `.changed`: Teal border for modified properties
-- `.required-missing`: Red text for missing required properties
+**Module Structure:**
+All functionality is in ES6 modules under `src/jsonld-editor/`. Key functions:
+- `renderData()` in `render.js` - Main render loop
+- `classifyProperty()` in `cdi-shacl-helpers.js` - Property classification
+- `validateData()` in `validation.js` - SHACL validation
+- `createAndReferenceNewNode()` in `cdi-graph-helpers.js` - Create nested objects
 
-### Behavior
-Key JavaScript functions:
-- `renderData()`: Main render loop (in `render.js`)
-- `renderNode()`: Individual node rendering (in `render.js`)
-- `renderProperty()`: Property row rendering (in `render.js`)
-- `classifyProperty()`: SHACL classification logic (in `cdi-shacl-helpers.js`)
-- `validateData()`: SHACL validation (in `validation.js`)
-- `addComplexPropertyToNode()`: Create nested objects (in `edit.js`)
+**Styling:**
+Modify `css/cdi-preview.css` for visual customization.
 
 ## Testing
 
@@ -282,57 +277,34 @@ curl -X POST -H 'Content-Type: application/json' \
 
 ## Known Limitations
 
-1. **SPARQL Features**: `sh:SPARQLTarget` and `sh:SPARQLConstraint` not supported (Core SHACL only)
-2. **Controlled Vocabularies**: `sh:in` constraints not yet implemented as dropdowns
-3. **Undo/Reset**: No undo functionality (reload page to discard changes)
-4. **Password Protection**: Edit mode not locked behind authentication
-5. **RDF List Parsing**: `sh:in` lists not fully parsed from RDF
-6. **Large Files**: Performance may degrade with 100+ nodes
-7. **Namespace Consistency**: SHACL shapes and data should use same namespaces (e.g., both `http://schema.org/`)
+1. **Controlled Vocabularies**: `sh:in` constraints not yet implemented as dropdowns
+2. **Undo/Reset**: No undo functionality (reload page to discard changes)
+3. **Large Files**: Performance may degrade with 100+ nodes
 
 ## Debug Mode
 
-The previewer includes a comprehensive logging system for troubleshooting:
-
-**Enable debug mode** by adding `?debug=true` to the URL:
-```
-https://example.com/CdiPreview.html?fileid=123&siteUrl=...&debug=true
+Enable debug logging by setting log level in browser console:
+```javascript
+import { setCurrentLogLevel, LOG_LEVEL } from './state.js';
+setCurrentLogLevel(LOG_LEVEL.DEBUG);
 ```
 
 **Log Levels:**
-- `ERROR`: Critical errors (always shown)
-- `WARN`: Warnings about potential issues (always shown)
-- `INFO`: Informational messages like "SPARQL execution complete" (always shown)
-- `DEBUG`: Detailed execution logs, query details, node matching (only with `?debug=true`)
-
-**What DEBUG mode shows:**
-- Shape loading details
-- Property classification logic
-- Validation results
-- Data structure information
-
-**Example debug output:**
-```
-DEBUG: Loaded SHACL shapes from cdif-core.ttl
-DEBUG: Found 3 node shapes with 20 property shapes
-DEBUG: Classifying property 'schema:name' for node xas:dataset1
-INFO: Validation complete: 4 violations found
-```
+- `ERROR`: Critical errors
+- `WARN`: Warnings about potential issues
+- `INFO`: Informational messages
+- `DEBUG`: Detailed execution logs
 
 ---
 
 ## Future Enhancements
 
-- [x] Modular code structure with separate files ✅
-- [x] Core SHACL validation support ✅
-- [x] Property classification with badges ✅
 - [ ] Implement controlled vocabulary dropdowns for `sh:in`
 - [ ] Add undo/reset functionality
-- [ ] Lock edit mode behind API token verification
-- [ ] Full RDF list parsing for allowed values
 - [ ] Pagination for large datasets (100+ nodes)
 - [ ] Diff view showing changes before save
 - [ ] Bulk import/export of property values
+- [ ] Export to Turtle, N-Triples formats
 
 ## Troubleshooting
 
@@ -362,9 +334,10 @@ INFO: Validation complete: 4 violations found
 ## Support
 
 For issues, questions, or contributions:
-- GitHub: [gdcc/dataverse-previewers](https://github.com/gdcc/dataverse-previewers)
-- Email: dataverse-dev@googlegroups.com
+- **GitHub**: [libis/cdi-viewer](https://github.com/libis/cdi-viewer)
+- **Documentation**: [README.md](../README.md), [GENERIC_USAGE.md](GENERIC_USAGE.md)
+- **Architecture**: [ARCHITECTURE.md](../ARCHITECTURE.md)
 
 ## License
 
-MIT License - See LICENSE file in repository root
+Apache License 2.0

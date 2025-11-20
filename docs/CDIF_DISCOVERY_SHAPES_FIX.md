@@ -1,54 +1,46 @@
-# CDIF Discovery Core Shapes for Browser-Based Validation
+# CDIF Discovery SHACL Shapes
 
-## Summary
+## Overview
 
-We've created **cdif-core.ttl**, a browser-compatible implementation of the CDIF Discovery SHACL shapes for validating schema.org Dataset metadata. The shapes validate 20 properties (4 mandatory + 16 recommended) and work with the lightweight Core SHACL validator, avoiding the need for a 1.9MB SPARQL engine.
+The cdi-viewer now supports **full SPARQL-based SHACL validation** via shacl-engine, including `sh:SPARQLTarget` and `sh:SPARQLConstraint` features. This means CDIF Discovery shapes can use SPARQL-based targeting for hierarchical node selection without conversion.
 
-**Quick start:** Select "CDIF Discovery Core" from the shape dropdown in the previewer to validate your CDIF metadata. Properties conforming to the shapes will display with blue "SHACL-defined" badges.
+## Usage
 
-## Background: CDIF Discovery Validation
+1. Open the viewer at [https://libis.github.io/cdi-viewer/](https://libis.github.io/cdi-viewer/)
+2. Load your CDIF Discovery metadata (JSON-LD format)
+3. Select or load your CDIF Discovery SHACL shapes
+4. Click "Validate" to see validation results
 
-CDIF Discovery shapes validate schema.org Dataset descriptions to ensure they contain essential metadata for data discovery. The original CDIF Discovery shapes used SPARQL-based SHACL features (`sh:SPARQLTarget`) for hierarchical node selection.
+## Features
 
-## How to Use
+- **SPARQL targeting**: Full support for `sh:SPARQLTarget`
+- **SPARQL constraints**: Full support for `sh:SPARQLConstraint`
+- **Hierarchical validation**: Validate nested structures with SPARQL queries
+- **Standard SHACL**: All Core SHACL features also supported
 
-1. Open the CDI previewer with your JSON-LD file
-2. Select **"CDIF Discovery Core"** from the shape dropdown
-3. Click "Validate"
-4. Review results:
-   - Red violations: Missing mandatory properties
-   - Orange warnings: Missing recommended properties  
-   - Blue badges: SHACL-defined properties present
-   - Yellow badges: Extra properties not in shapes
+## Technical Details
 
-## Testing Notes
+**Validation Engine**: [shacl-engine](https://github.com/jeswr/shacl-engine)
+- Includes SPARQL query engine
+- Supports complex SPARQL-based constraints
+- Browser-compatible (1.2MB bundle size)
 
-**Status:** Ready for testing with CDIF Discovery metadata files
+**Bundle Size Impact**:
+- Total bundle: 1.2MB (includes SPARQL support)
+- Trade-off: Larger bundle for complete SHACL feature support
+- Worth it: Enables validation of complex metadata structures
 
-**Expected results:**
-- Properties like `name`, `identifier`, `license`, `dateModified` should show blue "SHACL-defined" badges
-- Missing mandatory properties trigger red violation messages
-- Missing recommended properties trigger orange warning messages
+## Testing
 
-**Known good test:** `examples/cdi/se_na2so4-XDI-CDI-CDIF.jsonld` validates correctly with recognized properties
+Test with CDIF Discovery metadata files from `examples/cdi/` directory:
+- `se_na2so4-XDI-CDI-CDIF.jsonld` - X-ray spectroscopy dataset
+- `FeXAS_Fe_c3d.001-NEXUS-HDF5-cdi-CDIF.jsonld` - NEXUS HDF5 dataset
 
----
+Both use `schema:Dataset` as root type and work with SPARQL-based CDIF Discovery shapes.
 
-## Technical Reference: Why Core SHACL Only?
+## Migration from Core SHACL Only
 
-## Technical Reference: Why Core SHACL Only?
-
-The CDI previewer uses **Core SHACL only** for validation. SPARQL-based SHACL features like `sh:SPARQLTarget` and `sh:SPARQLConstraint` are not supported.
-
-**Important distinction:** The previewer previously used Comunica for executing `sh:SPARQLTarget` queries to identify which nodes to validate, but Comunica does **not perform SHACL validation** - it only executes SPARQL queries. We have not found a JavaScript SHACL validation library that supports SPARQL constraints (`sh:SPARQLConstraint`).
-
-### Bundle Size Comparison
-
-Browser-based applications have strict constraints on bundle size and performance. Even limited SPARQL support for node targeting would require including a full SPARQL query engine in the browser.
-
-**The numbers:**
-- **Current setup (Core SHACL only)**: ~400KB total
-  - rdf-validate-shacl: ~120KB (Core SHACL validation only)
+Previous versions required converting SPARQL-based shapes to Core SHACL. This is no longer necessary - use your original SPARQL-based shapes directly.
   - N3.js (RDF parsing): ~150KB
   - jsonld.js (JSON-LD processing): ~130KB
   

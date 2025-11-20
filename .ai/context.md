@@ -1,18 +1,47 @@
 # AI Context for JSON-LD Viewer Development
 
-**Purpose:** This file provides essential context for AI assistants (GitHub Copilot, Cursor, etc.) working on the JSON-LD Viewer codebase. It prevents context drift and ensures consistent code quality.
+**Purpose:** This file provides essential context for AI assistants working on the cdi-viewer codebase. It prevents context drift and ensures consistent code quality.
 
-**Note:** This is a generic JSON-LD viewer that works with any RDF vocabulary (DDI-CDI, schema.org, DCAT, etc.), not just DDI-CDI.
+**Project Vision:** A powerful, browser-based JSON-LD editor and SHACL validator that works with any RDF vocabulary. Originally developed for DDI-CDI, now positioned as a generic tool with DDI-CDI as the default use case.
 
 **Last Updated:** 2025-11-20
 
 ---
 
+## Project Status
+
+### Current State
+
+- **Architecture**: ES6 modules with centralized state management
+- **Build System**: Rollup producing 1.2MB bundle
+- **Code Quality**: 0 ESLint errors/warnings, Prettier formatted
+- **Features**: Complete - editing, validation, array/reference support
+- **Default Mode**: DDI-CDI shapes auto-load (use `?shacl=generic` for other vocabularies)
+- **Deployment**: GitHub Pages live, ready for Dataverse integration
+
+### What Works
+
+✅ ES6 module migration complete (11 modules)
+✅ SHACL validation with shacl-engine
+✅ Array operations (convert, add/remove values/references)
+✅ Complex object creation (nested nodes, references)
+✅ Property suggestions and classification
+✅ Export/import JSON-LD
+✅ Enhanced discoverability (keywords, documentation)
+
+### Next Focus
+
+- End-to-end testing of all features
+- Dataverse integration testing
+- GitHub repository enhancements
+
+---
+
 ## Critical Architectural Decisions
 
-### 1. Generic JSON-LD Support
+### 1. Generic JSON-LD Support with DDI-CDI Default
 
-**Decision:** Support any JSON-LD vocabulary via standard jsonld.flatten() and custom SHACL shapes with automatic DDI-CDI mode detection.
+**Decision:** Support any JSON-LD vocabulary, but default to DDI-CDI to match tool name and primary use case.
 
 **Why:**
 - Uses standard JSON-LD processing (jsonld.js library)
@@ -54,40 +83,41 @@ const LEGACY_CONTEXT_URLS = {
 - `DDICDIModels` normalization: Only triggers if property exists in data
 - Legacy context mapping: Configurable via LEGACY_CONTEXT_URLS
 
-### 2. Global State Pattern (window.*)
+### 2. ES6 Module Architecture with Centralized State
 
-**Decision:** Use `window.*` for all shared state across modules.
+**Decision:** Use ES6 modules with centralized state management via `state.js`.
 
-**Why:**
-- All JS files loaded via `<script>` tags (no ES6 modules currently)
-- Must work in Dataverse iframe context
-- Variables must be truly global for cross-file access
-- IIFE and namespace patterns failed in iframe environment
+**Architecture:**
+- Single entry point: `src/index.js` imports all modules
+- State module (`src/jsonld-editor/state.js`) exports getters/setters
+- All modules use imports/exports (no global scope pollution)
+- Rollup bundles into single IIFE for browser compatibility
 
 **Implementation:**
 ```javascript
-// ✅ CORRECT
-window.jsonData = { ... };
-window.isEditMode = false;
-window.shaclShapesStore = null;
-window.defaultTypeNamespace = null; // Configuration
+// state.js - Centralized state
+export function getJsonData() { return state.jsonData; }
+export function setJsonData(data) { state.jsonData = data; }
 
-// ❌ WRONG
-let jsonData = { ... };        // Not accessible across files
-var editMode = false;          // Missing window. prefix causes undefined errors
+// Other modules import what they need
+import { getJsonData, setJsonData } from './state.js';
+import { validateData } from './validation.js';
+import { renderData } from './render.js';
 ```
 
-**Global Variables to Use:**
-- `window.jsonData` - Current JSON-LD data (@graph format)
-- `window.shaclShapesStore` - N3.Store with parsed SHACL triples
-- `window.isEditMode` - Boolean: edit mode enabled?
-- `window.expandedJsonLd` - Fully expanded JSON-LD for URI matching
-- `window.currentLogLevel` - Logging level (ERROR/WARN/INFO/DEBUG)
-- `window.originalData` - Original JSON-LD for reset
-- `window.validationReport` - Latest SHACL validation report
-- `window.defaultTypeNamespace` - Default namespace for unprefixed types (configurable)
+**Key State Variables:**
+- `jsonData` - Current JSON-LD data (@graph format)
+- `shaclShapesStore` - N3.Store with parsed SHACL triples
+- `isEditMode` - Boolean: edit mode enabled?
+- `expandedJsonLd` - Fully expanded JSON-LD for URI matching
+- `validationReport` - Latest SHACL validation report
+- `defaultTypeNamespace` - Default namespace for DDI-CDI mode
 
-**Future:** Will migrate to ES6 modules with proper imports/exports (Phase 11.1)
+**Benefits:**
+- Type-safe access via getter/setter functions
+- No global scope pollution
+- Easy to test and maintain
+- Standard ES6 practices
 
 ### 3. Core SHACL Only (No SPARQL)
 
@@ -143,31 +173,26 @@ if (fileId && siteUrl) {
 }
 ```
 
-### 4. Browser-Only Architecture (Current)
+### 4. Dual Deployment Architecture
 
-**Decision:** All modules are browser-only, no Node.js compatibility yet.
+**Decision:** Single ES6 codebase bundled for both standalone and Dataverse deployment.
 
-**Why:**
-- Rapid development focused on production use
-- DOM dependencies throughout
-- Dataverse integration is primary use case
+**Standalone Mode (GitHub Pages):**
+- URL: https://libis.github.io/cdi-viewer/
+- Default: DDI-CDI shapes auto-load
+- Generic: Add `?shacl=generic` parameter
+- All dependencies bundled in single file
 
-**Implications:**
-- No `module.exports` or `export` statements
-- Tests cannot import actual modules (0% coverage tracking)
-- Must use `eval()` or logic pattern replication for testing
+**Dataverse Integration Mode:**
+- Bundle: `dist/cdi-viewer.bundle.js`
+- URL params: `?fileid=X&siteUrl=Y`
+- Works with Dataverse-provided jQuery/Bootstrap
+- Save directly to Dataverse API
 
-**Future:** Phase 11.1 will add conditional exports for testability:
-```javascript
-// Add at end of each module
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = {
-    functionName1,
-    functionName2,
-    // ...
-  };
-}
-```
+**Benefits:**
+- Single source of truth
+- Easier testing and maintenance
+- Consistent user experience
 
 ---
 
@@ -299,21 +324,20 @@ function extractDataFromDom() {
 
 ## Common Pitfalls to Avoid
 
-### Pitfall 1: Undefined Variable Errors
+### Pitfall 1: Not Using State Module
 
-**Symptom:** `ReferenceError: editMode is not defined`
+**Symptom:** Cannot access application state from module
 
-**Cause:** Variable not on window object
+**Cause:** Not importing from state module
 
 **Fix:**
 ```javascript
 // ❌ WRONG
-let editMode = false;
-if (editMode) { ... }
+if (window.isEditMode) { ... }  // Bypasses state module
 
 // ✅ CORRECT
-window.isEditMode = false;
-if (window.isEditMode) { ... }
+import { getIsEditMode } from './state.js';
+if (getIsEditMode()) { ... }
 ```
 
 ### Pitfall 2: Properties Marked EXTRA Incorrectly
@@ -382,71 +406,28 @@ console.log('Expected:', 'http://schema.org/');
 
 ## Testing Requirements
 
-### Test Coverage Goals
+### Current Approach
 
-**Current Status:**
-- 73/73 tests passing ✅
-- Direct coverage: 11/33 functions (33%)
-- Indirect coverage: ~15-18/33 functions (45-55%)
+**Focus:** Manual end-to-end testing of critical workflows
 
-**Target:** 50% minimum (Jest configured)
+**Priority Test Scenarios:**
+1. Load file → enable edit mode → modify properties → export → verify valid JSON-LD
+2. Load DDI-CDI file → verify shapes auto-load → validate → check classification
+3. Use `?shacl=generic` → load schema.org file → load custom shapes → validate
+4. Convert single value ↔ array → add/remove items → export → verify structure
+5. Add complex property → create nested object → reference existing node → export
 
-### Testing Approach
+### Testing Tools
 
-**1. Logic Pattern Tests (Current)**
-```javascript
-// Test logic without importing actual module
-test('humanizeKey capitalizes each word', () => {
-  const humanizeKey = (key) => {
-    return key
-      .replace(/([A-Z])/g, " $1")
-      .replace(/_/g, " ")
-      .trim()
-      .split(" ")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
-  };
-  
-  expect(humanizeKey('has_version')).toBe('Has Version');
-});
-```
+**Available:**
+- Jest for unit tests (73 tests currently disabled during migration)
+- ESLint for code quality (0 errors)
+- Manual testing in browser
 
-**2. Eval-Based Tests (For Complex Modules)**
-```javascript
-// Load and execute actual module code
-test('parseRdfList works correctly', () => {
-  const fs = require('fs');
-  const code = fs.readFileSync('js/cdi-shacl-helpers.js', 'utf8');
-  
-  // Mock dependencies
-  window.$ = jest.fn();
-  window.log = jest.fn();
-  
-  // Execute actual code
-  eval(code);
-  
-  // Test real function
-  const result = parseRdfList(mockListNode);
-  expect(result).toEqual([...]);
-});
-```
-
-**3. Future: Browser Integration Tests (Phase 11.2)**
-```javascript
-// Using Playwright/Puppeteer
-test('edit workflow preserves data', async () => {
-  await page.goto('http://localhost:8000');
-  await page.click('#toggle-edit-btn');
-  await page.fill('input[name="schema:name"]', 'New Value');
-  await page.click('#toggle-edit-btn');
-  
-  const exported = await page.evaluate(() => {
-    return window.jsonData;
-  });
-  
-  expect(exported['@graph'][0]['schema:name']).toBe('New Value');
-});
-```
+**Future:**
+- Re-enable Jest tests with ES6 module imports
+- Add Playwright for browser automation
+- Add mutation testing with Stryker
 
 ### Critical Tests to Maintain
 
@@ -490,20 +471,21 @@ npm run test:watch
 
 ### Build Process
 
-**Entry Point:** `js/core.js`
+**Entry Point:** `src/index.js`
 
-**Output:** `dist/cdi-viewer.min.js` (44KB minified)
+**Output:** `dist/cdi-viewer.bundle.js` (1.2MB bundle)
 
 **Bundled Libraries:**
-- N3.js v1.16.x (~150KB)
-- jsonld.js (~130KB)
-- rdf-validate-shacl (~120KB)
+- N3.js v1.16.x
+- jsonld.js
+- shacl-engine (includes SPARQL support)
+- All application modules
 
-**External (not bundled):**
-- jQuery 3.7.1 (provided by Dataverse or CDN)
-- Bootstrap 3.3.7 (provided by Dataverse or CDN)
+**External (loaded from CDN):**
+- jQuery 3.7.1
+- Bootstrap 3.3.7
 
-**Total Size:** ~400KB including all dependencies
+**Total Size:** 1.2MB (includes SPARQL engine for advanced SHACL validation)
 
 ### Build Commands
 
@@ -623,13 +605,13 @@ function classifyProperty(nodeId, propertyKey, shaclStore, expandedJsonLd) {
 ### Before Starting Work
 
 1. **Read ARCHITECTURE.md** - Understand system design
-2. **Check plan.md** - See what phase you're in
+2. **Check NEXT_STEPS.md** - See current priorities
 3. **Read this file** - Understand critical patterns
-4. **Run tests** - Ensure starting from clean state
+4. **Check code quality** - Ensure starting from clean state
 
 ```bash
-npm test
 npm run lint
+npm run build
 ```
 
 ### During Development
@@ -690,20 +672,7 @@ test('bug: duplicate properties create array', () => {
 
 ## Known Issues and Workarounds
 
-### Issue 1: 0% Test Coverage Despite 73 Passing Tests
-
-**Cause:** Browser-only architecture prevents module imports
-
-**Workaround:** Tests replicate logic patterns or use eval()
-
-**Future Fix:** Phase 11.1 will add conditional exports:
-```javascript
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { /* functions */ };
-}
-```
-
-### Issue 2: Duplicate Custom Properties (Latest Wins)
+### Issue 1: Duplicate Custom Properties (Latest Wins)
 
 **Status:** Known bug, documented in Phase 11.5
 
@@ -731,10 +700,11 @@ if (typeof module !== 'undefined' && module.exports) {
 
 ### Essential Files
 
-- **ARCHITECTURE.md** - Comprehensive technical guide (6000+ words)
-- **plan.md** - Development roadmap with phase tracking
+- **ARCHITECTURE.md** - Comprehensive technical guide
+- **NEXT_STEPS.md** - Current priorities and testing plan
 - **CONTRIBUTING.md** - Development workflow and guidelines
 - **README.md** - User-facing documentation
+- **docs/GENERIC_USAGE.md** - Guide for using with any vocabulary
 - **docs/CDI_PREVIEWER.md** - Feature documentation
 - **.ai/context.md** - This file (AI assistant context)
 
@@ -743,47 +713,38 @@ if (typeof module !== 'undefined' && module.exports) {
 ```bash
 # Development
 npm run dev              # Start server on :8000
-npm test                 # Run all tests
-npm run test:watch       # Run tests in watch mode
 npm run lint             # Check code quality
+npm run fmt              # Format code with Prettier
 npm run build            # Build production bundle
 
 # URLs
-http://localhost:8000                        # Standalone mode
-http://localhost:8000/test-bundle.html      # Test production bundle
-http://localhost:8000/?debug=true           # Enable debug logging
+http://localhost:8000                        # DDI-CDI mode (default)
+http://localhost:8000/?shacl=generic         # Generic mode
 http://localhost:8000/?testfile=SimpleSample.jsonld  # Load example
+https://libis.github.io/cdi-viewer/          # Live demo
 ```
 
-### Essential Global Variables
+### Key Modules
 
 ```javascript
-window.jsonData          // Current JSON-LD (@graph format)
-window.isEditMode        // Boolean: edit mode active?
-window.shaclShapesStore  // N3.Store with SHACL shapes
-window.expandedJsonLd    // Expanded JSON-LD for URI matching
-window.currentLogLevel   // Logging: ERROR/WARN/INFO/DEBUG
-```
+// State management
+import { getJsonData, setJsonData, getIsEditMode } from './state.js';
 
-### Essential Functions
+// Core functionality
+import { initializeApp } from './core.js';
+import { validateData } from './validation.js';
+import { renderData } from './render.js';
 
-```javascript
-// Rendering
-renderData()             // Re-render entire UI
-renderNode(node)         // Render single node card
+// Graph operations
+import { addNodeToGraph, deleteNode, addPropertyToNode } from './cdi-graph-helpers.js';
+import { convertPropertyToArray, createAndReferenceNewNode } from './cdi-graph-helpers.js';
 
-// Property classification
-classifyProperty(nodeId, propertyKey, shaclStore, expandedJsonLd)
-
-// Validation
-validateData()           // Run SHACL validation
+// SHACL helpers
+import { classifyProperty, getEnumerationValues } from './cdi-shacl-helpers.js';
+import { loadShapes } from './cdi-shacl-loader.js';
 
 // Data extraction
-extractDataFromDom()     // Extract current state from DOM
-
-// JSON-LD processing
-resolvePrefix(context, prefix)
-expandCompactIri(context, compactIri)
+import { collectChangesFromDOM, exportData } from './data-extraction.js';
 ```
 
 ---
@@ -792,19 +753,20 @@ expandCompactIri(context, compactIri)
 
 **When suggesting code changes:**
 
-1. ✅ **DO** use `window.*` for all shared state
-2. ✅ **DO** use N3.js term objects, not URI strings
-3. ✅ **DO** handle array contexts in JSON-LD
-4. ✅ **DO** attach event handlers after rendering
-5. ✅ **DO** write tests for new functions
+1. ✅ **DO** use ES6 imports/exports
+2. ✅ **DO** import from state.js for application state
+3. ✅ **DO** use N3.js term objects, not URI strings
+4. ✅ **DO** handle array contexts in JSON-LD
+5. ✅ **DO** attach event handlers after rendering
 6. ✅ **DO** check ARCHITECTURE.md for design decisions
+7. ✅ **DO** run `npm run fmt` before committing
 
-7. ❌ **DON'T** use `let`/`const` for shared state
-8. ❌ **DON'T** use `.value` property on N3.js terms
-9. ❌ **DON'T** assume context is always an object
-10. ❌ **DON'T** add inline onclick handlers
-11. ❌ **DON'T** skip tests for "simple" changes
-12. ❌ **DON'T** invent new patterns without discussing
+8. ❌ **DON'T** access global window variables directly
+9. ❌ **DON'T** use `.value` property on N3.js terms
+10. ❌ **DON'T** assume context is always an object
+11. ❌ **DON'T** add inline onclick handlers
+12. ❌ **DON'T** duplicate functionality across modules
+13. ❌ **DON'T** skip code quality checks (lint, format)
 
 **When fixing bugs:**
 
