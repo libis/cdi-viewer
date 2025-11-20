@@ -1,15 +1,53 @@
 // Author: Eryk Kulikowski @ KU Leuven (2025). Apache 2.0 License
 
-// === CDI Previewer: SHACL Validation Logic (using rdf-validate-shacl) ===
+// === CDI Previewer: SHACL Validation Logic (using shacl-engine with SPARQL support) ===
 
-// Runs validation end-to-end on the current jsonData and updates #validation-status
-async function validateData() {
+import rdfDataModel from '@rdfjs/data-model';
+import rdfDataset from '@rdfjs/dataset';
+import Validator from 'shacl-engine/Validator.js';
+import { validations as sparqlValidations } from 'shacl-engine/sparql.js';
+import { getShaclShapesStore, getJsonData, setValidationReport } from './state.js';
+import { jsonLdToN3Store } from './cdi-shacl-loader.js';
+
+// RDF factory for creating RDF/JS compliant datasets
+const rdf = {
+  ...rdfDataModel,
+  dataset: rdfDataset.dataset,
+  fromTerm: (term) => term,
+  defaultGraph: () => rdfDataModel.defaultGraph()
+};
+
+/**
+ * Convert N3 Store to RDF/JS Dataset
+ */
+function storeToDataset(store) {
+  const dataset = rdf.dataset();
+  store.getQuads(null, null, null, null).forEach((q) => {
+    dataset.add(
+      rdf.quad(
+        rdf.fromTerm(q.subject),
+        rdf.fromTerm(q.predicate),
+        rdf.fromTerm(q.object),
+        q.graph && q.graph.termType !== "DefaultGraph"
+          ? rdf.fromTerm(q.graph)
+          : rdf.defaultGraph()
+      )
+    );
+  });
+  return dataset;
+}
+
+/**
+ * Runs validation end-to-end on the current jsonData and updates #validation-status
+ */
+export async function validateData() {
   $("#validation-status").html(
     '<span class="label label-info">Validating...</span>'
   );
 
   try {
     // Check if SHACL shapes are loaded
+    const shaclShapesStore = getShaclShapesStore();
     if (!shaclShapesStore) {
       $("#validation-status").html(
         '<span class="label label-warning">No SHACL shapes loaded - cannot validate</span>'
@@ -19,56 +57,25 @@ async function validateData() {
       );
       return;
     }
-    
-    if (
-      !window.CdiShacl ||
-      !window.CdiShacl.SHACLValidator ||
-      !window.CdiShacl.rdf
-    ) {
-      throw new Error(
-        "SHACL validation engine is not loaded (CdiShacl bundle missing)"
-      );
-    }
 
-    const { SHACLValidator, rdf } = window.CdiShacl;
-
-    // Prepare shapes dataset from shaclShapesStore (N3.Store -> DatasetCore)
-    const shapesDataset = rdf.dataset();
-    shaclShapesStore.getQuads(null, null, null, null).forEach((q) => {
-      shapesDataset.add(
-        rdf.quad(
-          rdf.fromTerm(q.subject),
-          rdf.fromTerm(q.predicate),
-          rdf.fromTerm(q.object),
-          q.graph && q.graph.termType !== "DefaultGraph"
-            ? rdf.fromTerm(q.graph)
-            : rdf.defaultGraph()
-        )
-      );
-    });
+    // Prepare shapes dataset from shaclShapesStore
+    const shapesDataset = storeToDataset(shaclShapesStore);
 
     // Prepare data dataset: convert jsonData to N3 store, then to RDF/JS dataset
+    const jsonData = getJsonData();
     const tempStore = await jsonLdToN3Store(jsonData);
-    const dataDataset = rdf.dataset();
+    const dataDataset = storeToDataset(tempStore);
 
-    tempStore.getQuads(null, null, null, null).forEach((q) => {
-      dataDataset.add(
-        rdf.quad(
-          rdf.fromTerm(q.subject),
-          rdf.fromTerm(q.predicate),
-          rdf.fromTerm(q.object),
-          q.graph && q.graph.termType !== "DefaultGraph"
-            ? rdf.fromTerm(q.graph)
-            : rdf.defaultGraph()
-        )
-      );
+    // Create validator instance for the shapes in the dataset
+    const validator = new Validator(shapesDataset, { 
+      factory: rdf,
+      validations: sparqlValidations  // Enable SPARQL constraints
     });
+    
+    // Run the validation process
+    const report = await validator.validate({ dataset: dataDataset });
 
-    // Run SHACL validation using rdf-validate-shacl
-    const validator = new SHACLValidator(shapesDataset, { factory: rdf });
-    const report = await validator.validate(dataDataset);
-
-    validationReport = report;
+    setValidationReport(report);
 
     const violations = [];
 
@@ -195,6 +202,9 @@ async function validateData() {
   }
 }
 
+/**
+ * Update property rows with validation results
+ */
 function updatePropertyValidation(violations) {
   // Clear previous validation states
   $(".property-row")

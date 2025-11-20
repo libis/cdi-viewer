@@ -10,8 +10,15 @@
 //  - core.js                      (Dataverse wiring and initialization)
 //  - render.js                    (tree rendering)
 
+import { 
+  getJsonData,
+  getExpandedJsonLd,
+  getShaclShapesStore
+} from './state.js';
+import { expandCompactIri } from './cdi-json-ld-helpers.js';
+
 // Expand a compact node ID (e.g., "xas:fe_c3d.001") to full URI (e.g., "http://www.cdi4exas.org/fe_c3d.001")
-function getExpandedNodeId(compactNodeId) {
+export function getExpandedNodeId(compactNodeId) {
   if (!compactNodeId) return null;
 
   // If it's already a full URI, return as-is
@@ -23,6 +30,9 @@ function getExpandedNodeId(compactNodeId) {
   }
 
   // Try to find the node in the @graph
+  const jsonData = getJsonData();
+  const expandedJsonLd = getExpandedJsonLd();
+  
   if (jsonData && jsonData["@graph"]) {
     const node = jsonData["@graph"].find((n) => n["@id"] === compactNodeId);
     if (node && node["@id"]) {
@@ -56,7 +66,9 @@ function getExpandedNodeId(compactNodeId) {
 }
 
 // Get the expanded URI for a property from the expanded JSON-LD
-function getExpandedPropertyUri(nodeId, propertyKey) {
+export function getExpandedPropertyUri(nodeId, propertyKey) {
+  const expandedJsonLd = getExpandedJsonLd();
+  
   if (!expandedJsonLd || !Array.isArray(expandedJsonLd)) {
     return null;
   }
@@ -84,7 +96,9 @@ function getExpandedPropertyUri(nodeId, propertyKey) {
 }
 
 // Get all available node types from SHACL shapes.
-function getAvailableNodeTypes() {
+export function getAvailableNodeTypes() {
+  const shaclShapesStore = getShaclShapesStore();
+  
   if (!shaclShapesStore) {
     return [];
   }
@@ -119,7 +133,7 @@ function getAvailableNodeTypes() {
 }
 
 // Add a new root node to the graph
-function addRootNode() {
+export function addRootNode() {
   const availableTypes = getAvailableNodeTypes();
 
   if (availableTypes.length === 0) {
@@ -219,7 +233,9 @@ function addRootNode() {
 }
 
 // Create and add a root node with the specified type
-function createAndAddRootNode(nodeType) {
+export function createAndAddRootNode(nodeType) {
+  const jsonData = getJsonData();
+  
   // Generate unique ID
   const timestamp = Date.now();
   const newNodeId = `#NewNode_${nodeType}_${timestamp}`;
@@ -255,7 +271,9 @@ function createAndAddRootNode(nodeType) {
   console.log("Added new root node:", newNode);
 }
 
-function addPropertyToNode(nodeId, propertyKey, initialValue, bodyElement) {
+export function addPropertyToNode(nodeId, propertyKey, initialValue, bodyElement) {
+  const jsonData = getJsonData();
+  
   // Add the property to the data and get node types
   let nodeTypes = [];
   jsonData["@graph"].forEach((node) => {

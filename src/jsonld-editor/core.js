@@ -2,72 +2,25 @@
 
 // === CDI Previewer: Core Configuration and Initialization ===
 //
-// Global variables, logging, shape URLs, and main initialization logic.
+// Main initialization logic for loading data from Dataverse or local files.
 
-// Logging levels
-const LOG_LEVEL = {
-  ERROR: 0,
-  WARN: 1,
-  INFO: 2,
-  DEBUG: 3,
-};
-
-// Check URL parameter for debug mode
-const urlParams = new URLSearchParams(window.location.search);
-let currentLogLevel =
-  urlParams.get("debug") === "true" ? LOG_LEVEL.DEBUG : LOG_LEVEL.WARN;
-
-function log(level, ...args) {
-  if (level <= currentLogLevel) {
-    switch (level) {
-      case LOG_LEVEL.ERROR:
-        console.error(...args);
-        break;
-      case LOG_LEVEL.WARN:
-        console.warn(...args);
-        break;
-      case LOG_LEVEL.INFO:
-        console.info(...args);
-        break;
-      case LOG_LEVEL.DEBUG:
-        console.log(...args);
-        break;
-    }
-  }
-}
-
-let jsonData = null;
-let shaclShapes = null;
-let shaclShapesStore = null;
-let isEditMode = false;
-let originalData = null;
-let validationReport = null;
-let fileId = null;
-let siteUrl = null;
-let originalFileName = "cdi-metadata.jsonld"; // Default filename
-let expandedJsonLd = null; // Store expanded JSON-LD for property URI lookup
-let currentShapeSource = null; // Track currently loaded shape source (null = no shapes loaded yet)
-let hadOriginalGraph = true; // Track if original data had @graph (for export preservation)
-
-// Configuration: Default namespace for types without prefix
-// Automatically configured based on loaded SHACL shapes (DDI-CDI detection)
-// Can be manually overridden:
-// window.defaultTypeNamespace = "http://ddialliance.org/Specification/DDI-CDI/1.0/RDF/"; // DDI-CDI
-// window.defaultTypeNamespace = "http://schema.org/"; // Schema.org
-// window.defaultTypeNamespace = "http://www.w3.org/ns/dcat#"; // DCAT
-window.defaultTypeNamespace = null; // Auto-configured when SHACL shapes load
-
-// SHACL shape URLs (Core SHACL only - no SPARQL support)
-// These are examples - users can load any SHACL shapes via custom URL
-const SHAPE_URLS = {
-  "ddi-cdi-official":
-    "https://ddi-cdi.github.io/m2t-ng/DDI-CDI_1-0/encoding/shacl/ddi-cdi.shacl.ttl",
-  "cdif-core": "shapes/cdif-core.ttl",
-  "dcat-ap": "https://semiceu.github.io/DCAT-AP/releases/3.0.0/html/shacl/shapes.ttl",
-  "datacube": "https://raw.githubusercontent.com/w3c/shacl/master/shapes/datacube.shapes.ttl",
-  "skos": "https://raw.githubusercontent.com/skohub-io/skohub-shapes/main/skos.shacl.ttl",
-  "local-fallback": "shapes/ddi-cdi-official.ttl",
-};
+import {
+  LOG_LEVEL,
+  log,
+  SHAPE_URLS,
+  setJsonData,
+  setOriginalData,
+  setExpandedJsonLd,
+  setFileId,
+  setSiteUrl,
+  setOriginalFileName,
+  getFileId,
+  getSiteUrl
+} from './state.js';
+import { normalizeToGraphFormat } from './cdi-json-ld-helpers.js';
+import { loadShapes, jsonLdToN3Store } from './cdi-shacl-loader.js';
+import { renderData } from './render.js';
+import { setupEventHandlers } from './event-handlers.js';
 
 // Initialize
 $(document).ready(async function () {
@@ -106,8 +59,8 @@ $(document).ready(async function () {
 
       // Extract parameters from the response
       const queryParams = paramsData.data.queryParameters || {};
-      fileId = queryParams.fileid;
-      siteUrl = queryParams.siteUrl;
+      setFileId(queryParams.fileid);
+      setSiteUrl(queryParams.siteUrl);
 
       // Get the dataset metadata signed URL if available
       const signedUrls = paramsData.data.signedUrls || [];
@@ -119,11 +72,14 @@ $(document).ready(async function () {
       }
     } else {
       // Direct parameters (for testing)
-      fileId = urlParams.get("fileid");
-      siteUrl = urlParams.get("siteUrl");
+      setFileId(urlParams.get("fileid"));
+      setSiteUrl(urlParams.get("siteUrl"));
     }
 
     // Check required parameters
+    const fileId = getFileId();
+    const siteUrl = getSiteUrl();
+    
     if (!fileId || !siteUrl) {
       // Show load local file button instead of error
       $("#load-local-btn").show();
@@ -149,7 +105,7 @@ $(document).ready(async function () {
             (f) => f.dataFile && f.dataFile.id == fileId
           );
           if (fileInfo && fileInfo.dataFile && fileInfo.dataFile.filename) {
-            originalFileName = fileInfo.dataFile.filename;
+            setOriginalFileName(fileInfo.dataFile.filename);
           }
         }
       } else {
@@ -162,7 +118,7 @@ $(document).ready(async function () {
             metadata.data.dataFile &&
             metadata.data.dataFile.filename
           ) {
-            originalFileName = metadata.data.dataFile.filename;
+            setOriginalFileName(metadata.data.dataFile.filename);
           }
         }
       }
@@ -193,7 +149,8 @@ $(document).ready(async function () {
     let jsonText;
     try {
       jsonText = await response.text();
-      jsonData = JSON.parse(jsonText);
+      let parsedData = JSON.parse(jsonText);
+      setJsonData(parsedData);
     } catch (parseError) {
       throw new Error(
         `Failed to parse JSON: ${parseError.message}. This file may not be valid JSON-LD.`
@@ -202,7 +159,8 @@ $(document).ready(async function () {
 
     // Normalize to @graph format if needed
     try {
-      jsonData = await normalizeToGraphFormat(jsonData);
+      const normalized = await normalizeToGraphFormat(getJsonData());
+      setJsonData(normalized);
     } catch (normalizeError) {
       throw new Error(
         `Failed to normalize JSON-LD structure: ${normalizeError.message}`
@@ -210,26 +168,24 @@ $(document).ready(async function () {
     }
 
     // Verify we now have @graph (should always be true after normalization)
+    const jsonData = getJsonData();
     if (!jsonData["@graph"]) {
       throw new Error(
         "Internal error: Normalization did not produce @graph structure."
       );
     }
 
-    originalData = JSON.parse(JSON.stringify(jsonData)); // Deep clone
+    setOriginalData(JSON.parse(JSON.stringify(jsonData))); // Deep clone
 
     // Load local context cache for fallback (non-blocking)
-    loadLocalContext().catch((e) =>
-      console.warn("Could not pre-load local context:", e)
-    );
-
     // Expand JSON-LD to get full property URIs
     try {
-      expandedJsonLd = await jsonld.expand(jsonData);
+      const expanded = await jsonld.expand(jsonData);
+      setExpandedJsonLd(expanded);
       console.log("Expanded JSON-LD for property URI mapping");
     } catch (expandError) {
       console.warn("Could not expand JSON-LD:", expandError);
-      expandedJsonLd = null;
+      setExpandedJsonLd(null);
     }
 
     // Load SHACL shapes - use the selected shape from dropdown

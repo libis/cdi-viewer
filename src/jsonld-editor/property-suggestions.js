@@ -4,7 +4,17 @@
 //
 // Generates property suggestions based on SHACL shapes and node types.
 
-function getPropertySuggestions(node, types) {
+import { 
+  getShaclShapesStore,
+  getJsonData,
+  getDefaultTypeNamespace
+} from './state.js';
+import { expandCompactIri } from './cdi-json-ld-helpers.js';
+
+export function getPropertySuggestions(node, types) {
+  const shaclShapesStore = getShaclShapesStore();
+  const jsonData = getJsonData();
+  
   if (!shaclShapesStore || types.length === 0) {
     return [];
   }
@@ -41,8 +51,9 @@ function getPropertySuggestions(node, types) {
       }
     } else {
       // No prefix - check if default namespace is configured
-      if (window.defaultTypeNamespace) {
-        typeUri = window.defaultTypeNamespace + type;
+      const defaultTypeNamespace = getDefaultTypeNamespace();
+      if (defaultTypeNamespace) {
+        typeUri = defaultTypeNamespace + type;
       } else {
         // No default namespace - skip this type
         return;
@@ -268,7 +279,7 @@ function getPropertySuggestions(node, types) {
   return unique;
 }
 
-function createPropertySuggestionsSection(suggestions, nodeId, bodyElement) {
+export function createPropertySuggestionsSection(suggestions, nodeId, bodyElement) {
   const section = $("<div>").addClass("add-property-section");
   section.append(
     $("<h4>")
@@ -380,7 +391,9 @@ function createPropertySuggestionsSection(suggestions, nodeId, bodyElement) {
   return section;
 }
 
-function addComplexPropertyToNode(nodeId, suggestion, bodyElement) {
+export function addComplexPropertyToNode(nodeId, suggestion, bodyElement) {
+  const jsonData = getJsonData();
+  
   // Create a new node in the @graph
   const newNodeId = `_:${suggestion.path}_${Date.now()}`;
 

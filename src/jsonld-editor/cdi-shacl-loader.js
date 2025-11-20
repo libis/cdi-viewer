@@ -2,8 +2,18 @@
 
 // === SHACL Shape Loading (Core SHACL Only) ===
 
+import { 
+  LOG_LEVEL, 
+  log, 
+  SHAPE_URLS,
+  setShaclShapes,
+  setShaclShapesStore,
+  setCurrentShapeSource,
+  setDefaultTypeNamespace
+} from './state.js';
+
 // Load SHACL shapes from a URL with fallback to local
-async function loadShapes(shapeSource, customUrl = null) {
+export async function loadShapes(shapeSource, customUrl = null) {
   let shapeUrl;
   let fallbackUrl = SHAPE_URLS["local-fallback"];
 
@@ -35,9 +45,9 @@ async function loadShapes(shapeSource, customUrl = null) {
 
     log(
       LOG_LEVEL.INFO,
-      `Successfully loaded SHACL shapes from ${shapeUrl}, quad count: ${shaclShapesStore.size}`
+      `Successfully loaded SHACL shapes from ${shapeUrl}`
     );
-    currentShapeSource = shapeSource;
+    setCurrentShapeSource(shapeSource);
 
     return true;
   } catch (error) {
@@ -58,10 +68,9 @@ async function loadShapes(shapeSource, customUrl = null) {
         await parseShapes(fallbackShapesText);
 
         console.log(
-          `Successfully loaded fallback SHACL shapes, quad count:`,
-          shaclShapesStore.size
+          `Successfully loaded fallback SHACL shapes`
         );
-        currentShapeSource = "local-fallback";
+        setCurrentShapeSource("local-fallback");
 
         // Update dropdown to reflect fallback
         $("#shape-selector").val("local-fallback");
@@ -86,19 +95,21 @@ async function loadShapes(shapeSource, customUrl = null) {
 
 // Parse SHACL shapes text into N3 store
 async function parseShapes(shapesText) {
-  shaclShapes = shapesText;
-  shaclShapesStore = new N3.Store();
+  setShaclShapes(shapesText);
+  setShaclShapesStore(new N3.Store());
 
   const parser = new N3.Parser();
+  const store = new N3.Store();
 
   return new Promise((resolve, reject) => {
     parser.parse(shapesText, (error, quad, prefixes) => {
       if (error) {
         reject(error);
       } else if (quad) {
-        shaclShapesStore.addQuad(quad);
+        store.addQuad(quad);
       } else {
-        // Parsing complete
+        // Parsing complete - set the store after all quads added
+        setShaclShapesStore(store);
         log(LOG_LEVEL.DEBUG, "SHACL shapes parsed successfully");
         
         // Auto-detect DDI-CDI mode based on namespace in SHACL shapes
@@ -117,17 +128,17 @@ function detectAndConfigureDDICDIMode(shapesText) {
   
   if (isDDICDI) {
     // Enable DDI-CDI mode
-    window.defaultTypeNamespace = "http://ddialliance.org/Specification/DDI-CDI/1.0/RDF/";
+    setDefaultTypeNamespace("http://ddialliance.org/Specification/DDI-CDI/1.0/RDF/");
     log(LOG_LEVEL.INFO, "DDI-CDI shapes detected - enabling DDI-CDI mode");
   } else {
     // Disable DDI-CDI mode for other vocabularies
-    window.defaultTypeNamespace = null;
+    setDefaultTypeNamespace(null);
     log(LOG_LEVEL.INFO, "Generic JSON-LD mode (no DDI-CDI namespace detected)");
   }
 }
 
 // Convert JSON-LD to N3 Store for validation
-async function jsonLdToN3Store(jsonLdData) {
+export async function jsonLdToN3Store(jsonLdData) {
   const store = new N3.Store();
 
   try {

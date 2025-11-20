@@ -9,8 +9,8 @@
     "dev:bundle": "npm run build && python3 -m http.server 8000",
     "build": "rollup -c",
     "build:watch": "rollup -c --watch",
-    "lint": "eslint js/**/*.js",
-    "lint:fix": "eslint js/**/*.js --fix",
+    "lint": "eslint js/**/*.js src/**/*.js",
+    "lint:fix": "eslint js/**/*.js src/**/*.js --fix",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
@@ -36,14 +36,17 @@
   },
   "homepage": "https://libis.github.io/cdi-viewer/",
   "dependencies": {
+    "@rdfjs/data-model": "^2.1.1",
+    "@rdfjs/dataset": "^2.0.2",
     "jsonld": "^8.3.2",
     "n3": "^1.16.4",
-    "rdf-validate-shacl": "^0.5.5"
+    "shacl-engine": "^1.0.2"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-terser": "^0.4.4",
+    "esbuild": "^0.27.0",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-jest": "^27.6.3",

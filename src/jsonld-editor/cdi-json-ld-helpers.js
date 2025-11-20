@@ -6,6 +6,8 @@
 // Used for internal viewer behavior (expansion, suggestions, SHACL classification).
 // Does NOT modify the original data when exporting.
 
+import { LOG_LEVEL, log, setHadOriginalGraph } from './state.js';
+
 // Legacy/external context URLs that we want to handle via local copies
 // Add entries here if you have local cached versions of external contexts
 const LEGACY_CONTEXT_URLS = {
@@ -25,7 +27,7 @@ let cachedLocalContext = null;
  * @param {string} prefix - The prefix to resolve (e.g., "schema", "cdi")
  * @returns {string|null} - The namespace URI or null if not found
  */
-function resolvePrefix(context, prefix) {
+export function resolvePrefix(context, prefix) {
   if (!context || !prefix) return null;
 
   // Handle string context (URL) - we can't resolve from it directly
@@ -82,7 +84,7 @@ function resolvePrefix(context, prefix) {
  * @param {string} compactIri - The compact IRI (e.g., "schema:Dataset")
  * @returns {string|null} - The expanded URI or null if can't expand
  */
-function expandCompactIri(context, compactIri) {
+export function expandCompactIri(context, compactIri) {
   if (!compactIri || !compactIri.includes(":")) {
     return null;
   }
@@ -208,17 +210,17 @@ async function loadLocalContext() {
 }
 
 // Normalize JSON-LD to @graph format
-async function normalizeToGraphFormat(data) {
+export async function normalizeToGraphFormat(data) {
   // Check if already has @graph
   if (data["@graph"]) {
     log(LOG_LEVEL.DEBUG, "Data already has @graph, no normalization needed");
-    hadOriginalGraph = true;
+    setHadOriginalGraph(true);
     $("#normalization-notice").hide();
     return data;
   }
 
   log(LOG_LEVEL.DEBUG, "Data does not have @graph, normalizing...");
-  hadOriginalGraph = false;
+  setHadOriginalGraph(false);
 
   // Special handling for legacy DDI-CDI format with DDICDIModels and @included
   // This is an optional convenience - if your JSON-LD uses standard @graph, this won't trigger

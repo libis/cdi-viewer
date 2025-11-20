@@ -4,12 +4,16 @@
 //
 // Handles collecting user edits from the DOM and exporting JSON-LD data.
 
-function updateSaveButton() {
+import { getJsonData, getSiteUrl, getFileId, getOriginalFileName } from './state.js';
+
+export function updateSaveButton() {
   const hasChanges = $(".property-row.changed").length > 0;
   $("#save-btn").prop("disabled", !hasChanges);
 }
 
-function collectChangesFromDOM() {
+export function collectChangesFromDOM() {
+  const jsonData = getJsonData();
+  
   // Check if there are any actual changes
   const hasChanges = $(".property-row.changed").length > 0;
   console.log("collectChangesFromDOM: Found", hasChanges, "changed rows");
@@ -98,7 +102,7 @@ function collectChangesFromDOM() {
   updateSaveButton();
 }
 
-function saveChanges() {
+export function saveChanges() {
   // First, collect any changes from the DOM
   collectChangesFromDOM();
 
@@ -107,7 +111,12 @@ function saveChanges() {
   $("#saveModal").modal("show");
 }
 
-async function saveToDataverse() {
+export async function saveToDataverse() {
+  const jsonData = getJsonData();
+  const siteUrl = getSiteUrl();
+  const fileId = getFileId();
+  const originalFileName = getOriginalFileName();
+  
   const apiToken = $("#apiTokenInput").val().trim();
 
   if (!apiToken) {
@@ -186,7 +195,9 @@ async function saveToDataverse() {
   }
 }
 
-function exportData() {
+export function exportData() {
+  const jsonData = getJsonData();
+  
   // Collect any changes from DOM before exporting
   collectChangesFromDOM();
 

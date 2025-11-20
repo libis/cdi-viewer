@@ -2,10 +2,21 @@
 
 // === CDI Previewer: Tree Rendering & Node/Property Display ===
 
+import { 
+  getJsonData,
+  getIsEditMode,
+  getShaclShapesStore
+} from './state.js';
+import { classifyProperty } from './cdi-shacl-helpers.js';
+import { getPropertySuggestions, createPropertySuggestionsSection } from './property-suggestions.js';
+
 // Track which nodes have been rendered to avoid duplicates
 let renderedNodes = new Set();
 
-function renderData() {
+export function renderData() {
+  const jsonData = getJsonData();
+  const isEditMode = getIsEditMode();
+  
   console.log("🎨 RENDER START");
 
   const content = $("#content");
@@ -44,7 +55,8 @@ function renderData() {
 }
 
 // Extract all @id references from a value (handles arrays, nested objects, and string references)
-function extractNodeReferences(value) {
+export function extractNodeReferences(value) {
+  const jsonData = getJsonData();
   const refs = [];
   if (Array.isArray(value)) {
     value.forEach((item) => {
@@ -63,7 +75,8 @@ function extractNodeReferences(value) {
 }
 
 // Check if a string value looks like a node reference
-function isNodeReference(str) {
+export function isNodeReference(str) {
+  const jsonData = getJsonData();
   if (typeof str !== "string") return false;
   // Check if it starts with # or _: (common node ID patterns)
   if (str.startsWith("#") || str.startsWith("_:")) {
@@ -73,7 +86,10 @@ function isNodeReference(str) {
   return false;
 }
 
-function renderNodeTree(node, index, depth) {
+export function renderNodeTree(node, index, depth) {
+  const isEditMode = getIsEditMode();
+  const shaclShapesStore = getShaclShapesStore();
+  
   const id = node["@id"] || `_:blank${index}`;
   const types = Array.isArray(node["@type"]) ? node["@type"] : [node["@type"]];
 
@@ -167,7 +183,10 @@ function renderNodeTree(node, index, depth) {
   return card;
 }
 
-function renderNode(node, index) {
+export function renderNode(node, index) {
+  const isEditMode = getIsEditMode();
+  const shaclShapesStore = getShaclShapesStore();
+  
   const id = node["@id"] || `_:blank${index}`;
   const types = Array.isArray(node["@type"]) ? node["@type"] : [node["@type"]];
 
@@ -252,7 +271,8 @@ function renderNode(node, index) {
   return card;
 }
 
-function renderPropertyTree(key, value, nodeId, nodeTypes, depth) {
+export function renderPropertyTree(key, value, nodeId, nodeTypes, depth) {
+  const jsonData = getJsonData();
   const container = $("<div>");
 
   // First render the property itself
@@ -517,7 +537,7 @@ function renderProperty(key, value, nodeId, nodeTypes) {
   return row;
 }
 
-function createValueInput(key, value, nodeId, arrayIndex, classification) {
+export function createValueInput(key, value, nodeId, arrayIndex, classification) {
   // Check if value is a reference to another node (has @id)
   if (typeof value === "object" && value !== null && value["@id"]) {
     const refId = value["@id"];
@@ -692,7 +712,7 @@ function createValueInput(key, value, nodeId, arrayIndex, classification) {
   }
 }
 
-function humanizeKey(key) {
+export function humanizeKey(key) {
   // Convert camelCase or snake_case to human readable
   return key
     .replace(/([A-Z])/g, " $1") // Add space before capital letters
@@ -703,7 +723,7 @@ function humanizeKey(key) {
     .join(" "); // Join back together
 }
 
-function highlightText(element, searchTerm) {
+export function highlightText(element, searchTerm) {
   // Remove previous highlights
   element.find(".search-highlight").contents().unwrap();
 

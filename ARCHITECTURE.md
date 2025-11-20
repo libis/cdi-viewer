@@ -35,7 +35,7 @@ Render UI with Color-Coded Badges
     ↓
 User Modifications
     ↓
-Validate Against SHACL (rdf-validate-shacl)
+Validate Against SHACL (shacl-engine)
     ↓
 Export or Save to Dataverse
 ```
@@ -258,7 +258,7 @@ attachEventHandlers();
 **Validation Flow:**
 1. Convert JSON-LD to RDF (jsonld.toRDF)
 2. Parse RDF with N3.js into dataset
-3. Run rdf-validate-shacl validator
+3. Run shacl-engine validator (with SPARQL support)
 4. Parse validation report
 5. Update UI with violations/warnings
 6. Highlight invalid properties in red
@@ -422,7 +422,10 @@ const nodeId = `_:node-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
    - Expansion/compaction
    - RDF conversion
 
-3. **rdf-validate-shacl v0.5.5** (~120KB)
+3. **shacl-engine v1.0.2** (~1.1MB)
+   - Core SHACL validation with SPARQL constraint support
+   - 15-26x faster than rdf-validate-shacl
+   - Bundled with all dependencies (including @comunica/query-sparql)
    - Core SHACL validation only
    - No SPARQL support
    - Browser-compatible bundle
@@ -539,7 +542,7 @@ function attachHandlers() {
 
 **Bundled:**
 - All application JS files
-- N3.js, jsonld.js, rdf-validate-shacl
+- N3.js, jsonld.js, shacl-engine
 
 **External:**
 - jQuery (provided by Dataverse)
@@ -738,7 +741,9 @@ console.log(JSON.stringify(data, null, 2))
 
 **Target:** < 500KB minified
 
-**Current:** ~400KB (N3 150KB + jsonld 130KB + rdf-validate-shacl 120KB)
+**Current:** ~1.14MB (App 38KB + Validation 1.1MB)
+- Validation bundle includes shacl-engine with SPARQL support
+- App bundle contains all application logic
 
 **Optimization:**
 - Core SHACL only (no SPARQL = saves 1.9MB)
@@ -809,7 +814,7 @@ if (!window.shaclShapesStore) {
 
 - **N3.js:** https://github.com/rdfjs/N3.js
 - **jsonld.js:** https://github.com/digitalbazaar/jsonld.js
-- **rdf-validate-shacl:** https://github.com/zazuko/rdf-validate-shacl
+- **shacl-engine:** https://github.com/semantifyit/shacl-engine
 
 ### Dataverse
 

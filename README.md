@@ -166,7 +166,7 @@ Comprehensive documentation is available in the `docs/` directory:
 - **Bootstrap 3.3.7** - UI components
 - **N3.js v1.16.x** (~150KB) - RDF/Turtle parsing
 - **jsonld.js** (~130KB) - JSON-LD processing
-- **rdf-validate-shacl** (~120KB) - Core SHACL validation
+- **shacl-engine** (~1.1MB) - Core SHACL + SPARQL validation
 
 ### Development Tools
 - **Jest** - Testing framework with JSDOM
@@ -185,9 +185,10 @@ npm run lint          # Check code quality (ESLint + Prettier)
 ```
 
 ### Architecture
-- **Core SHACL only** - No SPARQL engine needed (~400KB total)
-- **Lightweight bundle** - Fast loading for browser environments
-- **Modular structure** - Separated HTML/CSS/JS files
+- **Core SHACL + SPARQL** - Full SHACL validation with SPARQL constraints (~1.1MB)
+- **ES6 modules** - Modern code with proper imports (like shacl-engine examples)
+- **Dual bundles** - Validation (1.1MB) + App logic (38KB)
+- **Modular structure** - Separated concerns, incremental ES6 migration
 - **Production ready** - Configurable logging, clean code
 - **Dual deployment** - Standalone (GitHub Pages) + Dataverse integration
 - **Test coverage** - 26 tests preventing regressions
@@ -205,8 +206,9 @@ cdi-viewer/
 │   ├── validation.js       # SHACL validation
 │   ├── cdi-shacl-loader.js # Shape loading
 │   └── ...                 # Other modules
-├── lib/
-│   └── rdf-validate-shacl.bundle.min.js
+├── dist/
+│   ├── cdi-app.bundle.js           # App logic (38KB)
+│   └── cdi-validation.bundle.js    # SHACL validation (1.1MB)
 ├── shapes/
 │   ├── ddi-cdi-official.ttl    # DDI-CDI 1.0 shapes
 │   └── cdif-core.ttl           # CDIF Discovery shapes
@@ -348,12 +350,54 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our development pr
 
 1. Fork and clone the repository
 2. Install dependencies: `npm install`
-3. Make your changes
-4. Run tests: `npm test`
-5. Check linting: `npm run lint`
-6. Test locally: `npm run dev`
-7. Build: `npm run build`
+3. Make your changes in `src/` (ES6 modules) or `js/` (legacy scripts)
+4. Build: `npm run build` (or `npm run build:watch` for development)
+5. Run tests: `npm test`
+6. Check linting: `npm run lint`
+7. Test locally: `npm run dev` (starts server on http://localhost:8000)
 8. Submit a pull request
+
+### Development Structure
+
+The project uses a **hybrid architecture** during migration to ES6 modules:
+
+```
+src/                    # Modern ES6 modules (new code)
+├── validation.js       # ✅ SHACL validation (proper imports)
+├── index.js           # Entry point (future: all modules)
+└── README.md          # Module documentation
+
+js/                     # Legacy plain scripts (being migrated)
+├── core.js            # Initialization and config
+├── render.js          # UI rendering
+└── ...                # Other modules
+
+dist/                   # Built bundles for browser
+├── cdi-validation.bundle.js  # 1.1MB - SHACL with SPARQL
+└── cdi-app.bundle.js        # 38KB - App logic
+```
+
+**Build Process:**
+```bash
+# Write code with ES6 imports (like validation.js)
+import Validator from 'shacl-engine/Validator.js';
+
+# Rollup bundles all dependencies into browser files
+npm run build
+
+# Two bundles created automatically:
+# - dist/cdi-validation.bundle.js (ES6 module + dependencies)
+# - dist/cdi-app.bundle.js (legacy scripts concatenated)
+```
+
+**Why ES6 Modules?**
+- ✅ Write clean Node.js-style code with `import`/`export`
+- ✅ Same pattern as shacl-engine, jsonld.js, n3.js
+- ✅ Better IDE support, type checking, debugging
+- ✅ Single minimized bundle for production
+- ✅ Incremental migration (legacy + modern code coexist)
+
+See `src/README.md` for details on the ES6 module structure and migration plan.
 
 ### Architecture Documentation
 

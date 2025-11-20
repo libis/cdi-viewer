@@ -5,15 +5,21 @@
 // Interprets SHACL shapes for UI purposes:
 //  - classifyProperty: determine REQUIRED / OPTIONAL / EXTRA, datatype, enums, etc.
 //  - parseRdfList, extractLabelFromUri, getEnumerationValues: helpers for sh:in and enums.
-//
-// Depends on globals:
-//  - shaclShapesStore (from core / cdi-shacl-loader.js)
-//  - jsonData, expandedJsonLd (from core)
-//  - getExpandedNodeId, getExpandedPropertyUri (from cdi-graph-helpers.js)
-//  - LOG_LEVEL, log (from core)
+
+import { 
+  LOG_LEVEL, 
+  log, 
+  getShaclShapesStore,
+  getJsonData,
+  getCurrentLogLevel,
+  getDefaultTypeNamespace
+} from './state.js';
+import { getExpandedPropertyUri } from './cdi-graph-helpers.js';
+import { expandCompactIri } from './cdi-json-ld-helpers.js';
 
 // Parse RDF list from sh:in to extract enumeration values
-function parseRdfList(listNodeOrUri) {
+export function parseRdfList(listNodeOrUri) {
+  const shaclShapesStore = getShaclShapesStore();
   if (!shaclShapesStore) return [];
 
   const values = [];
@@ -70,7 +76,7 @@ function parseRdfList(listNodeOrUri) {
 }
 
 // Extract a readable label from a URI
-function extractLabelFromUri(uri) {
+export function extractLabelFromUri(uri) {
   // Extract the local part after last / or #
   const parts = uri.split("/").pop().split("#").pop();
   // Convert camelCase to Title Case with spaces
@@ -81,7 +87,8 @@ function extractLabelFromUri(uri) {
 }
 
 // Get enumeration values from a NodeShape that has sh:in
-function getEnumerationValues(nodeShapeUri) {
+export function getEnumerationValues(nodeShapeUri) {
+  const shaclShapesStore = getShaclShapesStore();
   if (!shaclShapesStore) return null;
 
   // Query for sh:in on this NodeShape
@@ -99,7 +106,7 @@ function getEnumerationValues(nodeShapeUri) {
 }
 
 // Classify a property based on SHACL shapes
-function classifyProperty(nodeTypes, propertyKey, nodeId = null) {
+export function classifyProperty(nodeTypes, propertyKey, nodeId = null) {
   log(
     LOG_LEVEL.DEBUG,
     `Classifying property "${propertyKey}" for node "${nodeId}"`
@@ -119,6 +126,9 @@ function classifyProperty(nodeTypes, propertyKey, nodeId = null) {
     nodeClass: null,
   };
 
+  const shaclShapesStore = getShaclShapesStore();
+  const jsonData = getJsonData();
+  
   if (!shaclShapesStore || nodeTypes.length === 0) return result;
 
   // Try to get the expanded URI for this property
@@ -171,8 +181,9 @@ function classifyProperty(nodeTypes, propertyKey, nodeId = null) {
         }
       } else {
         // No prefix - check if default namespace is configured
-        if (window.defaultTypeNamespace) {
-          typeUri = window.defaultTypeNamespace + type;
+        const defaultTypeNamespace = getDefaultTypeNamespace();
+        if (defaultTypeNamespace) {
+          typeUri = defaultTypeNamespace + type;
           log(
             LOG_LEVEL.DEBUG,
             `Using default namespace for type: ${typeUri}`
@@ -245,7 +256,7 @@ function classifyProperty(nodeTypes, propertyKey, nodeId = null) {
       );
 
       if (
-        currentLogLevel >= LOG_LEVEL.DEBUG &&
+        getCurrentLogLevel() >= LOG_LEVEL.DEBUG &&
         nodeId === "xas:485749" &&
         propertyKey === "name"
       ) {

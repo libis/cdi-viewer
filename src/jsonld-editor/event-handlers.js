@@ -4,7 +4,31 @@
 //
 // Handles all user interactions: file loading, shape selection, edit mode, validation, etc.
 
-function setupEventHandlers() {
+import { 
+  LOG_LEVEL,
+  log,
+  setOriginalFileName,
+  setJsonData,
+  setOriginalData,
+  setExpandedJsonLd,
+  getJsonData,
+  getIsEditMode,
+  setIsEditMode,
+  getShaclShapesStore,
+  setShaclShapesStore,
+  setShaclShapes,
+  setDefaultTypeNamespace,
+  getValidationReport
+} from './state.js';
+import { normalizeToGraphFormat } from './cdi-json-ld-helpers.js';
+import { loadShapes } from './cdi-shacl-loader.js';
+import { renderData } from './render.js';
+import { validateData } from './validation.js';
+import { collectChangesFromDOM, saveChanges, saveToDataverse, exportData } from './data-extraction.js';
+import { addRootNode } from './cdi-graph-helpers.js';
+import { highlightText } from './render.js';
+
+export function setupEventHandlers() {
   // Load local file button
   $("#load-local-btn")
     .off("click")
@@ -23,27 +47,30 @@ function setupEventHandlers() {
         let parsedData = JSON.parse(fileText);
 
         // Set filename for export
-        originalFileName = file.name;
+        setOriginalFileName(file.name);
 
         // Normalize to @graph format
-        jsonData = await normalizeToGraphFormat(parsedData);
+        const normalizedData = await normalizeToGraphFormat(parsedData);
+        setJsonData(normalizedData);
 
+        const jsonData = getJsonData();
         if (!jsonData["@graph"]) {
           throw new Error("Failed to normalize JSON-LD structure.");
         }
 
-        originalData = JSON.parse(JSON.stringify(jsonData));
+        setOriginalData(JSON.parse(JSON.stringify(jsonData)));
 
         // Expand JSON-LD
         try {
-          expandedJsonLd = await jsonld.expand(jsonData);
+          const expanded = await jsonld.expand(jsonData);
+          setExpandedJsonLd(expanded);
         } catch (expandError) {
           console.warn("Could not expand JSON-LD:", expandError);
-          expandedJsonLd = null;
+          setExpandedJsonLd(null);
         }
 
         // Load SHACL shapes if not already loaded
-        if (!shaclShapesStore) {
+        if (!getShaclShapesStore()) {
           const selectedShape = $("#shape-selector").val();
           if (selectedShape) {
             try {
@@ -80,7 +107,9 @@ function setupEventHandlers() {
     // Collect any changes before switching modes
     collectChangesFromDOM();
     
-    isEditMode = !isEditMode;
+    const currentEditMode = getIsEditMode();
+    setIsEditMode(!currentEditMode);
+    const isEditMode = getIsEditMode();
 
     if (isEditMode) {
       $(this)
@@ -117,6 +146,7 @@ function setupEventHandlers() {
 
     // Check if validation passed
     setTimeout(() => {
+      const validationReport = getValidationReport();
       if (validationReport && !validationReport.conforms) {
         if (!confirm("Your data has validation errors. Do you want to save anyway?")) {
           return;
@@ -238,13 +268,13 @@ function setupEventHandlers() {
     } else if (selectedSource === "") {
       // Deselected - clear shapes and go to generic mode
       $("#custom-shape-url").hide().val("");
-      shaclShapesStore = null;
-      shaclShapes = null;
-      window.defaultTypeNamespace = null;
+      setShaclShapesStore(null);
+      setShaclShapes(null);
+      setDefaultTypeNamespace(null);
       log(LOG_LEVEL.INFO, "SHACL shapes cleared - generic JSON-LD mode");
       
       // Re-render to remove shape classifications if data is loaded
-      if (jsonData) {
+      if (getJsonData()) {
         renderData();
       }
       
@@ -267,12 +297,12 @@ function setupEventHandlers() {
         await loadShapes(selectedSource);
 
         // Re-render to apply new shape classifications if data is loaded
-        if (jsonData) {
+        if (getJsonData()) {
           renderData();
         }
 
         // Re-validate if in edit mode
-        if (isEditMode) {
+        if (getIsEditMode()) {
           validateData();
         } else {
           $("#validation-status").html(
@@ -310,12 +340,12 @@ function setupEventHandlers() {
         await loadShapes("custom", customUrl);
 
         // Re-render to apply new shape classifications if data is loaded
-        if (jsonData) {
+        if (getJsonData()) {
           renderData();
         }
 
         // Re-validate if in edit mode
-        if (isEditMode) {
+        if (getIsEditMode()) {
           validateData();
         } else {
           $("#validation-status").html(

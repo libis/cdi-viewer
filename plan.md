@@ -2,11 +2,44 @@
 
 ## Status Summary
 **Phases Complete**: 1, 2, 3, 4 (partial), 5, 6, 7, 8, 9
-**Current Phase**: Phase 10 (Dataverse-Previewers Integration) and Phase 11 (Advanced Testing)
-**Tests**: 73/73 passing ✅
-**Coverage**: ~33% direct, ~45-55% indirect (estimated)
-**Build**: 44KB bundle ✅
+**Current Phase**: Phase 12 (ES6 Module Migration) - IN PROGRESS ⏳
+**Previous Phase**: Phase 10 (Dataverse-Previewers Integration) and Phase 11 (Advanced Testing)
+**Tests**: Temporarily disabled during migration
+**Coverage**: Will be measured after migration
+**Build**: Migrating to single ES6 bundle with Rollup ⏳
 **Linting**: 0 errors ✅
+**Architecture**: Replacing window globals with ES6 imports/exports
+
+## ES6 Migration Status (Phase 12)
+**Started**: November 20, 2025
+**Goal**: Replace all window globals with proper ES6 module imports/exports
+
+### Completed:
+- ✅ Created centralized state.js module with all app state
+- ✅ Added backward compatibility proxies (Object.defineProperty on window)
+- ✅ Updated index.js to import state first
+- ✅ Updated validation.js to import from state module and cdi-shacl-loader.js
+- ✅ Updated cdi-shacl-loader.js to export functions and use state setters
+- ✅ Updated cdi-json-ld-helpers.js to export functions and use state setters
+- ✅ Updated cdi-graph-helpers.js to import dependencies and export all functions
+- ✅ Updated cdi-shacl-helpers.js to import dependencies and export all functions
+- ✅ Updated property-suggestions.js to import dependencies and export all functions
+- ✅ Updated render.js to import dependencies and export all functions
+- ✅ Updated data-extraction.js to import state and export all functions
+- ✅ Updated event-handlers.js to import all modules and export setupEventHandlers
+- ✅ Updated core.js to use imports and state setters for initialization
+- ✅ Built single ES6 bundle (1.2MB with shacl-engine + SPARQL support)
+- ✅ Updated index.html to load new single bundle
+- ✅ Started dev server for testing (http://localhost:8000)
+
+### In Progress:
+- ⏳ Testing in browser - Please test: load file, edit, validate, export
+
+### Pending:
+- ❌ Remove backward compatibility proxies from state.js (after confirming everything works)
+- ❌ Update documentation (ARCHITECTURE.md, README.md)
+- ❌ Remove backward compatibility proxies from state.js
+- ❌ Update documentation
 
 ## Context
 Moving CDI Previewer from dataverse-previewers to standalone repository with proper build system, testing, and dependency management.
@@ -187,6 +220,115 @@ Moving CDI Previewer from dataverse-previewers to standalone repository with pro
   - Link to https://github.com/libis/cdi-viewer
 
 ## Phase 11: Advanced Testing & Code Quality (NEW)
+
+### 11.1: Refactor for Testability (Foundation)
+
+## Phase 12: ES6 Module Migration ⏳ IN PROGRESS
+**Goal**: Replace all window globals with proper ES6 module imports/exports
+**Approach**: Centralized state management + gradual migration with backward compatibility
+
+### 12.1: State Management Foundation ✅ COMPLETE
+- [x] **12.1.1** Create centralized state.js module
+  - Export LOG_LEVEL, log function
+  - Export centralized state object with all app variables
+  - Export getter/setter functions for type safety
+  - Export SHAPE_URLS configuration
+  - Add backward compatibility proxies (Object.defineProperty on window)
+  
+- [x] **12.1.2** Update index.js
+  - Import state.js first (before any other modules)
+  - Import validation.js and other modules
+  - Single entry point for Rollup bundling
+
+### 12.2: Core Module Migration ⏳ IN PROGRESS
+- [x] **12.2.1** Update validation.js
+  - Import from state: getShaclShapesStore, getJsonData, setValidationReport
+  - Remove window.shaclShapesStore, window.jsonData, window.validationReport references
+  - Still needs: Import jsonLdToN3Store from cdi-shacl-loader.js
+  
+- [ ] **12.2.2** Update cdi-shacl-loader.js
+  - Import state module
+  - Export loadShapes function
+  - Export jsonLdToN3Store function
+  - Use state setters instead of window assignments
+  
+- [ ] **12.2.3** Complete validation.js migration
+  - Import jsonLdToN3Store from cdi-shacl-loader.js
+  - Remove window.jsonLdToN3Store reference
+
+### 12.3: Helper Module Migration
+- [ ] **12.3.1** Update cdi-json-ld-helpers.js
+  - Export resolvePrefix function
+  - Export expandCompactIri function
+  - Export normalizeToGraphFormat function
+  
+- [ ] **12.3.2** Update cdi-graph-helpers.js
+  - Import from cdi-json-ld-helpers
+  - Export all graph operation functions
+  
+- [ ] **12.3.3** Update cdi-shacl-helpers.js
+  - Import from cdi-graph-helpers
+  - Export all SHACL helper functions
+
+### 12.4: Application Module Migration
+- [ ] **12.4.1** Update core.js
+  - Import state module
+  - Use state setters for initialization
+  - Export initialization function
+  
+- [ ] **12.4.2** Update property-suggestions.js
+  - Import from cdi-shacl-helpers
+  - Import from state
+  - Export getPropertySuggestions function
+  
+- [ ] **12.4.3** Update render.js
+  - Import all helper modules
+  - Import state module
+  - Export all rendering functions
+  
+- [ ] **12.4.4** Update data-extraction.js
+  - Import state module
+  - Export collectChangesFromDOM function
+  
+- [ ] **12.4.5** Update event-handlers.js
+  - Import all required modules
+  - Import state module
+  - Export setupEventHandlers function
+
+### 12.5: Build & Test
+- [ ] **12.5.1** Build single bundle
+  - Run `npm run build`
+  - Verify dist/cdi-viewer.bundle.js created
+  - Check bundle size
+  
+- [ ] **12.5.2** Update index.html
+  - Replace old bundle references with dist/cdi-viewer.bundle.js
+  - Test loading
+  
+- [ ] **12.5.3** Integration testing
+  - Test load file
+  - Test edit mode
+  - Test validation (including SPARQL shapes)
+  - Test export
+  
+- [ ] **12.5.4** Remove backward compatibility
+  - Remove Object.defineProperty proxies from state.js
+  - Verify no window.* references remain in code
+  - Re-test all features
+
+### 12.6: Documentation Update
+- [ ] **12.6.1** Update ARCHITECTURE.md
+  - Document new ES6 module structure
+  - Explain state management pattern
+  - Update data flow diagrams
+  
+- [ ] **12.6.2** Update CONTRIBUTING.md
+  - New module import/export patterns
+  - State management guidelines
+  
+- [ ] **12.6.3** Update README.md
+  - Reflect new build system
+  - Update feature descriptions
 
 ### 11.1: Refactor for Testability (Foundation)
 - [ ] **11.1.1** Add module.exports to all js/ files
