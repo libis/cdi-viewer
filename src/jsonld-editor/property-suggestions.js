@@ -11,6 +11,7 @@ import {
 } from './state.js';
 import { expandCompactIri } from './cdi-json-ld-helpers.js';
 import { renderData, humanizeKey } from './render.js';
+import { addPropertyToNode } from './cdi-graph-helpers.js';
 
 export function getPropertySuggestions(node, types) {
   const shaclShapesStore = getShaclShapesStore();
@@ -343,9 +344,8 @@ export function createPropertySuggestionsSection(suggestions, nodeId) {
         // Always create a separate node and reference it
         addComplexPropertyToNode(nodeId, suggestion);
       } else {
-        // TODO: Implement addPropertyToNode for simple properties
-        // For now, just re-render to update the UI
-        console.warn('addPropertyToNode not yet implemented in ES6 migration');
+        // Add the property to the data and re-render
+        addPropertyToNode(nodeId, suggestion.path, "");
         renderData();
       }
 
@@ -366,8 +366,8 @@ export function createPropertySuggestionsSection(suggestions, nodeId) {
     .click(function () {
       const propName = prompt("Enter custom property name:");
       if (propName) {
-        // TODO: Implement addPropertyToNode for custom properties
-        console.warn('addPropertyToNode not yet implemented in ES6 migration');
+        addPropertyToNode(nodeId, propName, "");
+        renderData();
       }
     });
 

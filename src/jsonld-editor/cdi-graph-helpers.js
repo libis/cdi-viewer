@@ -271,30 +271,16 @@ export function createAndAddRootNode(nodeType) {
   console.log("Added new root node:", newNode);
 }
 
-export function addPropertyToNode(nodeId, propertyKey, initialValue, bodyElement) {
+export function addPropertyToNode(nodeId, propertyKey, initialValue) {
   const jsonData = getJsonData();
   
-  // Add the property to the data and get node types
-  let nodeTypes = [];
+  // Add the property to the data
   jsonData["@graph"].forEach((node) => {
     if (node["@id"] === nodeId) {
       node[propertyKey] = initialValue;
-      nodeTypes = Array.isArray(node["@type"])
-        ? node["@type"]
-        : [node["@type"]];
     }
   });
 
-  // Re-render just this node's body with proper classification
-  const propertyRow = renderProperty(
-    propertyKey,
-    initialValue,
-    nodeId,
-    nodeTypes
-  );
-  bodyElement.append(propertyRow);
-
-  // Mark as changed
-  propertyRow.addClass("changed");
-  updateSaveButton();
+  // Return true to signal success - caller will handle re-render
+  return true;
 }
