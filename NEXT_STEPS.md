@@ -10,49 +10,108 @@
 - ✅ Single-bundle build (1.2MB) via Rollup
 - ✅ 0 ESLint errors/warnings
 - ✅ Clean code - all unused variables/parameters removed
+- ✅ Prettier formatting (`npm run fmt`) configured and applied
+- ✅ Simple property addition working
+- ✅ Custom property addition working
 
 **Validation Screenshot Confirmed:** SHACL validation with DDI-CDI shapes is working!
 
 ---
 
-## 🔴 CRITICAL: Fix Property Suggestions (5 minutes)
+## 🔴 CRITICAL: Fix Complex Property Rendering (15 minutes)
 
-**Problem:** `addPropertyToNode` function exists but not imported in `property-suggestions.js`
+**Problem:** Complex properties are added to data correctly but render as reference buttons instead of editable inline nodes.
 
-**Current State:**
+**Root Cause:** 
+- Blank nodes created via `addComplexPropertyToNode` are sometimes rendered as root nodes first
+- They get added to `renderedNodes` set
+- When `renderPropertyTree` tries to render them inline, they're already marked as rendered
+- Shows as reference button instead of nested node card
 
+**Console Evidence:**
 ```javascript
-// property-suggestions.js has:
-// TODO: Implement addPropertyToNode for simple properties
-console.warn("addPropertyToNode not yet implemented in ES6 migration");
+Adding complex property: {nodeId: '#Volume_Substantive_Value_Domain', path: 'SubstantiveValueDomain_isDescribedBy_ValueAndConceptDescription', nodeClass: '...'}
+Creating new node: {@id: '_:SubstantiveValueDomain_isDescribedBy_ValueAndConceptDescription_1763669645546', @type: 'ValueAndConceptDescription'}
+Found parent node: #Volume_Substantive_Value_Domain
+Updated parent node: {...} // ✅ Property added correctly
+🎨 RENDER START // ❌ But renders as button, not editable node
 ```
 
-**But the function EXISTS in** `cdi-graph-helpers.js:274`:
+**Fix Options:**
+1. **Option A:** Change blank node detection logic in `renderData()` to never treat `_:` nodes as root nodes
+2. **Option B:** Force inline rendering for newly created blank nodes (ignore `renderedNodes` check for `_:` nodes)
+3. **Option C:** Use different ID pattern for newly created nodes so they're always treated as child nodes
 
-```javascript
-export function addPropertyToNode(nodeId, propertyKey, initialValue, bodyElement) {
-```
+**Recommended:** Option A - Blank nodes should never be root nodes
 
-**Fix:**
+**Implementation:** Added check `!n["@id"].startsWith("_:")` to root node filter
 
-```javascript
-// Add to property-suggestions.js imports (line ~7):
-import { addPropertyToNode } from "./cdi-graph-helpers.js";
+---
 
-// Then replace line 346-349 with:
-if (suggestion.isComplex) {
-  addComplexPropertyToNode(nodeId, suggestion);
-} else {
-  addPropertyToNode(nodeId, suggestion.path, "", bodyElement);
-}
+## 🔴 CRITICAL: Array and Nested Property Support (60 minutes)
 
-// And replace line 369-371 with:
-if (propName) {
-  addPropertyToNode(nodeId, propName, "", bodyElement);
-}
-```
+**User Requirements:**
+1. ✅ Add simple properties (working)
+2. ✅ Add complex properties inline (implemented - needs testing)
+3. ✅ Convert single value ↔ array (implemented)
+4. ✅ Add nested properties within custom properties (via modal)
+5. ✅ Array of references (pointers to existing nodes OR create new)
+6. ✅ Array of simple values (already working)
 
-**Impact:** This will enable adding simple properties and custom properties in edit mode.
+### ✅ Phase 1: Convert Single Value ↔ Array (IMPLEMENTED)
+
+**Added:**
+- ✅ "Convert to Array" button on single-value properties
+- ✅ "Convert to Single Value" button on array properties
+- ✅ Logic preserves value when converting single → array
+- ✅ Logic keeps first value when converting array → single
+
+**Functions added to `cdi-graph-helpers.js`:**
+- `convertPropertyToArray(nodeId, propertyKey)` 
+- `convertPropertyToSingle(nodeId, propertyKey)`
+
+### ✅ Phase 2: Complex Property Support (IMPLEMENTED)
+
+**Added:**
+- ✅ "Add Reference/Object" button for both single values and arrays
+- ✅ Modal with two options:
+  - Reference existing node (dropdown selector)
+  - Create new blank node (enter type)
+- ✅ Works for both single properties and arrays
+
+**Functions added to `cdi-graph-helpers.js`:**
+- `getAllNodesForReference()` - Lists all available nodes
+- `addReferenceToProperty(nodeId, propertyKey, referenceId)` - Adds reference
+- `createAndReferenceNewNode(nodeId, propertyKey, nodeType, asArray)` - Creates and links new node
+
+**UI added to `render.js`:**
+- `showAddReferenceModal()` - Modal UI for selecting/creating references
+
+### ✅ Phase 3: Array of References (IMPLEMENTED)
+
+**Added:**
+- ✅ "Add Reference/Object" button on array properties
+- ✅ Dropdown to select from existing nodes
+- ✅ Create new node option with type input
+- ✅ Automatic blank node ID generation with property name
+
+### 🧪 Phase 4: Testing & Polish (NEEDS TESTING)
+
+**Test scenarios:**
+- ✅ Add simple property → implemented
+- ❌ Convert simple property to array → **TEST NEEDED**
+- ❌ Add multiple values to array → **TEST NEEDED**
+- ❌ Convert array back to single value → **TEST NEEDED**
+- ❌ Add custom complex property via modal → **TEST NEEDED**
+- ❌ Reference existing node → **TEST NEEDED**
+- ❌ Create new blank node with type → **TEST NEEDED**
+- ❌ Verify nested nodes render as expandable cards → **TEST NEEDED**
+
+**Known Issues to Check:**
+1. Does blank node fix (`!n["@id"].startsWith("_:")`) work correctly?
+2. Do newly created blank nodes render inline and editable?
+3. Does the modal work with Bootstrap 3.3.7?
+4. Are all buttons styled consistently?
 
 ---
 

@@ -405,6 +405,12 @@ export function createPropertySuggestionsSection(suggestions, nodeId) {
 export function addComplexPropertyToNode(nodeId, suggestion) {
   const jsonData = getJsonData();
 
+  console.log("Adding complex property:", {
+    nodeId,
+    path: suggestion.path,
+    nodeClass: suggestion.nodeClass,
+  });
+
   // Create a new node in the @graph
   const newNodeId = `_:${suggestion.path}_${Date.now()}`;
 
@@ -421,6 +427,8 @@ export function addComplexPropertyToNode(nodeId, suggestion) {
     "@type": className,
   };
 
+  console.log("Creating new node:", newNode);
+
   // Add to graph
   if (!jsonData["@graph"]) {
     jsonData["@graph"] = [];
@@ -430,6 +438,7 @@ export function addComplexPropertyToNode(nodeId, suggestion) {
   // Add reference to parent node
   const parentNode = jsonData["@graph"].find((n) => n["@id"] === nodeId);
   if (parentNode) {
+    console.log("Found parent node:", parentNode["@id"]);
     if (suggestion.maxCount === 1) {
       parentNode[suggestion.path] = { "@id": newNodeId };
     } else {
@@ -445,6 +454,9 @@ export function addComplexPropertyToNode(nodeId, suggestion) {
         ];
       }
     }
+    console.log("Updated parent node:", parentNode);
+  } else {
+    console.error("Parent node not found:", nodeId);
   }
 
   // Re-render everything

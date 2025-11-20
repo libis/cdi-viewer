@@ -8,6 +8,13 @@ import {
   getPropertySuggestions,
   createPropertySuggestionsSection,
 } from "./property-suggestions.js";
+import {
+  convertPropertyToArray,
+  convertPropertyToSingle,
+  getAllNodesForReference,
+  addReferenceToProperty,
+  createAndReferenceNewNode,
+} from "./cdi-graph-helpers.js";
 
 // Track which nodes have been rendered to avoid duplicates
 const renderedNodes = new Set();
@@ -40,8 +47,9 @@ export function renderData() {
   });
 
   // Root nodes are those not referenced by any other node
+  // IMPORTANT: Blank nodes (_:xxx) should never be root nodes - they must always be referenced
   const rootNodes = jsonData["@graph"].filter(
-    (n) => !referencedIds.has(n["@id"])
+    (n) => !referencedIds.has(n["@id"]) && !n["@id"].startsWith("_:")
   );
 
   // Render root nodes (they will recursively render their children)
@@ -497,6 +505,39 @@ function renderProperty(key, value, nodeId, nodeTypes) {
           updateSaveButton();
         });
       valueContainer.append(addBtn);
+
+      // Add Reference/Object button for arrays
+      const addRefBtn = $("<button>")
+        .addClass("btn btn-sm btn-info add-reference-btn")
+        .html(
+          '<span class="glyphicon glyphicon-link"></span> Add Reference/Object'
+        )
+        .css({ "margin-left": "5px" })
+        .click(function () {
+          showAddReferenceModal(nodeId, key, true);
+        });
+      valueContainer.append(addRefBtn);
+    }
+
+    // Add "Convert to Single Value" button for arrays in edit mode
+    if (isEditMode) {
+      const convertBtn = $("<button>")
+        .addClass("btn btn-xs btn-default convert-btn")
+        .html(
+          '<span class="glyphicon glyphicon-resize-small"></span> Convert to Single'
+        )
+        .css({ "margin-left": "10px" })
+        .click(function () {
+          if (
+            confirm(
+              "Convert this array to a single value? Only the first value will be kept."
+            )
+          ) {
+            convertPropertyToSingle(nodeId, key);
+            renderData();
+          }
+        });
+      valueContainer.append(convertBtn);
     }
   } else {
     // Single value
@@ -509,21 +550,54 @@ function renderProperty(key, value, nodeId, nodeTypes) {
       );
     }
 
-    // Add delete button in edit mode (for non-required fields only)
-    if (isEditMode && !classification.isRequired) {
-      const deleteBtn = $("<button>")
-        .addClass("btn btn-xs delete-btn")
-        .html('<span class="glyphicon glyphicon-trash"></span>')
-        .css({ "margin-left": "10px" })
+    // Action buttons row for single values in edit mode
+    if (isEditMode) {
+      const actionsRow = $("<div>")
+        .addClass("property-actions")
+        .css({ "margin-top": "5px" });
+
+      // Delete button (for non-required fields only)
+      if (!classification.isRequired) {
+        const deleteBtn = $("<button>")
+          .addClass("btn btn-xs btn-danger")
+          .html('<span class="glyphicon glyphicon-trash"></span> Delete')
+          .click(function () {
+            if (confirm("Delete this property?")) {
+              row.addClass("deleted").fadeOut(300, function () {
+                $(this).remove();
+              });
+              updateSaveButton();
+            }
+          });
+        actionsRow.append(deleteBtn);
+      }
+
+      // Convert to Array button
+      const convertToArrayBtn = $("<button>")
+        .addClass("btn btn-xs btn-default")
+        .html(
+          '<span class="glyphicon glyphicon-resize-full"></span> Convert to Array'
+        )
+        .css({ "margin-left": "5px" })
         .click(function () {
-          if (confirm("Delete this property?")) {
-            row.addClass("deleted").fadeOut(300, function () {
-              $(this).remove();
-            });
-            updateSaveButton();
-          }
+          convertPropertyToArray(nodeId, key);
+          renderData();
         });
-      valueContainer.append(deleteBtn);
+      actionsRow.append(convertToArrayBtn);
+
+      // Add Object/Reference button
+      const addComplexBtn = $("<button>")
+        .addClass("btn btn-xs btn-info")
+        .html(
+          '<span class="glyphicon glyphicon-link"></span> Add Reference/Object'
+        )
+        .css({ "margin-left": "5px" })
+        .click(function () {
+          showAddReferenceModal(nodeId, key, false);
+        });
+      actionsRow.append(addComplexBtn);
+
+      valueContainer.append(actionsRow);
     }
   }
 
@@ -537,6 +611,82 @@ function renderProperty(key, value, nodeId, nodeTypes) {
 
   row.append(valueContainer);
   return row;
+}
+
+function showAddReferenceModal(nodeId, propertyKey, forArray) {
+  const availableNodes = getAllNodesForReference();
+
+  const modalHtml = `
+    <div class="modal fade" id="addReferenceModal" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">
+              <span>&times;</span>
+            </button>
+            <h4 class="modal-title">
+              <span class="glyphicon glyphicon-link"></span>
+              Add Reference or New Object
+            </h4>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label><strong>Option 1: Reference Existing Node</strong></label>
+              <select id="existingNodeSelect" class="form-control">
+                <option value="">-- Select an existing node --</option>
+                ${availableNodes
+                  .map(
+                    (node) =>
+                      `<option value="${node.id}">${node.id} (${node.type || "Unknown"})</option>`
+                  )
+                  .join("")}
+              </select>
+            </div>
+            <div class="form-group">
+              <label><strong>Option 2: Create New Object</strong></label>
+              <input type="text" id="newNodeType" class="form-control" 
+                     placeholder="Enter object type (e.g., ValueAndConceptDescription)">
+              <small class="help-block">Leave empty to create generic Object</small>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" id="confirmAddReference">
+              <span class="glyphicon glyphicon-ok"></span> Add
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Remove existing modal
+  $("#addReferenceModal").remove();
+  $("body").append(modalHtml);
+  $("#addReferenceModal").modal("show");
+
+  // Handle confirm
+  $("#confirmAddReference")
+    .off("click")
+    .on("click", function () {
+      const existingNodeId = $("#existingNodeSelect").val();
+      const newNodeType = $("#newNodeType").val().trim();
+
+      if (existingNodeId) {
+        // Add reference to existing node
+        addReferenceToProperty(nodeId, propertyKey, existingNodeId);
+        $("#addReferenceModal").modal("hide");
+        renderData();
+      } else if (newNodeType || confirm("Create new Object without type?")) {
+        // Create new node
+        const type = newNodeType || "Object";
+        createAndReferenceNewNode(nodeId, propertyKey, type, forArray);
+        $("#addReferenceModal").modal("hide");
+        renderData();
+      } else {
+        alert("Please select an existing node or enter a type for a new node");
+      }
+    });
 }
 
 export function createValueInput(

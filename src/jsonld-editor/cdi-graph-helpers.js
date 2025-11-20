@@ -290,3 +290,122 @@ export function addPropertyToNode(nodeId, propertyKey, initialValue) {
   // Return true to signal success - caller will handle re-render
   return true;
 }
+
+export function convertPropertyToArray(nodeId, propertyKey) {
+  const jsonData = getJsonData();
+
+  jsonData["@graph"].forEach((node) => {
+    if (node["@id"] === nodeId) {
+      const currentValue = node[propertyKey];
+      // Convert single value to array with that value
+      if (!Array.isArray(currentValue)) {
+        node[propertyKey] = currentValue ? [currentValue] : [];
+      }
+    }
+  });
+
+  return true;
+}
+
+export function convertPropertyToSingle(nodeId, propertyKey) {
+  const jsonData = getJsonData();
+
+  jsonData["@graph"].forEach((node) => {
+    if (node["@id"] === nodeId) {
+      const currentValue = node[propertyKey];
+      // Convert array to single value (take first element)
+      if (Array.isArray(currentValue)) {
+        node[propertyKey] = currentValue.length > 0 ? currentValue[0] : "";
+      }
+    }
+  });
+
+  return true;
+}
+
+export function getAllNodesForReference() {
+  const jsonData = getJsonData();
+
+  if (!jsonData || !jsonData["@graph"]) {
+    return [];
+  }
+
+  // Return all nodes with their ID and type for selection
+  return jsonData["@graph"].map((node) => ({
+    id: node["@id"],
+    type: Array.isArray(node["@type"]) ? node["@type"][0] : node["@type"],
+    types: Array.isArray(node["@type"]) ? node["@type"] : [node["@type"]],
+  }));
+}
+
+export function addReferenceToProperty(nodeId, propertyKey, referenceId) {
+  const jsonData = getJsonData();
+
+  jsonData["@graph"].forEach((node) => {
+    if (node["@id"] === nodeId) {
+      const currentValue = node[propertyKey];
+      const reference = { "@id": referenceId };
+
+      if (Array.isArray(currentValue)) {
+        // Add to array
+        currentValue.push(reference);
+      } else if (currentValue) {
+        // Convert to array
+        node[propertyKey] = [currentValue, reference];
+      } else {
+        // Set as single value
+        node[propertyKey] = reference;
+      }
+    }
+  });
+
+  return true;
+}
+
+export function createAndReferenceNewNode(
+  nodeId,
+  propertyKey,
+  nodeType,
+  asArray = false
+) {
+  const jsonData = getJsonData();
+
+  // Create new blank node
+  const newNodeId = `_:${propertyKey}_${Date.now()}`;
+  const newNode = {
+    "@id": newNodeId,
+    "@type": nodeType || "Object",
+  };
+
+  // Add to graph
+  if (!jsonData["@graph"]) {
+    jsonData["@graph"] = [];
+  }
+  jsonData["@graph"].push(newNode);
+
+  // Add reference to parent
+  const reference = { "@id": newNodeId };
+
+  jsonData["@graph"].forEach((node) => {
+    if (node["@id"] === nodeId) {
+      const currentValue = node[propertyKey];
+
+      if (asArray || Array.isArray(currentValue)) {
+        // Add to array or create array
+        if (Array.isArray(currentValue)) {
+          currentValue.push(reference);
+        } else if (currentValue) {
+          node[propertyKey] = [currentValue, reference];
+        } else {
+          node[propertyKey] = [reference];
+        }
+      } else {
+        // Set as single reference
+        node[propertyKey] = reference;
+      }
+    }
+  });
+
+  return newNodeId;
+}
+
