@@ -75,6 +75,18 @@ export function getPropertySuggestions(node, types) {
     });
   });
 
+  // Also check for sh:target (SPARQL targets)
+  // For UI purposes, we include shapes with SPARQL targets that might apply
+  const targetQuads = shaclShapesStore.getQuads(
+    null,
+    "http://www.w3.org/ns/shacl#target",
+    null,
+    null
+  );
+  targetQuads.forEach((quad) => {
+    applicableShapes.add(quad.subject.value);
+  });
+
   // Now process all applicable shapes
   applicableShapes.forEach((shapeSubject) => {
     // Get all sh:property predicates for this shape

@@ -56,7 +56,7 @@
     "@rdfjs/dataset": "^2.0.2",
     "jsonld": "^8.3.2",
     "n3": "^1.16.4",
-    "shacl-engine": "^1.0.2"
+    "shacl-engine": "file:./vendor/shacl-engine"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",

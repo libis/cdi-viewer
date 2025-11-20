@@ -250,6 +250,22 @@ export function classifyProperty(nodeTypes, propertyKey, nodeId = null) {
       });
     });
 
+    // Also check for sh:target (SPARQL targets)
+    // For UI purposes, we include shapes with SPARQL targets that might apply
+    const targetQuads = shaclShapesStore.getQuads(
+      null,
+      "http://www.w3.org/ns/shacl#target",
+      null,
+      null
+    );
+    targetQuads.forEach((quad) => {
+      applicableShapes.add(quad.subject.value);
+      log(
+        LOG_LEVEL.DEBUG,
+        `Including shape ${quad.subject.value} with sh:target (SPARQL target)`
+      );
+    });
+
     // Now process all applicable shapes
     log(
       LOG_LEVEL.DEBUG,
