@@ -75,13 +75,19 @@ Provides real-time validation, property classification, complex object editing, 
 
 **Live demo:** [https://libis.github.io/cdi-viewer/](https://libis.github.io/cdi-viewer/)
 
-**Quick workflow:**
+**Quick workflow (DDI-CDI mode - default):**
 
 1. Click **"Load Local File"** → select any JSON-LD file
-2. Select SHACL shapes from dropdown or enter custom URL
+2. DDI-CDI shapes are preloaded automatically
 3. Click **"Enable Edit Mode"** to start editing
 4. Add/edit/delete properties with visual feedback
 5. Click **"Export JSON-LD"** to download your changes
+
+**For other vocabularies:**
+
+- Visit [https://libis.github.io/cdi-viewer/?shacl=generic](https://libis.github.io/cdi-viewer/?shacl=generic)
+- Select your vocabulary's SHACL shapes from the dropdown
+- Or enter a custom SHACL URL
 
 ### Common Use Cases
 
@@ -192,18 +198,29 @@ npm run dev
 Load test files via URL parameter:
 
 ```
-# Generic mode (no shapes preloaded)
+# Default: DDI-CDI mode (official shapes preloaded automatically)
 http://localhost:8000/
 
-# DDI-CDI mode (official shapes preloaded)
-http://localhost:8000/?shacl=ddi-cdi-official
+# Generic mode (no shapes preloaded - for any JSON-LD vocabulary)
+http://localhost:8000/?shacl=generic
 
 # CDIF mode (CDIF Discovery shapes preloaded)
 http://localhost:8000/?shacl=cdif-core
 
-# Local fallback (built-in DDI-CDI shapes)
+# DCAT-AP mode (EU DCAT Application Profile)
+http://localhost:8000/?shacl=dcat-ap-3.0
+
+# DataCube mode (W3C RDF Data Cube)
+http://localhost:8000/?shacl=w3c-datacube
+
+# SKOS mode (Simple Knowledge Organization System)
+http://localhost:8000/?shacl=skos
+
+# Local fallback (built-in DDI-CDI shapes for offline use)
 http://localhost:8000/?shacl=local-fallback
 ```
+
+**Note:** Since version 1.0, the viewer defaults to DDI-CDI mode (matching the `cdi-viewer` name). Use `?shacl=generic` for a clean start with any vocabulary.
 
 ### Testing the Production Bundle
 

@@ -30,15 +30,32 @@ $(document).ready(async function () {
     const urlParams = new URLSearchParams(window.location.search);
     let datasetMetadataUrl = null;
 
-    // Check for shacl parameter (e.g., ?shacl=ddi-cdi-official)
+    // Check for shacl parameter
     const shaclParam = urlParams.get("shacl");
-    if (shaclParam && SHAPE_URLS[shaclParam]) {
+
+    if (shaclParam === "generic") {
+      // Generic mode: No shapes preloaded, leave dropdown at default
+      log(LOG_LEVEL.INFO, "Generic mode: No shapes preloaded");
+    } else if (shaclParam && SHAPE_URLS[shaclParam]) {
+      // Specific shape requested via URL parameter
       $("#shape-selector").val(shaclParam);
       try {
         await loadShapes(shaclParam);
         log(LOG_LEVEL.INFO, `Loaded shapes from URL parameter: ${shaclParam}`);
       } catch (error) {
         console.error("Failed to load shapes from URL parameter:", error);
+      }
+    } else if (!shaclParam) {
+      // Default mode: Load ddi-cdi-official automatically
+      $("#shape-selector").val("ddi-cdi-official");
+      try {
+        await loadShapes("ddi-cdi-official");
+        log(
+          LOG_LEVEL.INFO,
+          "Default mode: Loaded DDI-CDI official shapes (use ?shacl=generic for no preloading)"
+        );
+      } catch (error) {
+        console.error("Failed to load default DDI-CDI shapes:", error);
       }
     }
 

@@ -13,6 +13,10 @@
 - ✅ Prettier formatting (`npm run fmt`) configured and applied
 - ✅ Simple property addition working
 - ✅ Custom property addition working
+- ✅ Array support (convert single↔array, add/remove values)
+- ✅ Complex property support (references and nested objects)
+- ✅ Enhanced discoverability (keywords, README, generic usage docs)
+- ✅ Default mode: DDI-CDI shapes auto-load (use `?shacl=generic` for clean start)
 
 **Validation Screenshot Confirmed:** SHACL validation with DDI-CDI shapes is working!
 

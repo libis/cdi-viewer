@@ -2,6 +2,11 @@
 
 This guide shows how to use the CDI Viewer as a **general-purpose JSON-LD editor and SHACL validator** for any RDF vocabulary.
 
+**Note:** By default, the viewer loads in DDI-CDI mode (since the tool is named `cdi-viewer`). To use it with other vocabularies:
+
+- **Generic mode:** [https://libis.github.io/cdi-viewer/?shacl=generic](https://libis.github.io/cdi-viewer/?shacl=generic)
+- **No shapes preloaded** - Select from dropdown or enter custom URL
+
 ## Table of Contents
 
 - [Getting Started](#getting-started)
