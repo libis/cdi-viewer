@@ -695,10 +695,12 @@ function createValueInput(key, value, nodeId, arrayIndex, classification) {
 function humanizeKey(key) {
   // Convert camelCase or snake_case to human readable
   return key
-    .replace(/([A-Z])/g, " $1")
-    .replace(/_/g, " ")
-    .replace(/^./, (str) => str.toUpperCase())
-    .trim();
+    .replace(/([A-Z])/g, " $1") // Add space before capital letters
+    .replace(/_/g, " ") // Replace underscores with spaces
+    .trim() // Remove leading/trailing spaces
+    .split(" ") // Split into words
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1)) // Capitalize each word
+    .join(" "); // Join back together
 }
 
 function highlightText(element, searchTerm) {
