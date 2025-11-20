@@ -4,7 +4,6 @@
 @prefix xsd:         <http://www.w3.org/2001/XMLSchema#> .
 @prefix schema:      <http://schema.org/>.
 @prefix dcterms: <http://purl.org/dc/terms/>.
-@prefix cdi:         <http://ddialliance.org/Specification/DDI-CDI/1.0/RDF/> .
 @prefix cdifd: <https://cdif.org/validation/0.1/shacl#> .
 @base <https://www.ogc.org/rules/template/> .
 
@@ -12,6 +11,10 @@ cdifd:CDIFDatasetMandatoryShape a sh:NodeShape ;
 # only apply to elements that are child of root dataset 
 	sh:target [
 	  a sh:SPARQLTarget ;
+	  sh:prefixes (
+         [ sh:prefix "schema" ; sh:namespace "http://schema.org/" ]
+         [ sh:prefix "ex" ; sh:namespace "https://example.org/" ]
+       );
 # do we need to deal with schema:Dataset with parent = @graph? pyshacl work with these rules 
 #  for graph serialization.
     sh:select """
