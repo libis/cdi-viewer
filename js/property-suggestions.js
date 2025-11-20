@@ -374,3 +374,60 @@ function createPropertySuggestionsSection(suggestions, nodeId, bodyElement) {
 
   return section;
 }
+
+function addComplexPropertyToNode(nodeId, suggestion, bodyElement) {
+  // Create a new node in the @graph
+  const newNodeId = `_:${suggestion.path}_${Date.now()}`;
+
+  // Extract class name from full URI or use the short name
+  let className = suggestion.nodeClass || "Object";
+
+  // If it's a full URI, extract just the class name
+  if (className.includes("/") || className.includes("#")) {
+    className = className.split("/").pop().split("#").pop();
+  }
+
+  const newNode = {
+    "@id": newNodeId,
+    "@type": className,
+  };
+
+  // Add to graph
+  if (!jsonData["@graph"]) {
+    jsonData["@graph"] = [];
+  }
+  jsonData["@graph"].push(newNode);
+
+  // Add reference to parent node
+  const parentNode = jsonData["@graph"].find((n) => n["@id"] === nodeId);
+  if (parentNode) {
+    if (suggestion.maxCount === 1) {
+      parentNode[suggestion.path] = { "@id": newNodeId };
+    } else {
+      if (!parentNode[suggestion.path]) {
+        parentNode[suggestion.path] = [];
+      }
+      if (Array.isArray(parentNode[suggestion.path])) {
+        parentNode[suggestion.path].push({ "@id": newNodeId });
+      } else {
+        parentNode[suggestion.path] = [
+          parentNode[suggestion.path],
+          { "@id": newNodeId },
+        ];
+      }
+    }
+  }
+
+  // Re-render everything
+  renderData();
+  updateSaveButton();
+
+  // Scroll to new node
+  setTimeout(() => {
+    const newCard = $(`.node-card[data-node-id="${newNodeId}"]`);
+    if (newCard.length) {
+      newCard[0].scrollIntoView({ behavior: "smooth", block: "center" });
+      newCard.addClass("changed");
+    }
+  }, 100);
+}
