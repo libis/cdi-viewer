@@ -1,37 +1,57 @@
 # JSON-LD Viewer & Editor with SHACL Validation
 
-Interactive viewer and editor for JSON-LD metadata with SHACL validation support. Originally developed for DDI-CDI (Data Documentation Initiative - Cross Domain Integration) and CDIF (CDI Foundation), but **works with any JSON-LD vocabulary and SHACL shapes**.
+> **A powerful, browser-based JSON-LD editor and SHACL validator for any RDF vocabulary**
 
-Provides real-time validation, property classification, and complex object editing directly in the browser.
+Interactive viewer and editor for JSON-LD metadata with real-time SHACL validation. Originally developed for DDI-CDI (Data Documentation Initiative - Cross Domain Integration) and CDIF (CDI Foundation), but **works with any JSON-LD vocabulary and SHACL shapes** including schema.org, DCAT, DataCube, SKOS, and custom ontologies.
+
+Provides real-time validation, property classification, complex object editing, and array management directly in the browser. Perfect for researchers, data curators, and developers working with semantic web standards.
 
 [![Live Demo](https://img.shields.io/badge/demo-live-success)](https://libis.github.io/cdi-viewer/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![GitHub Topics](https://img.shields.io/badge/topics-json--ld%20%7C%20rdf%20%7C%20shacl-blue)](https://github.com/libis/cdi-viewer)
+
+## 🎯 Why This Tool?
+
+**The problem:** Most JSON-LD editors are either too simple (plain text editors) or too complex (enterprise RDF tooling). Validating against SHACL shapes often requires command-line tools or separate validation services.
+
+**This solution:**
+- ✨ **Visual editing** - See and edit your JSON-LD structure as nested, collapsible cards
+- ✅ **Instant validation** - Real-time SHACL validation with color-coded feedback
+- 🎨 **Smart UI** - Input fields adapt to SHACL constraints (dates, numbers, enumerations)
+- 🔗 **Complex objects** - Create nested objects and references with modal helpers
+- 📊 **Array support** - Convert between single/array values, manage reference lists
+- 🚀 **No installation** - Runs entirely in the browser, no server needed
+- 🔌 **Extensible** - Integrate with Dataverse or use as standalone tool
+
+**Perfect for:**
+- Data curators working with schema.org Dataset markup
+- Researchers creating DDI-CDI metadata
+- Developers testing SHACL validation rules
+- Anyone editing complex JSON-LD with nested structures
 
 ## ✨ Features
 
 ### 🌐 Generic JSON-LD Support
 
-- **Any JSON-LD vocabulary** - Not limited to DDI-CDI
-- **Custom SHACL shapes** - Load validation shapes from any URL
-- **Standard JSON-LD processing** - Uses W3C JSON-LD algorithms
-- **Vocabulary-agnostic editing** - Works with any ontology
+- **Any JSON-LD vocabulary** - schema.org, DCAT, DataCube, SKOS, FOAF, Dublin Core, and more
+- **Custom SHACL shapes** - Load validation shapes from any URL or local file
+- **Standard JSON-LD processing** - Uses W3C JSON-LD algorithms (jsonld.js)
+- **Vocabulary-agnostic editing** - Works with any RDF ontology
+- **Namespace flexibility** - Handles prefixed and expanded forms
 
-### 🔍 Data Display
+### ✏️ Advanced Editing Capabilities
 
-- **Complete visibility** of all nodes and properties in JSON-LD `@graph`
-- **Visual classification** with color-coded badges:
-  - 🔵 Blue: SHACL-defined properties
-  - 🟡 Yellow: Extra properties (not in shapes)
-  - 🔴 Red: Missing required properties
-  - 🔷 Teal: Modified properties
-
-### ✏️ Editing Capabilities
-
-- **Smart input types** based on SHACL datatype constraints
-- **Complex object support** with nested node creation
-- **Property management** with searchable dropdowns
-- **Cardinality enforcement** respecting SHACL constraints
-- **Delete protection** for required fields
+- **Smart input types** based on SHACL datatype constraints (text, number, date, URI, etc.)
+- **Complex object support** with nested node creation and inline editing
+- **Reference management** - Link to existing nodes or create new blank nodes
+- **Array operations**:
+  - Convert single value ↔ array
+  - Add/remove array items
+  - Support for both value arrays and reference arrays
+- **Property management** with searchable SHACL-based dropdowns
+- **Cardinality enforcement** respecting SHACL min/maxCount
+- **Delete protection** for required fields (SHACL sh:minCount > 0)
+- **Custom properties** - Add properties not defined in SHACL shapes
 
 ### ✅ Validation
 
@@ -53,10 +73,41 @@ Provides real-time validation, property classification, and complex object editi
 
 **Live demo:** [https://libis.github.io/cdi-viewer/](https://libis.github.io/cdi-viewer/)
 
-1. Click the "Load Local File" button
-2. Select any JSON-LD file (DDI-CDI, DCAT, DataCube, SKOS, etc.)
-3. Select SHACL shapes from the dropdown (DDI-CDI, DCAT-AP, DataCube, SKOS, or custom URL)
-4. Start viewing, editing, and validating
+**Quick workflow:**
+1. Click **"Load Local File"** → select any JSON-LD file
+2. Select SHACL shapes from dropdown or enter custom URL
+3. Click **"Enable Edit Mode"** to start editing
+4. Add/edit/delete properties with visual feedback
+5. Click **"Export JSON-LD"** to download your changes
+
+### Common Use Cases
+
+| Vocabulary | Use Case | SHACL Shapes |
+|------------|----------|--------------|
+| **schema.org** | Dataset markup for Google Dataset Search | Built-in or custom |
+| **DDI-CDI** | Social science data documentation | `ddi-cdi-official` (built-in) |
+| **DCAT-AP** | EU open data catalog metadata | `dcat-ap-3.0` (built-in) |
+| **DataCube** | Statistical data cubes | `w3c-datacube` (built-in) |
+| **SKOS** | Thesauri and taxonomies | `skos` (built-in) |
+| **Custom** | Your own ontology | Provide SHACL URL |
+
+### Example Workflow: Editing schema.org Dataset
+
+```bash
+# 1. Start with minimal JSON-LD
+{
+  "@context": "https://schema.org/",
+  "@type": "Dataset",
+  "@id": "http://example.org/dataset/1",
+  "name": "My Dataset"
+}
+
+# 2. Load in the viewer
+# 3. Add properties via the dropdown: description, keywords, creator
+# 4. Create nested objects: creator → Person with name, affiliation
+# 5. Validate against schema.org SHACL shapes
+# 6. Export complete, validated JSON-LD
+```
 
 ### Example Files
 
