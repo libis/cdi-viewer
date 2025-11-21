@@ -42,6 +42,97 @@ Export or Save to Dataverse
 
 ## Module Structure
 
+### src/jsonld-editor/advanced-search.js
+
+**Purpose:** Enhanced search functionality with multiple modes and navigation
+
+**Global Variables (window.\*):**
+- None (uses state.js getters/setters)
+
+**Key Functions:**
+
+- `performSearch()` - Main search with scope filter integration
+- `navigateToMatch(direction)` - Previous/next navigation
+- `matchesSearch(text, term)` - Case-sensitive and regex support
+- `updateSearchCounter()` - Display match count ("X of Y")
+- `clearSearch()` - Clear search with animations
+- `toggleCaseSensitive()` - Toggle case-sensitive mode
+- `toggleRegex()` - Toggle regex mode
+- `setupAdvancedSearchHandlers()` - Wire up all search controls
+
+**Integration:**
+- Called from event-handlers.js
+- Uses filter state from advanced-filter.js (getFilterState())
+- Applies CSS class `.current-search-match` with pulse animation
+- Keyboard shortcuts: F3, Shift+F3, Enter
+
+### src/jsonld-editor/advanced-filter.js
+
+**Purpose:** Comprehensive filtering system with multiple filter types
+
+**Global Variables (window.\*):**
+- None (uses state.js getters/setters)
+
+**Key Functions:**
+
+- `applyFilters()` - Apply all active filters
+- `applyNodeTypeFilter()` - Filter by @type
+- `applyValidationFilter()` - Filter by validation status
+- `applyPropertyStatusFilter()` - Filter SHACL/extra properties
+- `applyEmptyValueFilter()` - Hide properties with empty values
+- `extractNodeTypes()` - Get unique @types from document
+- `populateNodeTypeFilter()` - Fill dropdown with types
+- `updateValidationFilterCounts()` - Update counts in dropdown
+- `clearAllFilters()` - Reset all filters
+- `saveFilterState()`, `loadFilterState()` - LocalStorage persistence
+- `initializeFilters()` - Called when data loads
+- `getFilterState()` - Expose filter state to other modules
+- `setupAdvancedFilterHandlers()` - Wire up all filter controls
+
+**Filter Types:**
+1. Node type (multi-select with counts)
+2. Validation status (all/valid/invalid/modified/missing required)
+3. Property status (all/SHACL only/extra only)
+4. Hide empty properties (toggle)
+5. Search scope (names/values/IDs/types checkboxes)
+
+**Integration:**
+- Called from event-handlers.js
+- Called from validation.js (initializeFilters after validation)
+- Uses CSS classes: `.hidden-by-type-filter`, `.hidden-by-validation-filter`, `.hidden-by-property-filter`, `.hidden-by-empty-filter`
+- State persists to localStorage
+
+### src/jsonld-editor/unified-add-component.js
+
+**Purpose:** Consistent UI for adding properties and root nodes
+
+**Key Functions:**
+
+- `renderUnifiedAddComponent(context)` - Render unified add UI
+- `handleUnifiedAdd()` - Process add action
+- Context: "property" or "root-node"
+
+**Features:**
+- SHACL-defined items dropdown with descriptions
+- Custom input with namespace selector
+- "Add new namespace" option (opens modal)
+- Enter key support
+
+### src/jsonld-editor/namespace-manager.js
+
+**Purpose:** Namespace management functionality
+
+**Key Functions:**
+
+- `renderNamespaceManager()` - Display current namespaces
+- `addNamespace(prefix, uri)` - Add custom namespace
+- `removeNamespace(prefix)` - Remove custom namespace
+- `isBuiltInNamespace(prefix)` - Check if prefix is built-in (protected)
+
+**Integration:**
+- Modal-based UI (no scroll)
+- Integrates with unified-add-component
+
 ### js/core.js
 
 **Purpose:** Global configuration, initialization, Dataverse integration

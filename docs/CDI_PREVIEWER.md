@@ -43,15 +43,38 @@ A comprehensive viewer and editor for JSON-LD metadata with SHACL validation. Wo
 
 ### User Interface
 - **Collapsible Nodes**: Click node headers to collapse/expand
-- **Search & Filter**: Real-time search across all properties and values with highlighting
+- **Advanced Search & Filter**: 
+  - Enhanced search with counter ("X of Y matches")
+  - Case-sensitive and regex modes
+  - Previous/Next navigation with keyboard shortcuts (F3, Shift+F3, Enter)
+  - Current match highlighting with pulse animation
+  - Filter by node type, validation status, property status
+  - Hide empty properties option
+  - Search scope selection (names/values/IDs/types)
+  - Active filter badge showing count
+  - State persistence across sessions
 - **Bulk Operations**: Collapse All / Expand All buttons
 - **Color-Coded Legend**: Visual guide explaining the classification system
 - **Tooltips**: Hover help showing property descriptions from SHACL shapes
 - **Professional Styling**: Bootstrap-based responsive design
 
+### Namespace Management
+- **View Namespaces**: See all namespace prefixes from @context
+- **Add Namespaces**: Add custom namespace prefixes with validation
+- **Remove Namespaces**: Remove custom namespaces (built-in protected)
+- **Integration**: Works with property/node creation workflow
+- **Modal UI**: Clean modal-based interface
+
+### Document Creation
+- **Create from Scratch**: Start with empty JSON-LD document
+- **Shape-Specific Contexts**: Automatic context based on selected vocabulary
+- **Default Filenames**: Appropriate filename suggestions
+- **Support for Multiple Vocabularies**: DDI-CDI, CDIF, DCAT-AP, DataCube, SKOS, generic
+
 ### Data Management
 - **Load Local Files**: Standalone mode allows loading JSON-LD files directly from your computer
-- **Save to Dataverse**: Direct API integration to save changes back to Dataverse (when launched from Dataverse)
+- **Load from Dataverse**: URL parser supporting 6 Dataverse formats (JSF, SPA, API)
+- **Save to Dataverse**: Direct API integration to save changes (replace file or add new)
 - **Export JSON-LD**: Download modified data as JSON-LD file
 - **Change Tracking**: Visual indicators for modified properties
 - **View/Edit Modes**: Toggle between viewing and editing
@@ -83,6 +106,10 @@ A comprehensive viewer and editor for JSON-LD metadata with SHACL validation. Wo
 ### Module Structure
 ```
 src/jsonld-editor/
+├── advanced-search.js    # Enhanced search functionality (~240 lines)
+├── advanced-filter.js    # Comprehensive filtering (~340 lines)
+├── unified-add-component.js # Unified add UI for properties/nodes
+├── namespace-manager.js  # Namespace management
 ├── state.js              # Centralized state management
 ├── core.js               # Initialization & configuration
 ├── validation.js         # SHACL validation

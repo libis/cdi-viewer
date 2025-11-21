@@ -54,6 +54,12 @@ Provides real-time validation, property classification, complex object editing, 
 - **Cardinality enforcement** respecting SHACL min/maxCount
 - **Delete protection** for required fields (SHACL sh:minCount > 0)
 - **Custom properties** - Add properties not defined in SHACL shapes
+- **Namespace management**:
+  - View and add custom namespace prefixes
+  - Remove custom namespaces (built-in protected)
+  - Integration with property/node creation
+- **Document creation** - Create new JSON-LD documents from scratch with shape-specific contexts
+- **Unified add component** - Consistent UX for adding properties and root nodes
 
 ### ✅ Validation
 
@@ -62,11 +68,28 @@ Provides real-time validation, property classification, complex object editing, 
 - **Detailed reports** with actionable feedback
 - **Property suggestions** for missing fields
 
+### 🔍 Advanced Search & Filter
+
+- **Enhanced search**:
+  - Search counter ("X of Y matches")
+  - Case-sensitive and regex modes
+  - Previous/Next navigation
+  - Keyboard shortcuts (F3, Shift+F3, Enter)
+  - Current match highlighting
+- **Comprehensive filters**:
+  - Node type filter
+  - Validation status filter
+  - Property status filter (SHACL/extra)
+  - Hide empty properties
+  - Search scope selection (names/values/IDs/types)
+- **State persistence** - Filter settings saved across sessions
+
 ### 💾 Data Management
 
 - **Load local files** for standalone editing
+- **Load from Dataverse** with URL parser (6 formats supported)
+- **Save to Dataverse** (replace file or add new)
 - **Export JSON-LD** with all modifications
-- **Dataverse integration** for direct API saves
 - **Change tracking** with visual indicators
 
 ## 🚀 Quick Start
@@ -286,13 +309,24 @@ npm run lint          # Check code quality (ESLint + Prettier)
 cdi-viewer/
 ├── index.html              # Main entry point (standalone mode)
 ├── css/
-│   └── cdi-preview.css     # Styles
-├── js/
-│   ├── core.js             # Initialization and config
-│   ├── render.js           # UI rendering
-│   ├── validation.js       # SHACL validation
-│   ├── cdi-shacl-loader.js # Shape loading
-│   └── ...                 # Other modules
+│   └── cdi-preview.css     # Styles (includes search/filter styles)
+├── src/
+│   └── jsonld-editor/
+│       ├── advanced-search.js        # Enhanced search (~240 lines)
+│       ├── advanced-filter.js        # Filter system (~340 lines)
+│       ├── unified-add-component.js  # Add UI component
+│       ├── namespace-manager.js      # Namespace management
+│       ├── state.js                  # State management
+│       ├── core.js                   # Initialization
+│       ├── validation.js             # SHACL validation
+│       ├── cdi-shacl-loader.js       # Shape loading
+│       ├── cdi-shacl-helpers.js      # Property classification
+│       ├── cdi-json-ld-helpers.js    # JSON-LD processing
+│       ├── cdi-graph-helpers.js      # Graph manipulation
+│       ├── render.js                 # UI rendering
+│       ├── property-suggestions.js   # Property suggestions
+│       ├── data-extraction.js        # Export pipeline
+│       └── event-handlers.js         # Event wiring
 ├── dist/
 │   ├── cdi-app.bundle.js           # App logic (38KB)
 │   └── cdi-validation.bundle.js    # SHACL validation (1.1MB)

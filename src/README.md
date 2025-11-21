@@ -8,6 +8,10 @@ This directory contains modern ES6 modules for the cdi-viewer application.
 src/
 ├── index.js                    # Entry point - imports all modules
 └── jsonld-editor/
+    ├── advanced-search.js      # Enhanced search (~240 lines)
+    ├── advanced-filter.js      # Filter system (~340 lines)
+    ├── unified-add-component.js # Add UI component
+    ├── namespace-manager.js    # Namespace management
     ├── state.js                # Centralized state management
     ├── core.js                 # Initialization & configuration
     ├── validation.js           # SHACL validation (shacl-engine)
