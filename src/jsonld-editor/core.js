@@ -22,6 +22,7 @@ import { normalizeToGraphFormat } from "./cdi-json-ld-helpers.js";
 import { loadShapes } from "./cdi-shacl-loader.js";
 import { renderData } from "./render.js";
 import { setupEventHandlers } from "./event-handlers.js";
+import { updateNamespaceSectionVisibility } from "./namespace-manager.js";
 
 // Initialize
 $(document).ready(async function () {
@@ -227,6 +228,9 @@ $(document).ready(async function () {
 
     // Render the data (always, even without shapes)
     renderData();
+
+    // Update namespace section visibility
+    updateNamespaceSectionVisibility();
 
     // Setup event handlers
     setupEventHandlers();

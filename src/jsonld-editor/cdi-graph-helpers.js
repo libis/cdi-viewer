@@ -21,6 +21,7 @@ import {
 import { expandCompactIri } from "./cdi-json-ld-helpers.js";
 import { renderData } from "./render.js";
 import { updateSaveButton } from "./data-extraction.js";
+import { updateNamespaceSectionVisibility } from "./namespace-manager.js";
 
 // Expand a compact node ID (e.g., "xas:fe_c3d.001") to full URI (e.g., "http://www.cdi4exas.org/fe_c3d.001")
 export function getExpandedNodeId(compactNodeId) {
@@ -308,6 +309,9 @@ export function createAndAddRootNode(nodeType) {
   // If no data loaded yet, initialize a new document
   if (!jsonData || !jsonData["@graph"]) {
     jsonData = initializeNewDocument();
+    
+    // Update namespace section visibility with new context
+    updateNamespaceSectionVisibility();
     
     // Show success message
     $("#content").prepend(`

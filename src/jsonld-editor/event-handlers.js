@@ -36,6 +36,11 @@ import { addRootNode } from "./cdi-graph-helpers.js";
 import { highlightText } from "./render.js";
 import { parseDataverseUrl } from "./dataverse-url-parser.js";
 import { getFileId, getSiteUrl, getOriginalFileName } from "./state.js";
+import {
+  setupNamespaceHandlers,
+  updateNamespaceSectionVisibility,
+  renderNamespaceTable,
+} from "./namespace-manager.js";
 
 export function setupEventHandlers() {
   // Load local file button
@@ -104,6 +109,9 @@ export function setupEventHandlers() {
 
         // Render the data (always, even without shapes)
         renderData();
+        
+        // Update namespace section visibility
+        updateNamespaceSectionVisibility();
         
         // In standalone mode, ensure save button is visible
         const isStandaloneMode = !(getFileId() && getSiteUrl());
@@ -266,6 +274,9 @@ export function setupEventHandlers() {
         // Render the data
         renderData();
         
+        // Update namespace section visibility
+        updateNamespaceSectionVisibility();
+        
         // In standalone mode, ensure save button is visible
         const isStandaloneMode = !(getFileId() && getSiteUrl());
         if (isStandaloneMode) {
@@ -308,6 +319,7 @@ export function setupEventHandlers() {
         .addClass("btn-warning");
       $("#save-btn").removeClass("hidden");
       $("#add-root-node-btn").removeClass("hidden");
+      $("#add-namespace-btn").removeClass("hidden");
 
       // Auto-validate when entering edit mode
       validateData();
@@ -322,6 +334,7 @@ export function setupEventHandlers() {
         $("#save-btn").addClass("hidden");
       }
       $("#add-root-node-btn").addClass("hidden");
+      $("#add-namespace-btn").addClass("hidden");
     }
 
     renderData();
@@ -611,4 +624,7 @@ export function setupEventHandlers() {
       }
     }
   });
+
+  // Setup namespace management handlers
+  setupNamespaceHandlers();
 }
