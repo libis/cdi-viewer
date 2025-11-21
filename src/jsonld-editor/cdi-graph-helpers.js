@@ -14,8 +14,13 @@ import {
   getJsonData,
   getExpandedJsonLd,
   getShaclShapesStore,
+  setJsonData,
+  setOriginalData,
+  setOriginalFileName,
 } from "./state.js";
 import { expandCompactIri } from "./cdi-json-ld-helpers.js";
+import { renderData } from "./render.js";
+import { updateSaveButton } from "./data-extraction.js";
 
 // Expand a compact node ID (e.g., "xas:fe_c3d.001") to full URI (e.g., "http://www.cdi4exas.org/fe_c3d.001")
 export function getExpandedNodeId(compactNodeId) {
@@ -136,6 +141,64 @@ export function getAvailableNodeTypes() {
   return Array.from(nodeTypes).sort((a, b) => a.label.localeCompare(b.label));
 }
 
+// Initialize a new empty JSON-LD document based on the selected SHACL shape
+export function initializeNewDocument() {
+  const selectedShape = $("#shape-selector").val();
+  
+  // Define contexts and filenames for each shape type
+  const shapeConfigs = {
+    "ddi-cdi-official": {
+      context: "https://ddialliance.org/Specification/DDI-CDI/1.0/RDF/DDI-CDI_canonical.jsonld",
+      filename: "new-cdi-document.jsonld"
+    },
+    "cdif-core": {
+      context: "https://ddialliance.org/Specification/DDI-CDI/1.0/RDF/DDI-CDI_canonical.jsonld",
+      filename: "new-cdif-document.jsonld"
+    },
+    "cdif-core-shacl": {
+      context: "https://ddialliance.org/Specification/DDI-CDI/1.0/RDF/DDI-CDI_canonical.jsonld",
+      filename: "new-cdif-document.jsonld"
+    },
+    "dcat-ap": {
+      context: "https://www.w3.org/ns/dcat",
+      filename: "new-dcat-catalog.jsonld"
+    },
+    "datacube": {
+      context: "https://www.w3.org/ns/qb#",
+      filename: "new-datacube.jsonld"
+    },
+    "skos": {
+      context: "http://www.w3.org/2004/02/skos/core#",
+      filename: "new-skos-scheme.jsonld"
+    },
+    "local-fallback": {
+      context: "https://ddialliance.org/Specification/DDI-CDI/1.0/RDF/DDI-CDI_canonical.jsonld",
+      filename: "new-cdi-document.jsonld"
+    }
+  };
+  
+  // Get configuration or use generic defaults
+  const config = shapeConfigs[selectedShape] || {
+    context: {},
+    filename: "new-document.jsonld"
+  };
+  
+  // Create new empty JSON-LD document
+  const newDocument = {
+    "@context": config.context,
+    "@graph": []
+  };
+  
+  // Set the new document as the current data
+  setJsonData(newDocument);
+  setOriginalData(JSON.parse(JSON.stringify(newDocument)));
+  setOriginalFileName(config.filename);
+  
+  console.log(`Initialized new ${selectedShape || 'generic'} document:`, config.filename);
+  
+  return newDocument;
+}
+
 // Add a new root node to the graph
 export function addRootNode() {
   const availableTypes = getAvailableNodeTypes();
@@ -240,7 +303,26 @@ export function addRootNode() {
 
 // Create and add a root node with the specified type
 export function createAndAddRootNode(nodeType) {
-  const jsonData = getJsonData();
+  let jsonData = getJsonData();
+  
+  // If no data loaded yet, initialize a new document
+  if (!jsonData || !jsonData["@graph"]) {
+    jsonData = initializeNewDocument();
+    
+    // Show success message
+    $("#content").prepend(`
+      <div class="alert alert-success" style="margin-bottom: 10px;">
+        <strong>New document created!</strong> Starting with empty JSON-LD document.
+      </div>
+    `);
+    
+    // Auto-remove message after 3 seconds
+    setTimeout(() => {
+      $("#content .alert-success").first().fadeOut(500, function() {
+        $(this).remove();
+      });
+    }, 3000);
+  }
 
   // Generate unique ID
   const timestamp = Date.now();
