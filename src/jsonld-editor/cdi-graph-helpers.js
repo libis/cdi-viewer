@@ -201,8 +201,8 @@ export function initializeNewDocument() {
   return newDocument;
 }
 
-// Add a new root node to the graph
-export function addRootNode() {
+// Render the Add Root Node component inline
+export function renderAddRootNodeComponent() {
   const availableTypes = getAvailableNodeTypes();
 
   // Convert to suggestions format for unified component
@@ -213,56 +213,21 @@ export function addRootNode() {
     description: `Add a ${type.label} node`
   }));
 
-  // Create modal with unified add component
-  const modalHtml = `
-    <div class="modal fade" id="addRootNodeModal" tabindex="-1" role="dialog">
-      <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-            <h4 class="modal-title">
-              <span class="glyphicon glyphicon-plus-sign"></span>
-              Add New Root Node
-            </h4>
-          </div>
-          <div class="modal-body" id="addRootNodeModalBody">
-            <!-- Unified component will be inserted here -->
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-
-  // Remove existing modal if any
-  $("#addRootNodeModal").remove();
-
-  // Add modal to body
-  $("body").append(modalHtml);
-
   // Create unified component
   const unifiedComponent = createUnifiedAddComponent({
     type: "rootNode",
     suggestions: suggestions,
     onAdd: (selectedType, suggestion) => {
-      $("#addRootNodeModal").modal("hide");
       createAndAddRootNode(selectedType);
     },
     onAddCustom: (fullName) => {
-      $("#addRootNodeModal").modal("hide");
       createAndAddRootNode(fullName);
     }
   });
 
-  // Insert component into modal
-  $("#addRootNodeModalBody").append(unifiedComponent);
-
-  // Show modal
-  $("#addRootNodeModal").modal("show");
+  // Clear and populate the container
+  const container = $("#add-root-node-container");
+  container.empty().append(unifiedComponent);
 }
 
 // Create and add a root node with the specified type

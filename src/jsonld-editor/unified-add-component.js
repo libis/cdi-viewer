@@ -226,18 +226,8 @@ export function createUnifiedAddComponent(options) {
   // Handle "Add new namespace" selection
   namespaceSelect.on("change", function () {
     if ($(this).val() === "__ADD_NEW__") {
-      // Scroll to namespace section and open add namespace modal
-      $("#namespace-section")[0].scrollIntoView({ behavior: "smooth", block: "start" });
-      
-      // Expand namespace section if collapsed
-      if (!$("#namespace-content").is(":visible")) {
-        $("#toggle-namespace-btn").click();
-      }
-      
-      // Wait a bit for scroll, then open modal
-      setTimeout(() => {
-        $("#add-namespace-btn").click();
-      }, 500);
+      // Open add namespace modal directly
+      $("#add-namespace-btn").click();
       
       // Reset selector
       $(this).val("");

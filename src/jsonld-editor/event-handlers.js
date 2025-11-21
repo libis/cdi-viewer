@@ -32,7 +32,7 @@ import {
   saveToDataverse,
   exportData,
 } from "./data-extraction.js";
-import { addRootNode } from "./cdi-graph-helpers.js";
+import { renderAddRootNodeComponent } from "./cdi-graph-helpers.js";
 import { highlightText } from "./render.js";
 import { parseDataverseUrl } from "./dataverse-url-parser.js";
 import { getFileId, getSiteUrl, getOriginalFileName } from "./state.js";
@@ -318,7 +318,8 @@ export function setupEventHandlers() {
         .removeClass("btn-primary")
         .addClass("btn-warning");
       $("#save-btn").removeClass("hidden");
-      $("#add-root-node-btn").removeClass("hidden");
+      $("#add-root-node-container").removeClass("hidden");
+      renderAddRootNodeComponent();
       $("#add-namespace-btn").removeClass("hidden");
 
       // Auto-validate when entering edit mode
@@ -333,16 +334,11 @@ export function setupEventHandlers() {
       if (!isStandaloneMode) {
         $("#save-btn").addClass("hidden");
       }
-      $("#add-root-node-btn").addClass("hidden");
+      $("#add-root-node-container").addClass("hidden");
       $("#add-namespace-btn").addClass("hidden");
     }
 
     renderData();
-  });
-
-  // Add Root Node
-  $("#add-root-node-btn").click(function () {
-    addRootNode();
   });
 
   // Save changes

@@ -15,125 +15,165 @@
 - ✅ Live deployment at https://libis.github.io/cdi-viewer/
 - ✅ KU Leuven favicon added
 
-### Dataverse Integration
+### Dataverse Integration (November 2025)
 - ✅ Created single optimized bundle (1.2 MB) for dataverse-previewers
 - ✅ Updated CdiPreview.html to use bundle
 - ✅ Removed individual JS files (now bundled)
 - ✅ Updated CDIF shapes with SPARQL target support
-- ✅ Tested locally - working correctly
+- ✅ **Save to Dataverse functionality:**
+  - Replace existing file API integration
+  - Add new file to dataset API integration
+  - URL parser supporting 6 Dataverse URL formats (JSF, SPA, API)
+  - Real-time URL validation with feedback
+  - API token support for unpublished files
+  - Filename suggestions from original file
+- ✅ **Load from Dataverse functionality:**
+  - Load button with URL input
+  - Support for file URLs (all formats)
+  - Optional API token for unpublished files
+  - Automatic state transition to integrated mode
+- ✅ **Save button visibility:**
+  - Always visible in standalone mode (view + edit)
+  - Only visible in edit mode for integrated mode
+  - Shows on initial page load in standalone
 
-## 🎯 Next Steps (Priority Order)
+### Namespace Management (November 2025)
+- ✅ View current namespace prefixes from @context
+- ✅ Add custom namespace prefixes with validation
+- ✅ Remove custom namespaces (built-in protected)
+- ✅ Collapsible UI section
+- ✅ Integration with property/node creation
 
-### 1. Complete Dataverse Integration (HIGH PRIORITY)
-**Goal:** Finish functionality before submitting PRs to ensure everything works
+### Document Creation (November 2025)
+- ✅ Create new empty documents from scratch
+- ✅ Shape-specific contexts and filenames
+- ✅ Support for DDI-CDI, CDIF, DCAT-AP, DataCube, SKOS, generic
+- ✅ Automatic initialization when adding root node to empty state
 
-- ✅ Bundle created and tested locally
-- Implement remaining Dataverse API features:
-  - Save functionality via Dataverse API
-  - Handle `?fileid=X&siteUrl=Y&key=Z` parameters
-  - Verify MIME type handling (`application/ld+json`)
-  - Test file updates in Dataverse
-- Test with various JSON-LD vocabularies (not just DDI-CDI)
-- Update documentation with bundle workflow
+### Unified Add Component (November 2025)
+- ✅ Consistent UX for adding properties and root nodes
+- ✅ SHACL-defined items dropdown with descriptions
+- ✅ Custom input section with namespace selector
+- ✅ "Add new namespace" integration (scrolls to namespace section)
+- ✅ No more popup prompts for custom items
+- ✅ Enter key support for quick adding
 
-### 2. Test with Real Dataverse Workflow (HIGH PRIORITY)
-**Goal:** Validate functionality before submitting PRs
+### UI Improvements (November 2025)
+- ✅ Export button changed to green (consistent with I/O actions)
+- ✅ Add Root Node button moved to bottom of form (logical placement)
 
-- Test with `?fileid=X&siteUrl=Y` parameters in Dataverse instance
-- Make edits and save via Dataverse API
-- Verify file updates correctly in Dataverse
-- Test error handling and edge cases
-- Document any issues or limitations
+## 🎯 Current Sprint (In Progress)
 
-### 3. Repository Polish (MEDIUM PRIORITY)
-**Goal:** PR draws attention - make the repository clean and professional
+### Undo/Redo Functionality (HIGH PRIORITY)
+**Goal:** Allow users to undo/redo changes while editing
 
-- Add GitHub topics for discoverability:
-  - `json-ld`, `rdf`, `shacl`, `dataverse`, `ddi-cdi`, `metadata`, `semantic-web`
-- Update repository description (concise, clear value proposition)
-- Consider adding Open Graph image for social media previews
-- Ensure README badges are up-to-date
-- Clean up any TODO comments or debug code
+- Implement state history management
+- Track all edit operations (add, delete, modify)
+- Undo/Redo buttons in toolbar
+- Keyboard shortcuts (Ctrl+Z, Ctrl+Y / Cmd+Z, Cmd+Shift+Z)
+- Visual feedback for undo/redo actions
+- Clear history on file load
+- Limit history size (e.g., last 50 actions)
 
-### 4. Submit PR to dataverse-previewers (MEDIUM PRIORITY)
-**Goal:** Get the link to share with community
+### Advanced Search and Filter (HIGH PRIORITY)
+**Goal:** Help users find and navigate complex JSON-LD documents
 
-- Formalize PR to ErykKul/dataverse-previewers fork (if needed)
+- Enhanced search functionality:
+  - Search in property names and values
+  - Filter by node type
+  - Filter by validation status (valid/invalid/modified)
+  - Show/hide empty properties
+  - Jump to search results
+- Filter controls in toolbar
+- Real-time filtering/highlighting
+- Clear filters button
+- Search result counter
+
+## 🎯 Next Steps After Current Sprint
+
+### 1. Comprehensive Testing (HIGH PRIORITY)
+**Goal:** Validate all functionality before PR submissions
+
+**Integrated Mode Testing:**
+- Load viewer with fileId and siteUrl parameters
+- Verify URL field hidden in save modal
+- Verify filename pre-filled from metadata
+- Test file replacement with API token
+- Test error handling
+
+**Standalone Mode Testing:**
+- Load from Dataverse button functionality
+- Save to Dataverse (replace + add to dataset)
+- Create new documents and save
+- Namespace management workflow
+- Custom properties with namespace prefixes
+
+**End-to-End Workflows:**
+- Load → enable edit → modify properties → save → verify
+- Create new document → add nodes → add properties → export
+- Load file → validate → fix violations → re-validate
+- Add namespace → use in custom property → save → reload
+
+**UI/UX Testing:**
+- Undo/Redo operations
+- Search and filter functionality
+- All button visibility states
+- Modal interactions
+- Keyboard shortcuts
+
+### 2. Repository Polish (MEDIUM PRIORITY)
+**Goal:** Professional presentation for PR submissions
+
+- Add GitHub topics: `json-ld`, `rdf`, `shacl`, `dataverse`, `ddi-cdi`, `metadata`, `semantic-web`
+- Update repository description
+- Ensure README is up-to-date with new features
+- Clean up TODO comments
+- Update screenshots/demos if needed
+
+### 3. Submit PR to dataverse-previewers (MEDIUM PRIORITY)
+**Goal:** Share CDI Viewer with Dataverse community
+
 - Submit PR to gdcc/dataverse-previewers with:
-  - Clear description of SPARQL target support
-  - Bundle integration benefits
+  - Clear description of features
+  - Bundle integration
   - Testing evidence
-  - Link to cdi-viewer documentation
-- Reference PR in communications with Steve and others
+  - Documentation
+  - Link to cdi-viewer repository
 
-### 5. Submit PR to rdf-ext/shacl-engine (MEDIUM PRIORITY)
+### 4. Submit PR to rdf-ext/shacl-engine (MEDIUM PRIORITY)
 **Goal:** Contribute SPARQL target support upstream
 
-**Prerequisites:**
-- Update shacl-engine README.md first:
-  - Mention SPARQL target support
-  - Reference cdi-viewer as example usage
-  - Note Dataverse integration (PR pending to gdcc/dataverse-previewers)
-- Ensure code quality (tests, documentation, examples)
+- Update shacl-engine README with SPARQL target documentation
+- Submit PR with:
+  - ~60 lines of SPARQL target implementation
+  - Test cases
+  - Documentation updates
+  - Reference to cdi-viewer usage
 
-**PR Contents:**
-- ~60 lines of SPARQL target implementation (3 files)
-- Test cases demonstrating functionality
-- Documentation updates
-- Reference to real-world usage in cdi-viewer
+### 5. Test Coverage (LONG-TERM)
+**Goal:** Ensure code quality and prevent regressions
 
-### 6. End-to-End Testing (MEDIUM PRIORITY)
-**Goal:** Once everything works, ensure it stays that way
+- Increase test coverage for core modules
+- Add integration tests
+- Set up coverage reporting
+- Add pre-commit hooks
+- Target: >80% coverage
 
-- **Test new default behavior**: Verify DDI-CDI shapes auto-load without URL parameters
-- **Test generic mode**: Verify `?shacl=generic` works for non-DDI-CDI use cases
-- **Test array operations**: Convert single↔array, add/remove values, add references
-- **Test complex objects**: Create nested objects via modal, reference existing nodes
-- **Test edit pipeline**: Load → enable edit → modify properties → export → verify valid JSON-LD
-- **Test validation workflow**: Load file → validate → fix violations → re-validate
-- **Test SPARQL targets**: Verify CDIF shapes validate only root datasets (not nested)
+## 🔮 Future Enhancements (After PRs)
 
-### 7. Test Coverage (HIGH PRIORITY for Long-term)
-**Goal:** High coverage essential for AI-assisted development
-
-- ✅ GitHub Actions workflow added
-- Increase test coverage for SPARQL target code (currently minimal)
-- Add integration tests for Dataverse workflow
-- Add tests for UI interactions (property editing, validation, etc.)
-- Set up coverage reporting (codecov.io or similar)
-- Add pre-commit hooks (husky + lint-staged)
-- Consider mutation testing with Stryker for critical paths
-- Target: >80% coverage for core modules
-
-**Why critical for AI:**
-- AI-generated code needs automated validation
-- Prevents regressions during rapid iteration
-- Enables confident refactoring
-- Documents expected behavior
-
-### 8. Feature Enhancements (FUTURE)
-**Goal:** Nice-to-haves after core functionality is stable
-
-- Undo/Redo functionality
+### Feature Ideas (Lower Priority)
 - Export to different formats (Turtle, N-Triples, RDF/XML)
 - Import from SPARQL endpoint
 - Batch editing capabilities
-- Advanced search and filter options
 - Property value autocomplete from ontologies
 - Visual graph view of references
+- Collaborative editing features
+- Version history and diff views
 
-### 9. Production Deployment Strategy (LONG-TERM GOAL)
-**Goal:** Show and tell, gather feedback before production claims
-
-- **NOT immediate priority** - wait for user feedback
-- Focus on demonstration and community engagement
-- Document deployment requirements and considerations
-- Collect feedback from early adopters
-- Iterate based on real-world usage patterns
-- Production readiness checklist:
-  - Security review
-  - Performance optimization
-  - Comprehensive error handling
-  - User acceptance testing
-  - Documentation for administrators
-  - Support plan
+### Production Considerations (Long-term)
+- Security review
+- Performance optimization
+- Comprehensive error handling
+- User acceptance testing
+- Documentation for administrators
+- Support plan
