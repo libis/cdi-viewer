@@ -10,6 +10,7 @@
  */
 
 import { extractNamespaces } from "./namespace-manager.js";
+import { showAlert } from "./modal-dialogs.js";
 
 /**
  * Create a unified add component (works for both properties and root nodes)

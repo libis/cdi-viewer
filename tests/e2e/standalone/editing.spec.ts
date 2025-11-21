@@ -47,12 +47,11 @@ test.describe('Editing Mode', () => {
     // 3. Add Namespace button appears
     await expect(page.locator('#add-namespace-btn')).toBeVisible();
     
-    // 4. Input fields become editable
-    const inputs = page.locator('input[type="text"]');
-    const count = await inputs.count();
-    if (count > 0) {
-      await expect(inputs.first()).toBeEnabled();
-    }
+    // 4. Property input fields become editable
+    const propertyInputs = page.locator('[data-testid^="property-"] input[type="text"]');
+    const count = await propertyInputs.count();
+    expect(count).toBeGreaterThan(0); // Should have editable property inputs
+    await expect(propertyInputs.first()).toBeEnabled();
   });
 
   test('should disable edit mode', async ({ page }) => {
@@ -73,12 +72,11 @@ test.describe('Editing Mode', () => {
     // 2. Add components hidden
     await expect(page.locator('#add-root-node-container')).toBeHidden();
     
-    // 3. Input fields become readonly
-    const inputs = page.locator('input[type="text"]');
-    const count = await inputs.count();
-    if (count > 0) {
-      await expect(inputs.first()).toBeDisabled();
-    }
+    // 3. Input fields become readonly (properties are shown as text, not inputs)
+    const propertyInputs = page.locator('[data-testid^="property-"] input[type="text"]');
+    const count = await propertyInputs.count();
+    // In view mode, property inputs should not exist or be disabled
+    expect(count).toBe(0);
   });
 
   test('should edit text property', async ({ page }) => {
@@ -87,8 +85,8 @@ test.describe('Editing Mode', () => {
     await page.waitForTimeout(500);
     
     // ============= ACTIONS =============
-    // Find a text input (name or identifier field)
-    const nameInput = page.locator('input[type="text"]').first();
+    // Find the name property input in the first node
+    const nameInput = page.locator('[data-testid="property-name"] input[type="text"]').first();
     const originalValue = await nameInput.inputValue();
     
     await nameInput.fill('Updated Test Value');
@@ -114,7 +112,7 @@ test.describe('Editing Mode', () => {
     await page.waitForTimeout(500);
     
     // ============= ACTIONS =============
-    const input = page.locator('input[type="text"]').first();
+    const input = page.locator('[data-testid="property-name"] input[type="text"]').first();
     await input.fill('');
     await page.keyboard.press('Tab');
     
@@ -138,20 +136,52 @@ test.describe('Editing Mode', () => {
     
     if (count > 0) {
       const firstDeleteBtn = deleteButtons.first();
-      const propertyRow = firstDeleteBtn.locator('xpath=ancestor::div[contains(@class, "property-row")][1]');
+      const propertyTestId = await firstDeleteBtn.getAttribute('data-testid');
       
+      // Ensure we have a valid test ID
+      expect(propertyTestId).toBeTruthy();
+      
+      // Get the property row that contains this delete button to identify the specific property
+      const propertyRowLocator = firstDeleteBtn.locator('xpath=ancestor::div[contains(@class, "property-row")][1]');
+      const nodeId = await propertyRowLocator.getAttribute('data-node-id');
+      const propertyKey = propertyTestId!.replace('delete-property-btn-', '');
+      
+      // Click delete button - our custom modal will appear
       await firstDeleteBtn.click();
+      
+      // Wait for custom modal to appear
+      await page.waitForSelector('[data-testid="confirm-modal"]', { state: 'visible' });
       
       // ============= EXPECTED RESULTS =============
       
-      // 1. Property row removed
-      await expect(propertyRow).not.toBeVisible();
+      // 1. Modal should have correct message
+      const modalText = await page.locator('[data-testid="confirm-modal"] .custom-modal-body').textContent();
+      expect(modalText).toContain('Delete this property?');
       
-      // 2. Validation updates after debounce
+      // 2. Click OK button to confirm deletion
+      await page.click('[data-testid="confirm-ok-btn"]');
+      
+      // Wait for modal to close
+      await page.waitForSelector('[data-testid="confirm-modal"]', { state: 'hidden' });
+      
+      // 3. Property row should get 'deleted' class and fade out (be specific about which property row)
+      const propertyRow = page.locator(`[data-node-id="${nodeId}"][data-testid="property-${propertyKey}"]`);
+      
+      // Check that the deleted class was added (indicates delete was triggered)
+      await expect(propertyRow).toHaveClass(/deleted/, { timeout: 500 });
+      
+      // Wait for the fadeOut animation (300ms) and removal
+      await page.waitForTimeout(500);
+      
+      // Property should now be removed from DOM or at least hidden
+      const isStillVisible = await propertyRow.isVisible().catch(() => false);
+      expect(isStillVisible).toBe(false);
+      
+      // 4. Validation updates after debounce
       await page.waitForTimeout(3500);
       await expect(page.locator('#validation-status')).toBeVisible();
     } else {
-      // No delete buttons found - test passes (all properties required)
+      // No delete buttons found - all properties are required
       expect(true).toBe(true);
     }
   });
@@ -189,7 +219,7 @@ test.describe('Editing Mode', () => {
     await page.waitForTimeout(500);
     
     // ============= ACTIONS =============
-    const input = page.locator('input[type="text"]').first();
+    const input = page.locator('[data-testid="property-name"] input[type="text"]').first();
     await input.fill('Changed Value');
     await page.keyboard.press('Tab');
     
@@ -209,16 +239,15 @@ test.describe('Editing Mode', () => {
     await page.waitForTimeout(500);
     
     // ============= ACTIONS =============
-    const inputs = page.locator('input[type="text"]');
-    const count = await inputs.count();
+    const nameInput = page.locator('[data-testid="property-name"] input[type="text"]').first();
+    const identifierInput = page.locator('[data-testid="property-identifier"] input[type="text"]').first();
     
-    if (count >= 2) {
-      // Edit multiple fields rapidly
-      await inputs.nth(0).fill('Rapid Edit 1');
-      await page.waitForTimeout(500);
-      await inputs.nth(1).fill('Rapid Edit 2');
-      await page.waitForTimeout(500);
-      await inputs.nth(0).fill('Rapid Edit 1 Modified');
+    // Edit multiple fields rapidly
+    await nameInput.fill('Rapid Edit 1');
+    await page.waitForTimeout(500);
+    await identifierInput.fill('Rapid Edit 2');
+    await page.waitForTimeout(500);
+    await nameInput.fill('Rapid Edit 1 Modified');
       
       // ============= EXPECTED RESULTS =============
       
@@ -226,11 +255,10 @@ test.describe('Editing Mode', () => {
       await page.waitForTimeout(2000);
       // Validation still pending or just starting
       
-      // 2. Validation triggers after full debounce period
-      await page.waitForTimeout(2000); // Total 4s
-      const validationStatus = page.locator('#validation-status');
-      await expect(validationStatus).toBeVisible();
-    }
+    // 2. Validation triggers after full debounce period
+    await page.waitForTimeout(2000); // Total 4s
+    const validationStatus = page.locator('#validation-status');
+    await expect(validationStatus).toBeVisible();
   });
 
   test('should revert changes when disabling edit mode without save', async ({ page }) => {
@@ -238,7 +266,7 @@ test.describe('Editing Mode', () => {
     await page.waitForTimeout(500);
     
     // ============= ACTIONS =============
-    const input = page.locator('input[type="text"]').first();
+    const input = page.locator('[data-testid="property-name"] input[type="text"]').first();
     const originalValue = await input.inputValue();
     
     await input.fill('Temporary Change');

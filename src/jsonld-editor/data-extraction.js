@@ -11,6 +11,7 @@ import {
   getOriginalFileName,
 } from "./state.js";
 import { parseDataverseUrl } from "./dataverse-url-parser.js";
+import { showAlert } from "./modal-dialogs.js";
 
 export function updateSaveButton() {
   const hasChanges = $(".property-row.changed").length > 0;
@@ -225,12 +226,12 @@ export async function saveToDataverse() {
   const filename = $("#filenameInput").val().trim();
 
   if (!apiToken) {
-    alert("Please enter your API token.");
+    await showAlert("Please enter your API token.");
     return;
   }
 
   if (!filename) {
-    alert("Please enter a filename.");
+    await showAlert("Please enter a filename.");
     return;
   }
 
@@ -250,13 +251,13 @@ export async function saveToDataverse() {
     // Standalone mode: parse URL
     const dataverseUrl = $("#dataverseUrlInput").val().trim();
     if (!dataverseUrl) {
-      alert("Please enter a Dataverse URL.");
+      await showAlert("Please enter a Dataverse URL.");
       return;
     }
 
     const parseResult = parseDataverseUrl(dataverseUrl);
     if (!parseResult.valid) {
-      alert("Invalid Dataverse URL: " + parseResult.error);
+      await showAlert("Invalid Dataverse URL: " + parseResult.error);
       return;
     }
 
@@ -302,7 +303,7 @@ export async function saveToDataverse() {
     }
 
     if (result.status === "OK") {
-      alert(
+      await showAlert(
         `File ${operationType === "replace" ? "replaced" : "added"} successfully!`
       );
       $(".property-row").removeClass("changed");
@@ -312,7 +313,7 @@ export async function saveToDataverse() {
     }
   } catch (error) {
     console.error("Save error:", error);
-    alert(
+    await showAlert(
       "Failed to save to Dataverse:\n\n" +
         error.message +
         "\n\nPlease check:\n• Your API token is valid\n• You have write access to this dataset\n• The Dataverse server is accessible"

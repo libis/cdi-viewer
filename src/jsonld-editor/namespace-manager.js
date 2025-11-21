@@ -13,6 +13,7 @@
 import { getJsonData, setJsonData } from "./state.js";
 import { renderData } from "./render.js";
 import { updateNamespaceSelectors } from "./unified-add-component.js";
+import { showAlert, showConfirm } from "./modal-dialogs.js";
 
 // Built-in namespaces that should not be deletable
 const PROTECTED_NAMESPACES = new Set([
@@ -208,8 +209,8 @@ export function renderNamespaceTable() {
         .attr('data-testid', `delete-namespace-btn-${prefix.replace(/[^a-zA-Z0-9]/g, '_')}`)
         .html('<span class="glyphicon glyphicon-trash"></span>')
         .attr('title', 'Delete namespace')
-        .click(function () {
-          if (confirm(`Remove namespace prefix "${prefix}"?`)) {
+        .click(async function () {
+          if (await showConfirm(`Remove namespace prefix "${prefix}"?`, { title: 'Delete Namespace', confirmText: 'Delete' })) {
             removeNamespace(prefix);
             renderNamespaceTable();
             renderData(); // Re-render to apply changes
@@ -296,18 +297,18 @@ export function setupNamespaceHandlers() {
   });
 
   // Confirm add namespace
-  $("#confirmNamespaceBtn").click(function () {
+  $("#confirmNamespaceBtn").click(async function () {
     const prefix = $("#namespacePrefixInput").val().trim();
     const uri = $("#namespaceUriInput").val().trim();
 
     if (!prefix || !uri) {
-      alert("Please provide both prefix and namespace URI");
+      await showAlert("Please provide both prefix and namespace URI");
       return;
     }
 
     // Validate prefix format
     if (!/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(prefix)) {
-      alert(
+      await showAlert(
         "Invalid prefix format. Must start with a letter and contain only letters, numbers, hyphens, and underscores."
       );
       return;
@@ -315,14 +316,14 @@ export function setupNamespaceHandlers() {
 
     // Validate URI format
     if (!uri.match(/^https?:\/\/.+/)) {
-      alert("Invalid URI format. Must start with http:// or https://");
+      await showAlert("Invalid URI format. Must start with http:// or https://");
       return;
     }
 
     // Check if prefix already exists
     const namespaces = extractNamespaces();
     if (namespaces[prefix]) {
-      if (!confirm(`Prefix "${prefix}" already exists. Overwrite?`)) {
+      if (!await showConfirm(`Prefix "${prefix}" already exists. Overwrite?`, { title: 'Overwrite Prefix' })) {
         return;
       }
     }

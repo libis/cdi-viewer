@@ -17,6 +17,7 @@ import {
   addReferenceToProperty,
   createAndReferenceNewNode,
 } from "./cdi-graph-helpers.js";
+import { showAlert, showConfirm, showPrompt } from "./modal-dialogs.js";
 
 // Track which nodes have been rendered to avoid duplicates
 const renderedNodes = new Set();
@@ -282,8 +283,8 @@ export function renderNode(node, index) {
         .html(
           '<span class="glyphicon glyphicon-edit"></span> Add Custom Property'
         )
-        .click(function () {
-          const propName = prompt("Enter custom property name:");
+        .click(async function () {
+          const propName = await showPrompt("Enter custom property name:");
           if (propName) {
             addPropertyToNode(id, propName, "", body);
           }
@@ -497,8 +498,8 @@ function renderProperty(key, value, nodeId, nodeTypes) {
           .addClass("btn btn-xs delete-btn")
           .attr("data-testid", `delete-array-value-btn-${idx}`)
           .html('<span class="glyphicon glyphicon-trash"></span>')
-          .click(function () {
-            if (confirm("Delete this value?")) {
+          .click(async function () {
+            if (await showConfirm("Delete this value?", { title: 'Delete Value', confirmText: 'Delete' })) {
               valDiv.remove();
               row.addClass("changed");
               updateSaveButton();
@@ -561,10 +562,11 @@ function renderProperty(key, value, nodeId, nodeTypes) {
           '<span class="glyphicon glyphicon-resize-small"></span> Convert to Single'
         )
         .css({ "margin-left": "10px" })
-        .click(function () {
+        .click(async function () {
           if (
-            confirm(
-              "Convert this array to a single value? Only the first value will be kept."
+            await showConfirm(
+              "Convert this array to a single value? Only the first value will be kept.",
+              { title: 'Convert to Single', confirmText: 'Convert' }
             )
           ) {
             convertPropertyToSingle(nodeId, key);
@@ -596,8 +598,8 @@ function renderProperty(key, value, nodeId, nodeTypes) {
           .addClass("btn btn-xs btn-danger")
           .attr("data-testid", `delete-property-btn-${key.replace(/[^a-zA-Z0-9]/g, "_")}`)
           .html('<span class="glyphicon glyphicon-trash"></span> Delete')
-          .click(function () {
-            if (confirm("Delete this property?")) {
+          .click(async function () {
+            if (await showConfirm("Delete this property?", { title: 'Delete Property', confirmText: 'Delete' })) {
               row.addClass("deleted").fadeOut(300, function () {
                 $(this).remove();
               });
@@ -704,7 +706,7 @@ function showAddReferenceModal(nodeId, propertyKey, forArray) {
   // Handle confirm
   $("#confirmAddReference")
     .off("click")
-    .on("click", function () {
+    .on("click", async function () {
       const existingNodeId = $("#existingNodeSelect").val();
       const newNodeType = $("#newNodeType").val().trim();
 
@@ -713,14 +715,14 @@ function showAddReferenceModal(nodeId, propertyKey, forArray) {
         addReferenceToProperty(nodeId, propertyKey, existingNodeId);
         $("#addReferenceModal").modal("hide");
         renderData();
-      } else if (newNodeType || confirm("Create new Object without type?")) {
+      } else if (newNodeType || await showConfirm("Create new Object without type?", { title: 'Create Object' })) {
         // Create new node
         const type = newNodeType || "Object";
         createAndReferenceNewNode(nodeId, propertyKey, type, forArray);
         $("#addReferenceModal").modal("hide");
         renderData();
       } else {
-        alert("Please select an existing node or enter a type for a new node");
+        await showAlert("Please select an existing node or enter a type for a new node");
       }
     });
 }
@@ -752,7 +754,7 @@ export function createValueInput(
           targetCard.addClass("highlight");
           setTimeout(() => targetCard.removeClass("highlight"), 2000);
         } else {
-          alert("Referenced node not found: " + refId);
+          showAlert("Referenced node not found: " + refId);
         }
       });
 
@@ -778,7 +780,7 @@ export function createValueInput(
           targetCard.addClass("highlight");
           setTimeout(() => targetCard.removeClass("highlight"), 2000);
         } else {
-          alert("Referenced node not found: " + value);
+          showAlert("Referenced node not found: " + value);
         }
       });
 

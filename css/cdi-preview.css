@@ -617,3 +617,135 @@ body {
   display: none;
 }
 
+/* Custom Modal Dialogs */
+.custom-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.15s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.custom-modal {
+  background: white;
+  border-radius: 6px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  min-width: 400px;
+  max-width: 600px;
+  animation: slideIn 0.2s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.custom-modal-header {
+  padding: 15px 20px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.custom-modal-header h4 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #212529;
+}
+
+.custom-modal-body {
+  padding: 20px;
+}
+
+.custom-modal-body p {
+  margin: 0 0 15px 0;
+  color: #495057;
+  line-height: 1.5;
+}
+
+.custom-modal-body input[type="text"] {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+.custom-modal-body input[type="text"]:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.custom-modal-footer {
+  padding: 15px 20px;
+  border-top: 1px solid #dee2e6;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.custom-modal-footer .btn {
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.custom-modal-footer .btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+}
+
+.custom-modal-footer .btn-default {
+  background: white;
+  border-color: #ced4da;
+  color: #495057;
+}
+
+.custom-modal-footer .btn-default:hover {
+  background: #f8f9fa;
+  border-color: #adb5bd;
+}
+
+.custom-modal-footer .btn-primary {
+  background: #007bff;
+  color: white;
+}
+
+.custom-modal-footer .btn-primary:hover {
+  background: #0056b3;
+}
+
+.custom-modal-footer .btn-danger {
+  background: #dc3545;
+  color: white;
+}
+
+.custom-modal-footer .btn-danger:hover {
+  background: #c82333;
+}
+
