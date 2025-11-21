@@ -5,6 +5,7 @@
 import { getJsonData, getIsEditMode, getShaclShapesStore } from "./state.js";
 import { classifyProperty } from "./cdi-shacl-helpers.js";
 import { scheduleValidation } from "./validation.js";
+import { updateSaveButton } from "./data-extraction.js";
 import {
   getPropertySuggestions,
   createPropertySuggestionsSection,
@@ -814,7 +815,7 @@ export function createValueInput(
       // Mark as changed
       $(this).closest(".property-row").addClass("changed");
       updateSaveButton();
-      
+
       // Schedule auto-validation
       scheduleValidation();
     });

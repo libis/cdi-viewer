@@ -80,14 +80,14 @@ export function scheduleValidation() {
   // Schedule new validation
   validationDebounceTimeout = setTimeout(async () => {
     validationDebounceTimeout = null;
-    
+
     // Wait if validation is already running
     if (isValidationRunning) {
       // Reschedule after current validation completes
       scheduleValidation();
       return;
     }
-    
+
     await validateData();
   }, 3000);
 }
@@ -101,9 +101,9 @@ export async function validateData() {
   if (isValidationRunning) {
     return;
   }
-  
+
   isValidationRunning = true;
-  
+
   // Clear any pending timeout from previous messages (e.g., "Shapes loaded")
   clearStatusTimeout();
 
@@ -287,7 +287,7 @@ export async function validateDataImmediate() {
     clearTimeout(validationDebounceTimeout);
     validationDebounceTimeout = null;
   }
-  
+
   await validateData();
 }
 
