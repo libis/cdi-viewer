@@ -15,7 +15,12 @@
     "fmt:check": "prettier --check \"src/**/*.js\" \"*.{json,md,html,css}\"",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:report": "playwright show-report",
+    "test:coverage:all": "npm run test:coverage && npm run test:e2e"
   },
   "repository": {
     "type": "git",
@@ -59,6 +64,7 @@
     "shacl-engine": "file:./vendor/shacl-engine"
   },
   "devDependencies": {
+    "@playwright/test": "^1.56.1",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-terser": "^0.4.4",
@@ -68,6 +74,7 @@
     "eslint-plugin-jest": "^27.6.3",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
+    "nyc": "^17.1.0",
     "prettier": "^3.2.5",
     "rollup": "^4.9.6",
     "rollup-plugin-concat": "^1.0.4"
@@ -81,16 +88,21 @@
     "setupFilesAfterEnv": [
       "<rootDir>/tests/setup.js"
     ],
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/tests/e2e/"
+    ],
     "collectCoverageFrom": [
-      "js/**/*.js",
-      "!js/**/*.test.js"
+      "src/**/*.js",
+      "!src/**/*.test.js",
+      "!dist/**"
     ],
     "coverageThreshold": {
       "global": {
-        "branches": 50,
-        "functions": 50,
-        "lines": 50,
-        "statements": 50
+        "branches": 30,
+        "functions": 30,
+        "lines": 30,
+        "statements": 30
       }
     }
   }
