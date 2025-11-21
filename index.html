@@ -92,13 +92,164 @@
           placeholder="Enter SHACL shape URL"
           style="width: 300px; display: none"
         />
-        <input
-          type="text"
-          id="search-input"
-          class="form-control"
-          placeholder="Search nodes and properties..."
-          style="width: 300px; margin-left: auto"
-        />
+        <!-- Enhanced Search Controls -->
+        <div style="margin-left: auto; display: flex; align-items: center; gap: 5px;">
+          <div style="position: relative;">
+            <input
+              type="text"
+              id="search-input"
+              class="form-control"
+              placeholder="Search nodes and properties..."
+              style="width: 300px; padding-right: 30px;"
+            />
+            <button
+              id="clear-search-btn"
+              title="Clear search"
+              style="
+                position: absolute;
+                right: 8px;
+                top: 50%;
+                transform: translateY(-50%);
+                background: none;
+                border: none;
+                color: #999;
+                cursor: pointer;
+                padding: 0;
+                display: none;
+                font-size: 16px;
+              "
+            >
+              <span class="glyphicon glyphicon-remove"></span>
+            </button>
+          </div>
+          <button
+            id="toggle-case-btn"
+            class="btn btn-default btn-sm"
+            title="Toggle case-sensitive search"
+            style="min-width: 40px;"
+          >
+            <strong>Aa</strong>
+          </button>
+          <button
+            id="toggle-regex-btn"
+            class="btn btn-default btn-sm"
+            title="Toggle regex search"
+            style="min-width: 40px;"
+          >
+            <strong>.*</strong>
+          </button>
+          <button
+            id="prev-match-btn"
+            class="btn btn-default btn-sm"
+            title="Previous match (Shift+F3)"
+            disabled
+          >
+            <span class="glyphicon glyphicon-chevron-up"></span>
+          </button>
+          <button
+            id="next-match-btn"
+            class="btn btn-default btn-sm"
+            title="Next match (F3 or Enter)"
+            disabled
+          >
+            <span class="glyphicon glyphicon-chevron-down"></span>
+          </button>
+          <span
+            id="search-counter"
+            style="
+              font-size: 12px;
+              color: #6c757d;
+              min-width: 80px;
+              text-align: center;
+            "
+          ></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Advanced Filter Panel -->
+    <div id="filter-panel" class="filter-panel" style="display: none; margin-bottom: 15px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;" id="filter-panel-header">
+        <div>
+          <span id="filter-panel-chevron" class="glyphicon glyphicon-chevron-down"></span>
+          <strong style="margin-left: 5px;">Advanced Filters</strong>
+          <span id="active-filter-badge" class="active-filter-badge" style="display: none;"></span>
+        </div>
+        <button id="clear-all-filters-btn" class="btn btn-xs btn-default">
+          Clear All
+        </button>
+      </div>
+      <div id="filter-panel-content" style="display: none; margin-top: 15px;">
+        <!-- Node Type Filter -->
+        <div class="filter-row">
+          <label class="filter-label">
+            <span class="glyphicon glyphicon-tag"></span> Node Type
+          </label>
+          <select id="node-type-filter" class="form-control" style="width: 100%;" multiple size="4">
+            <option value="">Loading...</option>
+          </select>
+          <small class="text-muted">Hold Ctrl/Cmd to select multiple types</small>
+        </div>
+
+        <!-- Validation Status Filter -->
+        <div class="filter-row">
+          <label class="filter-label">
+            <span class="glyphicon glyphicon-check"></span> Validation Status
+          </label>
+          <select id="validation-filter" class="form-control" style="width: 100%;">
+            <option value="all">All Nodes</option>
+            <option value="valid">Valid Only</option>
+            <option value="invalid">Invalid Only</option>
+            <option value="modified">Modified Only</option>
+            <option value="missing-required">Missing Required Fields</option>
+          </select>
+        </div>
+
+        <!-- Property Status Filter -->
+        <div class="filter-row">
+          <label class="filter-label">
+            <span class="glyphicon glyphicon-list"></span> Property Status
+          </label>
+          <div>
+            <label class="radio-inline">
+              <input type="radio" name="property-status" value="all" checked> All
+            </label>
+            <label class="radio-inline">
+              <input type="radio" name="property-status" value="shacl-only"> SHACL Only
+            </label>
+            <label class="radio-inline">
+              <input type="radio" name="property-status" value="extra-only"> Extra Only
+            </label>
+          </div>
+        </div>
+
+        <!-- Hide Empty Properties -->
+        <div class="filter-row">
+          <label>
+            <input type="checkbox" id="hide-empty-checkbox"> Hide empty properties
+          </label>
+        </div>
+
+        <!-- Search Scope -->
+        <div class="filter-row">
+          <label class="filter-label">
+            <span class="glyphicon glyphicon-search"></span> Search In
+          </label>
+          <div>
+            <label class="checkbox-inline">
+              <input type="checkbox" class="search-scope-checkbox" value="names" checked> Property Names
+            </label>
+            <label class="checkbox-inline">
+              <input type="checkbox" class="search-scope-checkbox" value="values" checked> Values
+            </label>
+            <label class="checkbox-inline">
+              <input type="checkbox" class="search-scope-checkbox" value="ids" checked> Node IDs
+            </label>
+            <label class="checkbox-inline">
+              <input type="checkbox" class="search-scope-checkbox" value="types" checked> Node Types
+            </label>
+          </div>
+        </div>
       </div>
     </div>
 

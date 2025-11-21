@@ -12,6 +12,7 @@ import {
   setValidationReport,
 } from "./state.js";
 import { jsonLdToN3Store } from "./cdi-shacl-loader.js";
+import { initializeFilters } from "./advanced-filter.js";
 
 // RDF factory for creating RDF/JS compliant datasets
 // Use rdfDataModel directly and add dataset method via Object.assign to preserve prototype
@@ -218,6 +219,9 @@ export async function validateData() {
 
     // Update property rows with validation results
     updatePropertyValidation(violations);
+    
+    // Update filter counts after validation
+    initializeFilters();
   } catch (error) {
     console.error("Validation error:", error);
 

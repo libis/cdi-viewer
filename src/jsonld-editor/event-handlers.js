@@ -41,6 +41,8 @@ import {
   updateNamespaceSectionVisibility,
   renderNamespaceTable,
 } from "./namespace-manager.js";
+import { setupAdvancedSearchHandlers } from "./advanced-search.js";
+import { setupAdvancedFilterHandlers, showFilterPanel, hideFilterPanel, initializeFilters } from "./advanced-filter.js";
 
 export function setupEventHandlers() {
   // Load local file button
@@ -112,6 +114,10 @@ export function setupEventHandlers() {
         
         // Update namespace section visibility
         updateNamespaceSectionVisibility();
+        
+        // Show filter panel and initialize filters when data is loaded
+        showFilterPanel();
+        initializeFilters();
         
         // In standalone mode, ensure save button is visible
         const isStandaloneMode = !(getFileId() && getSiteUrl());
@@ -476,42 +482,8 @@ export function setupEventHandlers() {
     }
   });
 
-  // Search functionality
-  $("#search-input").on("input", function () {
-    const searchTerm = $(this).val().toLowerCase();
-
-    if (searchTerm === "") {
-      // Show all
-      $(".node-card").removeClass("hidden-by-search");
-      $(".search-highlight").contents().unwrap();
-    } else {
-      // Filter nodes and properties
-      $(".node-card").each(function () {
-        const card = $(this);
-        const nodeId = card.find(".node-id").text().toLowerCase();
-        const nodeType = card.find(".node-type").text().toLowerCase();
-        const propertyTexts = card
-          .find(".property-label, .property-path, .value-display")
-          .map(function () {
-            return $(this).text().toLowerCase();
-          })
-          .get()
-          .join(" ");
-
-        const matches =
-          nodeId.includes(searchTerm) ||
-          nodeType.includes(searchTerm) ||
-          propertyTexts.includes(searchTerm);
-
-        if (matches) {
-          card.removeClass("hidden-by-search").removeClass("collapsed");
-          highlightText(card, searchTerm);
-        } else {
-          card.addClass("hidden-by-search");
-        }
-      });
-    }
-  });
+  // Advanced Search - setup handlers
+  setupAdvancedSearchHandlers();
 
   // Shape selector change handler
   $("#shape-selector").on("change", async function () {
@@ -623,4 +595,7 @@ export function setupEventHandlers() {
 
   // Setup namespace management handlers
   setupNamespaceHandlers();
+  
+  // Setup advanced filter handlers
+  setupAdvancedFilterHandlers();
 }
