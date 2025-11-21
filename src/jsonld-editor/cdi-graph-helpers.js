@@ -22,6 +22,7 @@ import { expandCompactIri } from "./cdi-json-ld-helpers.js";
 import { renderData } from "./render.js";
 import { updateSaveButton } from "./data-extraction.js";
 import { updateNamespaceSectionVisibility } from "./namespace-manager.js";
+import { createUnifiedAddComponent } from "./unified-add-component.js";
 
 // Expand a compact node ID (e.g., "xas:fe_c3d.001") to full URI (e.g., "http://www.cdi4exas.org/fe_c3d.001")
 export function getExpandedNodeId(compactNodeId) {
@@ -204,61 +205,38 @@ export function initializeNewDocument() {
 export function addRootNode() {
   const availableTypes = getAvailableNodeTypes();
 
-  if (availableTypes.length === 0) {
-    // No SHACL shapes loaded, allow custom type
-    const customType = prompt(
-      "No SHACL shapes loaded. Enter a custom node type (e.g., Dataset, Study, Variable):"
-    );
-    if (!customType) {
-      return;
-    }
+  // Convert to suggestions format for unified component
+  const suggestions = availableTypes.map(type => ({
+    name: type.name,
+    label: type.label,
+    path: type.name,
+    description: `Add a ${type.label} node`
+  }));
 
-    createAndAddRootNode(customType);
-    return;
-  }
-
-  // Create a modal-like selection interface using Bootstrap modal
+  // Create modal with unified add component
   const modalHtml = `
-                <div class="modal fade" id="addRootNodeModal" tabindex="-1" role="dialog">
-                    <div class="modal-dialog" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                                <h4 class="modal-title">
-                                    <span class="glyphicon glyphicon-plus-sign"></span>
-                                    Add New Root Node
-                                </h4>
-                            </div>
-                            <div class="modal-body">
-                                <div class="form-group">
-                                    <label for="nodeTypeSelect"><strong>Select Node Type:</strong></label>
-                                    <select id="nodeTypeSelect" class="form-control" size="10" style="height: 300px;">
-                                        ${availableTypes
-                                          .map(
-                                            (type) =>
-                                              `<option value="${type.name}">${type.label}</option>`
-                                          )
-                                          .join("")}
-                                    </select>
-                                    <small class="help-block">Select a type from the available SHACL shapes</small>
-                                </div>
-                                <div class="form-group">
-                                    <label for="customNodeType"><strong>Or enter custom type:</strong></label>
-                                    <input type="text" id="customNodeType" class="form-control" placeholder="e.g., Dataset, Study, Variable">
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                                <button type="button" class="btn btn-primary" id="confirmAddRootNode">
-                                    <span class="glyphicon glyphicon-plus"></span> Add Node
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
+    <div class="modal fade" id="addRootNodeModal" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+            <h4 class="modal-title">
+              <span class="glyphicon glyphicon-plus-sign"></span>
+              Add New Root Node
+            </h4>
+          </div>
+          <div class="modal-body" id="addRootNodeModalBody">
+            <!-- Unified component will be inserted here -->
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
 
   // Remove existing modal if any
   $("#addRootNodeModal").remove();
@@ -266,40 +244,25 @@ export function addRootNode() {
   // Add modal to body
   $("body").append(modalHtml);
 
-  // Show modal
-  $("#addRootNodeModal").modal("show");
-
-  // Handle confirm button
-  $("#confirmAddRootNode")
-    .off("click")
-    .on("click", function () {
-      const customType = $("#customNodeType").val().trim();
-      const selectedType = $("#nodeTypeSelect").val();
-
-      const nodeType = customType || selectedType;
-
-      if (!nodeType) {
-        alert("Please select or enter a node type");
-        return;
-      }
-
+  // Create unified component
+  const unifiedComponent = createUnifiedAddComponent({
+    type: "rootNode",
+    suggestions: suggestions,
+    onAdd: (selectedType, suggestion) => {
       $("#addRootNodeModal").modal("hide");
-      createAndAddRootNode(nodeType);
-    });
-
-  // Handle Enter key in custom type input
-  $("#customNodeType").on("keypress", function (e) {
-    if (e.which === 13) {
-      // Enter key
-      e.preventDefault();
-      $("#confirmAddRootNode").click();
+      createAndAddRootNode(selectedType);
+    },
+    onAddCustom: (fullName) => {
+      $("#addRootNodeModal").modal("hide");
+      createAndAddRootNode(fullName);
     }
   });
 
-  // Handle double-click on list item
-  $("#nodeTypeSelect").on("dblclick", function () {
-    $("#confirmAddRootNode").click();
-  });
+  // Insert component into modal
+  $("#addRootNodeModalBody").append(unifiedComponent);
+
+  // Show modal
+  $("#addRootNodeModal").modal("show");
 }
 
 // Create and add a root node with the specified type

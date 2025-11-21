@@ -487,3 +487,61 @@ body.filter-shacl-only .property-row.extra-field {
 .modal-body ul li {
     margin-bottom: 5px;
 }
+
+/* Unified Add Component Styles */
+.unified-add-section {
+    margin: 15px 0;
+    padding: 15px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+}
+
+.add-item-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.item-dropdown-wrapper {
+    flex: 1;
+}
+
+.item-dropdown {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.item-description {
+    margin: 5px 0 10px 0;
+    padding: 8px;
+    background: #fff;
+    border-left: 3px solid #007bff;
+    font-size: 13px;
+    color: #495057;
+}
+
+.custom-item-section {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #dee2e6;
+}
+
+.custom-input-row {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+.namespace-selector {
+    width: 150px;
+    flex-shrink: 0;
+}
+
+.custom-name-input {
+    flex: 1;
+}

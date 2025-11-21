@@ -12,6 +12,7 @@
 
 import { getJsonData, setJsonData } from "./state.js";
 import { renderData } from "./render.js";
+import { updateNamespaceSelectors } from "./unified-add-component.js";
 
 // Built-in namespaces that should not be deletable
 const PROTECTED_NAMESPACES = new Set([
@@ -205,6 +206,7 @@ export function renderNamespaceTable() {
             removeNamespace(prefix);
             renderNamespaceTable();
             renderData(); // Re-render to apply changes
+            updateNamespaceSelectors(); // Update all namespace selectors
           }
         });
       actionsCell.append(deleteBtn);
@@ -298,6 +300,7 @@ export function setupNamespaceHandlers() {
       $("#namespaceModal").modal("hide");
       renderNamespaceTable();
       renderData(); // Re-render to apply changes
+      updateNamespaceSelectors(); // Update all namespace selectors in unified components
       
       // Show success message
       const message = $(`

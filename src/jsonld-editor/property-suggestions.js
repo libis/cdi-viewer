@@ -12,6 +12,7 @@ import {
 import { expandCompactIri } from "./cdi-json-ld-helpers.js";
 import { renderData, humanizeKey } from "./render.js";
 import { addPropertyToNode } from "./cdi-graph-helpers.js";
+import { createUnifiedAddComponent } from "./unified-add-component.js";
 
 export function getPropertySuggestions(node, types) {
   const shaclShapesStore = getShaclShapesStore();
@@ -291,74 +292,10 @@ export function getPropertySuggestions(node, types) {
 }
 
 export function createPropertySuggestionsSection(suggestions, nodeId) {
-  const section = $("<div>").addClass("add-property-section");
-  section.append(
-    $("<h4>")
-      .text("Add Properties")
-      .css({ "margin-top": "0", "margin-bottom": "10px" })
-  );
-
-  // Sort: required first, then alphabetically
-  suggestions.sort((a, b) => {
-    if (a.required && !b.required) {
-      return -1;
-    }
-    if (!a.required && b.required) {
-      return 1;
-    }
-    return a.label.localeCompare(b.label);
-  });
-
-  // Control row with dropdown and buttons
-  const controlRow = $("<div>").addClass("add-property-controls");
-
-  // Searchable dropdown
-  const dropdownWrapper = $("<div>").addClass("property-dropdown-wrapper");
-  const dropdown = $("<select>").addClass("property-dropdown");
-  dropdown.append($("<option>").val("").text("-- Select a property to add --"));
-
-  suggestions.forEach((suggestion) => {
-    const option = $("<option>")
-      .val(suggestion.path)
-      .attr("data-required", suggestion.required)
-      .attr("data-complex", suggestion.isComplex)
-      .attr("data-max-count", suggestion.maxCount || "")
-      .attr("data-node-class", suggestion.nodeClass || "")
-      .attr("data-description", suggestion.description)
-      .data("suggestion", suggestion);
-
-    let text = suggestion.label;
-    if (suggestion.required) {
-      text = "⚠ " + text + " (REQUIRED)";
-    }
-    if (suggestion.isComplex) {
-      text = text + " [object]";
-    }
-    if (suggestion.maxCount === 1) {
-      text = text + " (max 1)";
-    }
-
-    option.text(text);
-    dropdown.append(option);
-  });
-
-  dropdownWrapper.append(dropdown);
-  controlRow.append(dropdownWrapper);
-
-  // Add button
-  const addBtn = $("<button>")
-    .addClass("btn btn-primary")
-    .html('<span class="glyphicon glyphicon-plus"></span> Add Property')
-    .click(function () {
-      const selectedPath = dropdown.val();
-      if (!selectedPath) {
-        alert("Please select a property first");
-        return;
-      }
-
-      const selectedOption = dropdown.find("option:selected");
-      const suggestion = selectedOption.data("suggestion");
-
+  return createUnifiedAddComponent({
+    type: "property",
+    suggestions: suggestions,
+    onAdd: (selectedPath, suggestion) => {
       if (suggestion.isComplex) {
         // Always create a separate node and reference it
         addComplexPropertyToNode(nodeId, suggestion);
@@ -367,51 +304,12 @@ export function createPropertySuggestionsSection(suggestions, nodeId) {
         addPropertyToNode(nodeId, suggestion.path, "");
         renderData();
       }
-
-      // Remove from dropdown if maxCount = 1
-      if (suggestion.maxCount === 1) {
-        selectedOption.remove();
-      }
-
-      dropdown.val("");
-    });
-
-  controlRow.append(addBtn);
-
-  // Add Custom Property button
-  const addCustomBtn = $("<button>")
-    .addClass("btn btn-default")
-    .html('<span class="glyphicon glyphicon-edit"></span> Add Custom Property')
-    .click(function () {
-      const propName = prompt("Enter custom property name:");
-      if (propName) {
-        addPropertyToNode(nodeId, propName, "");
-        renderData();
-      }
-    });
-
-  controlRow.append(addCustomBtn);
-
-  section.append(controlRow);
-
-  // Description area (shows when property is selected)
-  const descArea = $("<div>")
-    .addClass("property-info")
-    .css({ "margin-top": "10px", display: "none" });
-  section.append(descArea);
-
-  // Show description on selection change
-  dropdown.on("change", function () {
-    const selectedOption = $(this).find("option:selected");
-    const description = selectedOption.attr("data-description");
-    if (description) {
-      descArea.text(description).show();
-    } else {
-      descArea.hide();
+    },
+    onAddCustom: (fullName) => {
+      addPropertyToNode(nodeId, fullName, "");
+      renderData();
     }
   });
-
-  return section;
 }
 
 export function addComplexPropertyToNode(nodeId, suggestion) {
