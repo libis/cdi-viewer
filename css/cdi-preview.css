@@ -78,10 +78,6 @@ body {
     display: none;
 }
 
-.node-card.hidden-by-search {
-    display: none;
-}
-
 .search-highlight {
     background-color: yellow;
     font-weight: bold;
@@ -235,11 +231,6 @@ body {
     border-radius: 4px;
     font-family: monospace;
     word-break: break-all;
-}
-
-/* Hide extra properties when filter is active */
-body.filter-shacl-only .property-row.extra-field {
-    display: none !important;
 }
 
 /* Hide nodes with no SHACL properties when filter is active */
@@ -620,12 +611,9 @@ body.filter-shacl-only .property-row.extra-field {
   font-weight: normal;
 }
 
+/* Hide filtered elements */
 .node-card.hidden-by-filter,
-.node-card.hidden-by-type-filter,
-.node-card.hidden-by-validation-filter,
-.node-card.hidden-by-property-filter,
-.property-row.hidden-by-filter,
-.property-row.hidden-by-property-filter,
-.property-row.hidden-by-empty-filter {
+.property-row.hidden-by-filter {
   display: none;
 }
+

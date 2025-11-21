@@ -19,6 +19,7 @@ When you run `npm install`, it creates a symlink from `node_modules/shacl-engine
 ## Why This Works on GitHub Actions
 
 ✅ **The entire `vendor/` directory is committed to git**
+
 - GitHub Actions clones your repo with `vendor/shacl-engine/` included
 - `npm install` creates the symlink to the vendored copy
 - `npm run build` bundles from the vendored source
@@ -31,7 +32,7 @@ When you run `npm install`, it creates a symlink from `node_modules/shacl-engine
 **Files modified (3 files, ~60 lines):**
 
 1. **Validator.js** - Added `sh:target` to shape detection
-2. **lib/Shape.js** - Made `resolveTargets()` async  
+2. **lib/Shape.js** - Made `resolveTargets()` async
 3. **lib/TargetResolver.js** - Implemented SPARQL target execution
 
 **Feature:** Supports `sh:SPARQLTarget` for advanced node selection via SPARQL queries
@@ -78,11 +79,13 @@ npm run build
 ## Files Included
 
 The vendored copy includes only essential files:
+
 - Source code (`lib/`, `*.js`)
 - Package metadata (`package.json`, `README.md`, `LICENSE.md`)
 - Examples (`examples/`)
 
 Excluded:
+
 - Tests (`test/`)
 - Git data (`.git/`, `.github/`)
 - Build artifacts (`node_modules/`, `dist/`)

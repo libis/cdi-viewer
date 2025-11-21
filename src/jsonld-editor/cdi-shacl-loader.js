@@ -236,7 +236,7 @@ export async function jsonLdToN3Store(jsonLdData) {
     // Convert JSON-LD to N-Quads format
     // Use DDI-CDI base URI for resolving relative IDs (fragments like #Mass)
     const baseUri = "http://ddialliance.org/Specification/DDI-CDI/1.0/RDF/";
-    
+
     const nquads = await jsonld.toRDF(jsonLdData, {
       format: "application/n-quads",
       base: baseUri,

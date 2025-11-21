@@ -47,6 +47,7 @@ Export or Save to Dataverse
 **Purpose:** Enhanced search functionality with multiple modes and navigation
 
 **Global Variables (window.\*):**
+
 - None (uses state.js getters/setters)
 
 **Key Functions:**
@@ -61,6 +62,7 @@ Export or Save to Dataverse
 - `setupAdvancedSearchHandlers()` - Wire up all search controls
 
 **Integration:**
+
 - Called from event-handlers.js
 - Uses filter state from advanced-filter.js (getFilterState())
 - Applies CSS class `.current-search-match` with pulse animation
@@ -71,6 +73,7 @@ Export or Save to Dataverse
 **Purpose:** Comprehensive filtering system with multiple filter types
 
 **Global Variables (window.\*):**
+
 - None (uses state.js getters/setters)
 
 **Key Functions:**
@@ -90,13 +93,14 @@ Export or Save to Dataverse
 - `setupAdvancedFilterHandlers()` - Wire up all filter controls
 
 **Filter Types:**
-1. Node type (multi-select with counts)
-2. Validation status (all/valid/invalid/modified/missing required)
-3. Property status (all/SHACL only/extra only)
-4. Hide empty properties (toggle)
-5. Search scope (names/values/IDs/types checkboxes)
+
+1. Validation status (all/valid/invalid/modified/missing required)
+2. Property status (all/SHACL only/extra only)
+3. Hide empty properties (toggle)
+4. Search scope (names/values/IDs/types checkboxes)
 
 **Integration:**
+
 - Called from event-handlers.js
 - Called from validation.js (initializeFilters after validation)
 - Uses CSS classes: `.hidden-by-type-filter`, `.hidden-by-validation-filter`, `.hidden-by-property-filter`, `.hidden-by-empty-filter`
@@ -113,6 +117,7 @@ Export or Save to Dataverse
 - Context: "property" or "root-node"
 
 **Features:**
+
 - SHACL-defined items dropdown with descriptions
 - Custom input with namespace selector
 - "Add new namespace" option (opens modal)
@@ -130,6 +135,7 @@ Export or Save to Dataverse
 - `isBuiltInNamespace(prefix)` - Check if prefix is built-in (protected)
 
 **Integration:**
+
 - Modal-based UI (no scroll)
 - Integrates with unified-add-component
 
@@ -423,7 +429,6 @@ attachEventHandlers();
 - Validate button
 - Export JSON-LD button
 - Collapse/Expand All buttons
-- Filter SHACL Only toggle
 - Search input
 - Shape selector dropdown
 - Load Local File button
@@ -1003,22 +1008,26 @@ if (!window.shaclShapesStore) {
 Located in `vendor/shacl-engine/` - Modified version with SPARQL target support.
 
 **Why Vendored:**
+
 - Upstream doesn't yet support `sh:SPARQLTarget` (SHACL Advanced Features)
 - Required for CDIF Discovery shapes that validate only root datasets
 - Temporary until feature is merged upstream
 
 **Modifications (3 files, ~60 lines):**
+
 1. `Validator.js` - Added `sh:target` to shape detection
 2. `lib/Shape.js` - Made `resolveTargets()` async
 3. `lib/TargetResolver.js` - Implemented SPARQL target execution
 
 **Integration:**
+
 - `package.json`: `"shacl-engine": "file:./vendor/shacl-engine"`
 - `npm install` creates symlink: `node_modules/shacl-engine -> vendor/shacl-engine`
 - Rollup bundles from vendored source
 - Works on GitHub Actions (vendor/ committed to git)
 
 **Migration Path:**
+
 - Submit PR to rdf-ext/shacl-engine
 - Once merged and published, update to npm version
 - Remove vendor/ directory

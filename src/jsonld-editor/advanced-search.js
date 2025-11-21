@@ -2,7 +2,7 @@
 
 /**
  * Advanced Search & Filter Module
- * 
+ *
  * Provides enhanced search capabilities:
  * - Case-sensitive search
  * - Regex search
@@ -11,7 +11,12 @@
  */
 
 import { highlightText } from "./render.js";
-import { getFilterState } from "./advanced-filter.js";
+import {
+  getFilterState,
+  setSearchPredicate,
+  clearSearchPredicate,
+  applyFilters,
+} from "./advanced-filter.js";
 
 // Search state
 let searchMatches = [];
@@ -27,7 +32,7 @@ function matchesSearch(text, searchTerm) {
   if (!searchTerm) {
     return true;
   }
-  
+
   if (useRegex) {
     try {
       const flags = caseSensitive ? "g" : "gi";
@@ -52,84 +57,101 @@ function matchesSearch(text, searchTerm) {
 export function performSearch() {
   const searchTerm = $("#search-input").val();
   lastSearchTerm = searchTerm;
-  
+
   // Clear error
   $("#search-error").hide();
-  
+
   // Clear previous highlights
   $(".search-highlight").contents().unwrap();
   $(".current-search-match").removeClass("current-search-match");
-  
+
   if (searchTerm === "") {
-    // Show all
-    $(".node-card").removeClass("hidden-by-search");
+    // Clear search predicate
+    clearSearchPredicate();
     searchMatches = [];
     currentMatchIndex = -1;
     updateSearchCounter();
     updateNavigationButtons();
+    applyFilters(); // Re-apply other filters
     return;
   }
 
-  // Filter nodes and properties
+  // Build search results (for highlighting and navigation)
   searchMatches = [];
-  
+
   // Get search scope from filter state
   const filterState = getFilterState();
   const searchInNames = filterState.searchScope.includes("names");
   const searchInValues = filterState.searchScope.includes("values");
   const searchInIds = filterState.searchScope.includes("ids");
   const searchInTypes = filterState.searchScope.includes("types");
-  
-  $(".node-card").each(function () {
-    const card = $(this);
-    let matches = false;
-    
+
+  // Create search predicate function
+  const predicate = (card) => {
     // Check node ID
     if (searchInIds) {
       const nodeId = card.find(".node-id").text();
       if (matchesSearch(nodeId, searchTerm)) {
-        matches = true;
+        return true;
       }
     }
-    
+
     // Check node type
     if (searchInTypes) {
       const nodeType = card.find(".node-type").text();
       if (matchesSearch(nodeType, searchTerm)) {
-        matches = true;
+        return true;
       }
     }
-    
+
     // Check properties
     if (searchInNames || searchInValues) {
-      card.find(".property-label, .property-path, .value-display").each(function() {
-        const isLabel = $(this).hasClass("property-label") || $(this).hasClass("property-path");
-        
-        if ((searchInNames && isLabel) || (searchInValues && !isLabel)) {
-          const text = $(this).text();
-          if (matchesSearch(text, searchTerm)) {
-            matches = true;
-            return false; // Break loop
+      let found = false;
+      card
+        .find(".property-label, .property-path, .value-display")
+        .each(function () {
+          const isLabel =
+            $(this).hasClass("property-label") ||
+            $(this).hasClass("property-path");
+
+          if ((searchInNames && isLabel) || (searchInValues && !isLabel)) {
+            const text = $(this).text();
+            if (matchesSearch(text, searchTerm)) {
+              found = true;
+              return false; // Break loop
+            }
           }
-        }
-      });
+        });
+      if (found) {
+        return true;
+      }
     }
 
-    if (matches) {
-      card.removeClass("hidden-by-search").removeClass("collapsed");
+    return false;
+  };
+
+  // Set the search predicate in filter system
+  setSearchPredicate(predicate);
+
+  // Build list of matching nodes (for navigation and highlighting)
+  $(".node-card").each(function () {
+    const card = $(this);
+    if (predicate(card)) {
+      card.removeClass("collapsed");
       highlightText(card, searchTerm);
       searchMatches.push(card[0]);
-    } else {
-      card.addClass("hidden-by-search");
     }
   });
 
+  // Apply all filters (including search predicate)
+  applyFilters();
+
   // Reset current match index
   currentMatchIndex = -1;
-  
+
   updateSearchCounter();
   updateNavigationButtons();
-  
+
   // If there are matches, navigate to first one
   if (searchMatches.length > 0) {
     navigateToMatch("next");
@@ -141,13 +163,15 @@ export function performSearch() {
  */
 function updateSearchCounter() {
   const counter = $("#search-counter");
-  
+
   if (lastSearchTerm === "") {
     counter.text("");
   } else if (searchMatches.length === 0) {
     counter.text("No matches").css("color", "#dc3545");
   } else if (currentMatchIndex >= 0) {
-    counter.text(`${currentMatchIndex + 1} of ${searchMatches.length}`).css("color", "#28a745");
+    counter
+      .text(`${currentMatchIndex + 1} of ${searchMatches.length}`)
+      .css("color", "#28a745");
   } else {
     counter.text(`${searchMatches.length} found`).css("color", "#28a745");
   }
@@ -169,26 +193,27 @@ export function navigateToMatch(direction) {
   if (searchMatches.length === 0) {
     return;
   }
-  
+
   // Update index
   if (direction === "next") {
     currentMatchIndex = (currentMatchIndex + 1) % searchMatches.length;
   } else {
-    currentMatchIndex = (currentMatchIndex - 1 + searchMatches.length) % searchMatches.length;
+    currentMatchIndex =
+      (currentMatchIndex - 1 + searchMatches.length) % searchMatches.length;
   }
-  
+
   // Scroll to match and highlight it
   const matchCard = $(searchMatches[currentMatchIndex]);
-  
+
   // Remove previous current match highlight
   $(".current-search-match").removeClass("current-search-match");
-  
+
   // Add current match highlight
   matchCard.addClass("current-search-match");
-  
+
   // Scroll to match
   matchCard[0].scrollIntoView({ behavior: "smooth", block: "center" });
-  
+
   // Update counter
   updateSearchCounter();
 }
@@ -198,6 +223,10 @@ export function navigateToMatch(direction) {
  */
 export function clearSearch() {
   $("#search-input").val("");
+  caseSensitive = false;
+  useRegex = false;
+  $("#toggle-case-btn").removeClass("active");
+  $("#toggle-regex-btn").removeClass("active");
   performSearch();
 }
 
@@ -207,7 +236,7 @@ export function clearSearch() {
 export function toggleCaseSensitive() {
   caseSensitive = !caseSensitive;
   $("#toggle-case-btn").toggleClass("active", caseSensitive);
-  
+
   // Re-run search if there's a search term
   if ($("#search-input").val()) {
     performSearch();
@@ -220,7 +249,7 @@ export function toggleCaseSensitive() {
 export function toggleRegex() {
   useRegex = !useRegex;
   $("#toggle-regex-btn").toggleClass("active", useRegex);
-  
+
   // Re-run search if there's a search term
   if ($("#search-input").val()) {
     performSearch();
@@ -232,57 +261,62 @@ export function toggleRegex() {
  */
 export function setupAdvancedSearchHandlers() {
   // Search input
-  $("#search-input").on("input", function() {
+  $("#search-input").on("input", function () {
     const hasText = $(this).val().length > 0;
-    
+
     // Show/hide clear button
     if (hasText) {
       $("#clear-search-btn").fadeIn(200);
     } else {
       $("#clear-search-btn").fadeOut(200);
     }
-    
+
     performSearch();
   });
 
   // Clear button
-  $("#clear-search-btn").click(function() {
+  $("#clear-search-btn").click(function () {
     clearSearch();
     $("#search-input").focus();
   });
 
   // Case sensitivity toggle
-  $("#toggle-case-btn").click(function() {
+  $("#toggle-case-btn").click(function () {
     toggleCaseSensitive();
   });
 
   // Regex toggle
-  $("#toggle-regex-btn").click(function() {
+  $("#toggle-regex-btn").click(function () {
     toggleRegex();
   });
 
   // Navigation buttons
-  $("#prev-match-btn").click(function() {
+  $("#prev-match-btn").click(function () {
     navigateToMatch("previous");
   });
 
-  $("#next-match-btn").click(function() {
+  $("#next-match-btn").click(function () {
     navigateToMatch("next");
   });
 
   // Keyboard shortcuts
-  $(document).on("keydown", function(e) {
+  $(document).on("keydown", function (e) {
     // F3 or Enter in search box
-    if (e.key === "F3" || (e.key === "Enter" && $("#search-input").is(":focus"))) {
+    if (
+      e.key === "F3" ||
+      (e.key === "Enter" && $("#search-input").is(":focus"))
+    ) {
       e.preventDefault();
       if (searchMatches.length > 0) {
         navigateToMatch(e.shiftKey ? "previous" : "next");
       }
     }
   });
-  
+
   // Add error message element if it doesn't exist
   if ($("#search-error").length === 0) {
-    $("#search-counter").after('<span id="search-error" class="search-error" style="display: none;"></span>');
+    $("#search-counter").after(
+      '<span id="search-error" class="search-error" style="display: none;"></span>'
+    );
   }
 }

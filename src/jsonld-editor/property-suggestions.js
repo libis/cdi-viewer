@@ -308,7 +308,7 @@ export function createPropertySuggestionsSection(suggestions, nodeId) {
     onAddCustom: (fullName) => {
       addPropertyToNode(nodeId, fullName, "");
       renderData();
-    }
+    },
   });
 }
 

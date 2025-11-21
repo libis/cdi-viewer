@@ -146,58 +146,65 @@ export function getAvailableNodeTypes() {
 // Initialize a new empty JSON-LD document based on the selected SHACL shape
 export function initializeNewDocument() {
   const selectedShape = $("#shape-selector").val();
-  
+
   // Define contexts and filenames for each shape type
   const shapeConfigs = {
     "ddi-cdi-official": {
-      context: "https://ddialliance.org/Specification/DDI-CDI/1.0/RDF/DDI-CDI_canonical.jsonld",
-      filename: "new-cdi-document.jsonld"
+      context:
+        "https://ddialliance.org/Specification/DDI-CDI/1.0/RDF/DDI-CDI_canonical.jsonld",
+      filename: "new-cdi-document.jsonld",
     },
     "cdif-core": {
-      context: "https://ddialliance.org/Specification/DDI-CDI/1.0/RDF/DDI-CDI_canonical.jsonld",
-      filename: "new-cdif-document.jsonld"
+      context:
+        "https://ddialliance.org/Specification/DDI-CDI/1.0/RDF/DDI-CDI_canonical.jsonld",
+      filename: "new-cdif-document.jsonld",
     },
     "cdif-core-shacl": {
-      context: "https://ddialliance.org/Specification/DDI-CDI/1.0/RDF/DDI-CDI_canonical.jsonld",
-      filename: "new-cdif-document.jsonld"
+      context:
+        "https://ddialliance.org/Specification/DDI-CDI/1.0/RDF/DDI-CDI_canonical.jsonld",
+      filename: "new-cdif-document.jsonld",
     },
     "dcat-ap": {
       context: "https://www.w3.org/ns/dcat",
-      filename: "new-dcat-catalog.jsonld"
+      filename: "new-dcat-catalog.jsonld",
     },
-    "datacube": {
+    datacube: {
       context: "https://www.w3.org/ns/qb#",
-      filename: "new-datacube.jsonld"
+      filename: "new-datacube.jsonld",
     },
-    "skos": {
+    skos: {
       context: "http://www.w3.org/2004/02/skos/core#",
-      filename: "new-skos-scheme.jsonld"
+      filename: "new-skos-scheme.jsonld",
     },
     "local-fallback": {
-      context: "https://ddialliance.org/Specification/DDI-CDI/1.0/RDF/DDI-CDI_canonical.jsonld",
-      filename: "new-cdi-document.jsonld"
-    }
+      context:
+        "https://ddialliance.org/Specification/DDI-CDI/1.0/RDF/DDI-CDI_canonical.jsonld",
+      filename: "new-cdi-document.jsonld",
+    },
   };
-  
+
   // Get configuration or use generic defaults
   const config = shapeConfigs[selectedShape] || {
     context: {},
-    filename: "new-document.jsonld"
+    filename: "new-document.jsonld",
   };
-  
+
   // Create new empty JSON-LD document
   const newDocument = {
     "@context": config.context,
-    "@graph": []
+    "@graph": [],
   };
-  
+
   // Set the new document as the current data
   setJsonData(newDocument);
   setOriginalData(JSON.parse(JSON.stringify(newDocument)));
   setOriginalFileName(config.filename);
-  
-  console.log(`Initialized new ${selectedShape || 'generic'} document:`, config.filename);
-  
+
+  console.log(
+    `Initialized new ${selectedShape || "generic"} document:`,
+    config.filename
+  );
+
   return newDocument;
 }
 
@@ -206,11 +213,11 @@ export function renderAddRootNodeComponent() {
   const availableTypes = getAvailableNodeTypes();
 
   // Convert to suggestions format for unified component
-  const suggestions = availableTypes.map(type => ({
+  const suggestions = availableTypes.map((type) => ({
     name: type.name,
     label: type.label,
     path: type.name,
-    description: `Add a ${type.label} node`
+    description: `Add a ${type.label} node`,
   }));
 
   // Create unified component
@@ -222,7 +229,7 @@ export function renderAddRootNodeComponent() {
     },
     onAddCustom: (fullName) => {
       createAndAddRootNode(fullName);
-    }
+    },
   });
 
   // Clear and populate the container
@@ -233,26 +240,28 @@ export function renderAddRootNodeComponent() {
 // Create and add a root node with the specified type
 export function createAndAddRootNode(nodeType) {
   let jsonData = getJsonData();
-  
+
   // If no data loaded yet, initialize a new document
   if (!jsonData || !jsonData["@graph"]) {
     jsonData = initializeNewDocument();
-    
+
     // Update namespace section visibility with new context
     updateNamespaceSectionVisibility();
-    
+
     // Show success message
     $("#content").prepend(`
       <div class="alert alert-success" style="margin-bottom: 10px;">
         <strong>New document created!</strong> Starting with empty JSON-LD document.
       </div>
     `);
-    
+
     // Auto-remove message after 3 seconds
     setTimeout(() => {
-      $("#content .alert-success").first().fadeOut(500, function() {
-        $(this).remove();
-      });
+      $("#content .alert-success")
+        .first()
+        .fadeOut(500, function () {
+          $(this).remove();
+        });
     }, 3000);
   }
 

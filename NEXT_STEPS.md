@@ -3,11 +3,12 @@
 ## ✅ Recently Completed (November 2025)
 
 ### Advanced Search & Filter (November 21, 2025)
+
 - ✅ **Enhanced Search:**
   - Search counter showing "X of Y matches"
   - Clear button with fade animations
   - Case-sensitive toggle (Aa button)
-  - Regex search support (.* button) with error handling
+  - Regex search support (.\* button) with error handling
   - Previous/Next navigation buttons
   - Keyboard shortcuts: F3, Shift+F3, Enter
   - Current match highlighting with pulse animation
@@ -29,12 +30,14 @@
   - Modular architecture (advanced-search.js, advanced-filter.js)
 
 ### SPARQL Target Support (November 2025)
+
 - ✅ Implemented SPARQL target support in shacl-engine (~60 lines, 3 files)
 - ✅ Added `sh:target` detection in UI for property classification
 - ✅ Properties from SPARQL-targeted shapes now show as "SHACL-defined" (blue badges)
 - ✅ Validated with CDIF Discovery shapes - working correctly in production
 
 ### Deployment & Build (November 2025)
+
 - ✅ GitHub Actions workflow for automated builds and deployment
 - ✅ Vendored shacl-engine with SPARQL support for independence
 - ✅ N3 and jsonld exposed globally in bundle
@@ -42,6 +45,7 @@
 - ✅ KU Leuven favicon added
 
 ### Dataverse Integration (November 2025)
+
 - ✅ Created single optimized bundle (1.2 MB) for dataverse-previewers
 - ✅ Updated CdiPreview.html to use bundle
 - ✅ Removed individual JS files (now bundled)
@@ -64,6 +68,7 @@
   - Shows on initial page load in standalone
 
 ### Namespace Management (November 2025)
+
 - ✅ View current namespace prefixes from @context
 - ✅ Add custom namespace prefixes with validation
 - ✅ Remove custom namespaces (built-in protected)
@@ -72,12 +77,14 @@
 - ✅ Integration with property/node creation
 
 ### Document Creation (November 2025)
+
 - ✅ Create new empty documents from scratch
 - ✅ Shape-specific contexts and filenames
 - ✅ Support for DDI-CDI, CDIF, DCAT-AP, DataCube, SKOS, generic
 - ✅ Automatic initialization when adding root node to empty state
 
 ### Unified Add Component (November 2025)
+
 - ✅ Consistent UX for adding properties and root nodes
 - ✅ SHACL-defined items dropdown with descriptions
 - ✅ Custom input section with namespace selector
@@ -87,13 +94,16 @@
 - ✅ Add Root Node inline component (not modal)
 
 ### UI Improvements (November 2025)
+
 - ✅ Export button changed to green (consistent with I/O actions)
 - ✅ Add Root Node button moved to bottom of form (inline component)
 
 ## 🎯 Current Focus
 
 ### Feature Freeze Declared (November 21, 2025)
+
 All planned features for v1.0 release have been implemented. Focus now on:
+
 - Documentation updates (ensuring all .md files reflect current state)
 - Comprehensive testing
 - Bug fixes only (no new features)
@@ -101,9 +111,11 @@ All planned features for v1.0 release have been implemented. Focus now on:
 ## 🎯 Next Steps After Feature Freeze
 
 ### 1. Comprehensive Testing (HIGH PRIORITY)
+
 **Goal:** Validate all functionality before release
 
 **Integrated Mode Testing:**
+
 - Load viewer with fileId and siteUrl parameters
 - Verify URL field hidden in save modal
 - Verify filename pre-filled from metadata
@@ -111,6 +123,7 @@ All planned features for v1.0 release have been implemented. Focus now on:
 - Test error handling
 
 **Standalone Mode Testing:**
+
 - Load from Dataverse button functionality
 - Save to Dataverse (replace + add to dataset)
 - Create new documents and save
@@ -119,6 +132,7 @@ All planned features for v1.0 release have been implemented. Focus now on:
 - Advanced search and filter features
 
 **End-to-End Workflows:**
+
 - Load → enable edit → modify properties → save → verify
 - Create new document → add nodes → add properties → export
 - Load file → validate → fix violations → re-validate
@@ -126,6 +140,7 @@ All planned features for v1.0 release have been implemented. Focus now on:
 - Search with filters → navigate matches → modify → save
 
 **UI/UX Testing:**
+
 - Advanced search (case/regex, navigation, keyboard shortcuts)
 - Filter panel (all filter types, persistence)
 - All button visibility states
@@ -133,6 +148,7 @@ All planned features for v1.0 release have been implemented. Focus now on:
 - Namespace management
 
 ### 2. Bug Fixes (HIGH PRIORITY)
+
 **Goal:** Fix any issues discovered during testing
 
 - Address bugs found in testing phase
@@ -140,6 +156,7 @@ All planned features for v1.0 release have been implemented. Focus now on:
 - Performance optimization if needed
 
 ### 3. Repository Polish (MEDIUM PRIORITY)
+
 **Goal:** Professional presentation for release
 
 - Add GitHub topics: `json-ld`, `rdf`, `shacl`, `dataverse`, `ddi-cdi`, `metadata`, `semantic-web`
@@ -149,6 +166,7 @@ All planned features for v1.0 release have been implemented. Focus now on:
 - Update screenshots/demos if needed
 
 ### 4. Release v1.0 (HIGH PRIORITY)
+
 **Goal:** Official release with all features
 
 - Create release notes
@@ -157,6 +175,7 @@ All planned features for v1.0 release have been implemented. Focus now on:
 - Announce in Dataverse community
 
 ### 5. Submit PR to dataverse-previewers (MEDIUM PRIORITY)
+
 **Goal:** Share CDI Viewer with Dataverse community
 
 - Submit PR to gdcc/dataverse-previewers with:
@@ -167,6 +186,7 @@ All planned features for v1.0 release have been implemented. Focus now on:
   - Link to cdi-viewer repository
 
 ### 6. Submit PR to rdf-ext/shacl-engine (MEDIUM PRIORITY)
+
 **Goal:** Contribute SPARQL target support upstream
 
 - Update shacl-engine README with SPARQL target documentation
@@ -179,6 +199,7 @@ All planned features for v1.0 release have been implemented. Focus now on:
 ## 🔮 Future Enhancements (Post-v1.0)
 
 ### Undo/Redo Functionality (Priority: High)
+
 **Goal:** Allow users to undo/redo changes while editing
 
 - Implement state history management
@@ -190,6 +211,7 @@ All planned features for v1.0 release have been implemented. Focus now on:
 - Limit history size (e.g., last 50 actions)
 
 ### Test Coverage (Priority: Medium)
+
 **Goal:** Ensure code quality and prevent regressions
 
 - Increase test coverage for core modules
@@ -199,6 +221,7 @@ All planned features for v1.0 release have been implemented. Focus now on:
 - Target: >80% coverage
 
 ### Additional Feature Ideas (Lower Priority)
+
 - Export to different formats (Turtle, N-Triples, RDF/XML)
 - Import from SPARQL endpoint
 - Batch editing capabilities
@@ -208,6 +231,7 @@ All planned features for v1.0 release have been implemented. Focus now on:
 - Version history and diff views
 
 ### Production Considerations (Long-term)
+
 - Security review
 - Performance optimization for large files
 - Comprehensive error handling

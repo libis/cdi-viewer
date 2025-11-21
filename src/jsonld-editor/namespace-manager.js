@@ -19,7 +19,7 @@ const PROTECTED_NAMESPACES = new Set([
   "@vocab",
   "@base",
   "@language",
-  "@version"
+  "@version",
 ]);
 
 /**
@@ -37,7 +37,7 @@ export function extractNamespaces() {
 
   // Handle array of contexts
   if (Array.isArray(context)) {
-    context.forEach(ctx => {
+    context.forEach((ctx) => {
       if (typeof ctx === "object" && ctx !== null) {
         Object.entries(ctx).forEach(([key, value]) => {
           if (typeof value === "string") {
@@ -86,13 +86,15 @@ export function addNamespace(prefix, uri) {
   // If context is a string URL, convert to object
   if (typeof context === "string") {
     context = jsonData["@context"] = {
-      "@vocab": context
+      "@vocab": context,
     };
   }
 
   // If context is an array, add to the first object or create one
   if (Array.isArray(context)) {
-    let objectContext = context.find(c => typeof c === "object" && c !== null);
+    let objectContext = context.find(
+      (c) => typeof c === "object" && c !== null
+    );
     if (!objectContext) {
       objectContext = {};
       context.push(objectContext);
@@ -128,7 +130,7 @@ export function removeNamespace(prefix) {
 
   // Handle array of contexts
   if (Array.isArray(context)) {
-    context.forEach(ctx => {
+    context.forEach((ctx) => {
       if (typeof ctx === "object" && ctx !== null && ctx[prefix]) {
         delete ctx[prefix];
       }
@@ -162,7 +164,9 @@ export function renderNamespaceTable() {
   tbody.empty();
 
   // Filter out JSON-LD keywords (@ prefixed keys)
-  const entries = Object.entries(namespaces).filter(([prefix]) => !prefix.startsWith('@'));
+  const entries = Object.entries(namespaces).filter(
+    ([prefix]) => !prefix.startsWith("@")
+  );
 
   if (entries.length === 0) {
     tbody.append(`
@@ -202,7 +206,7 @@ export function renderNamespaceTable() {
         .addClass("btn btn-xs btn-danger")
         .html('<span class="glyphicon glyphicon-trash"></span>')
         .attr("title", "Delete namespace")
-        .click(function() {
+        .click(function () {
           if (confirm(`Remove namespace prefix "${prefix}"?`)) {
             removeNamespace(prefix);
             renderNamespaceTable();
@@ -238,23 +242,31 @@ export function updateNamespaceSectionVisibility() {
  */
 export function setupNamespaceHandlers() {
   // Toggle collapse/expand
-  $("#toggle-namespace-btn").click(function() {
+  $("#toggle-namespace-btn").click(function () {
     const content = $("#namespace-content");
     const icon = $(this).find(".glyphicon");
-    
+
     if (content.is(":visible")) {
       content.slideUp();
-      icon.removeClass("glyphicon-chevron-up").addClass("glyphicon-chevron-down");
-      $(this).html('<span class="glyphicon glyphicon-chevron-down"></span> Expand');
+      icon
+        .removeClass("glyphicon-chevron-up")
+        .addClass("glyphicon-chevron-down");
+      $(this).html(
+        '<span class="glyphicon glyphicon-chevron-down"></span> Expand'
+      );
     } else {
       content.slideDown();
-      icon.removeClass("glyphicon-chevron-down").addClass("glyphicon-chevron-up");
-      $(this).html('<span class="glyphicon glyphicon-chevron-up"></span> Collapse');
+      icon
+        .removeClass("glyphicon-chevron-down")
+        .addClass("glyphicon-chevron-up");
+      $(this).html(
+        '<span class="glyphicon glyphicon-chevron-up"></span> Collapse'
+      );
     }
   });
 
   // Add namespace button
-  $("#add-namespace-btn").click(function() {
+  $("#add-namespace-btn").click(function () {
     $("#namespacePrefixInput").val("");
     $("#namespaceUriInput").val("");
     $("#namespaceValidationFeedback").html("");
@@ -262,12 +274,12 @@ export function setupNamespaceHandlers() {
   });
 
   // Validate inputs in real-time
-  $("#namespacePrefixInput, #namespaceUriInput").on("input", function() {
+  $("#namespacePrefixInput, #namespaceUriInput").on("input", function () {
     validateNamespaceInputs();
   });
 
   // Confirm add namespace
-  $("#confirmNamespaceBtn").click(function() {
+  $("#confirmNamespaceBtn").click(function () {
     const prefix = $("#namespacePrefixInput").val().trim();
     const uri = $("#namespaceUriInput").val().trim();
 
@@ -278,7 +290,9 @@ export function setupNamespaceHandlers() {
 
     // Validate prefix format
     if (!/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(prefix)) {
-      alert("Invalid prefix format. Must start with a letter and contain only letters, numbers, hyphens, and underscores.");
+      alert(
+        "Invalid prefix format. Must start with a letter and contain only letters, numbers, hyphens, and underscores."
+      );
       return;
     }
 
@@ -302,7 +316,7 @@ export function setupNamespaceHandlers() {
       renderNamespaceTable();
       renderData(); // Re-render to apply changes
       updateNamespaceSelectors(); // Update all namespace selectors in unified components
-      
+
       // Show success message
       const message = $(`
         <div class="alert alert-success" style="margin: 10px 0;">
@@ -310,12 +324,18 @@ export function setupNamespaceHandlers() {
         </div>
       `);
       $("#namespace-section").after(message);
-      setTimeout(() => message.fadeOut(500, function() { $(this).remove(); }), 3000);
+      setTimeout(
+        () =>
+          message.fadeOut(500, function () {
+            $(this).remove();
+          }),
+        3000
+      );
     }
   });
 
   // Allow Enter key to confirm
-  $("#namespacePrefixInput, #namespaceUriInput").keypress(function(e) {
+  $("#namespacePrefixInput, #namespaceUriInput").keypress(function (e) {
     if (e.which === 13) {
       e.preventDefault();
       $("#confirmNamespaceBtn").click();
@@ -339,7 +359,9 @@ function validateNamespaceInputs() {
   const errors = [];
 
   if (prefix && !/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(prefix)) {
-    errors.push("Prefix must start with a letter and contain only letters, numbers, hyphens, and underscores");
+    errors.push(
+      "Prefix must start with a letter and contain only letters, numbers, hyphens, and underscores"
+    );
   }
 
   if (uri && !uri.match(/^https?:\/\/.+/)) {
@@ -349,7 +371,7 @@ function validateNamespaceInputs() {
   if (errors.length > 0) {
     feedback.html(`
       <div class="alert alert-danger" style="margin-bottom: 0;">
-        ${errors.map(e => `<div>• ${e}</div>`).join("")}
+        ${errors.map((e) => `<div>• ${e}</div>`).join("")}
       </div>
     `);
   } else if (prefix && uri) {

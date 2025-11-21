@@ -21,7 +21,7 @@
     "cachedLocalContext": "writable",
     "validationViolations": "writable",
     "currentSearchTerm": "writable",
-    "currentFilterShaclOnly": "writable",
+
     "LOG_LEVEL": "writable",
     "log": "readonly",
     "normalizeToGraphFormat": "readonly",

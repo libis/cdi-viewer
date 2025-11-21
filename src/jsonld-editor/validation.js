@@ -43,7 +43,7 @@ function clearStatusTimeout() {
 export function setValidationStatus(html, autoClearMs = 0) {
   clearStatusTimeout();
   $("#validation-status").html(html);
-  
+
   if (autoClearMs > 0) {
     statusClearTimeout = setTimeout(() => {
       $("#validation-status").html("");
@@ -71,7 +71,7 @@ function storeToDataset(store) {
 export async function validateData() {
   // Clear any pending timeout from previous messages (e.g., "Shapes loaded")
   clearStatusTimeout();
-  
+
   $("#validation-status").html(
     '<span class="label label-info">Validating...</span>'
   );
@@ -249,29 +249,40 @@ function updatePropertyValidation(violations) {
     .removeClass("invalid")
     .find(".validation-error-icon")
     .remove();
-  
-  $(".node-card")
-    .removeClass("invalid")
-    .find(".node-validation-icon")
-    .remove();
+
+  $(".node-card").removeClass("invalid").find(".node-validation-icon").remove();
 
   // Initialize tooltips at the end
   const initTooltips = () => {
     $('[data-toggle="tooltip"]').tooltip();
   };
 
-  // Process each violation
+  // Group violations by node ID and path to consolidate messages
+  const groupedViolations = new Map();
   violations.forEach((violation) => {
+    const key = `${violation.focusNode}|${violation.path || "unknown"}`;
+    if (!groupedViolations.has(key)) {
+      groupedViolations.set(key, {
+        focusNode: violation.focusNode,
+        path: violation.path,
+        messages: [],
+      });
+    }
+    groupedViolations.get(key).messages.push(violation.message);
+  });
+
+  // Process each unique node/path combination
+  groupedViolations.forEach((violation) => {
     const nodeId = violation.focusNode;
     const path = violation.path;
-    
+
     // Extract fragment from full URI if present
     // HTML uses relative fragments (#Mass) while validation reports use full URIs (http://...#Mass)
     let nodeIdFragment = nodeId;
-    if (nodeId && nodeId.includes('#')) {
-      nodeIdFragment = '#' + nodeId.split('#').pop();
+    if (nodeId && nodeId.includes("#")) {
+      nodeIdFragment = "#" + nodeId.split("#").pop();
     }
-    
+
     // Handle property-level violations (specific property path)
     if (nodeId && path && path !== "unknown") {
       const propertyRow = $(
@@ -281,15 +292,22 @@ function updatePropertyValidation(violations) {
       if (propertyRow.length > 0) {
         propertyRow.addClass("invalid");
 
-        // Add validation icon with tooltip
-        const message = violation.message || "Validation failed";
+        // Add validation icon with consolidated messages
+        const message =
+          violation.messages.length > 0
+            ? violation.messages.join("; ")
+            : "Validation failed";
         const icon = $("<span>")
-          .addClass("glyphicon glyphicon-exclamation-sign validation-error-icon")
+          .addClass(
+            "glyphicon glyphicon-exclamation-sign validation-error-icon"
+          )
           .attr("title", message)
           .attr("data-toggle", "tooltip")
           .attr("data-placement", "top");
-        
-        const labelArea = propertyRow.find(".property-label, .property-path").first();
+
+        const labelArea = propertyRow
+          .find(".property-label, .property-path")
+          .first();
         if (labelArea.length > 0) {
           labelArea.after(icon);
         } else {
@@ -297,35 +315,41 @@ function updatePropertyValidation(violations) {
         }
       }
     }
-    
+
     // Handle node-level violations (no specific property)
     if (nodeId && (!path || path === "unknown")) {
-      const nodeCard = $(`.node-card[data-node-id="${nodeId}"], .node-card[data-node-id="${nodeIdFragment}"]`);
-      
+      const nodeCard = $(
+        `.node-card[data-node-id="${nodeId}"], .node-card[data-node-id="${nodeIdFragment}"]`
+      );
+
       if (nodeCard.length > 0) {
         nodeCard.addClass("invalid");
-        
-        // Add validation icon to node header
-        const message = violation.message || "Node validation failed";
+
+        // Add validation icon to node header with consolidated messages
+        const message =
+          violation.messages.length > 0
+            ? violation.messages.join("; ")
+            : "Node validation failed";
         const icon = $("<span>")
           .addClass("glyphicon glyphicon-exclamation-sign node-validation-icon")
           .attr("title", message)
           .attr("data-toggle", "tooltip")
           .attr("data-placement", "right")
           .css({
-            "color": "#dc3545",
+            color: "#dc3545",
             "margin-left": "10px",
-            "cursor": "help"
+            cursor: "help",
           });
-        
-        const nodeType = nodeCard.find(".node-type").first();
-        if (nodeType.length > 0) {
-          nodeType.after(icon);
+
+        // Append icon after ALL type labels, not just the first one
+        const nodeTypes = nodeCard.find(".node-type");
+        if (nodeTypes.length > 0) {
+          nodeTypes.last().after(icon);
         }
       }
     }
   });
-  
+
   // Initialize tooltips
   setTimeout(initTooltips, 100);
 }

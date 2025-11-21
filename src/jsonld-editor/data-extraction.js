@@ -131,17 +131,17 @@ export function saveChanges() {
 
   // Clear API token input
   $("#apiTokenInput").val("");
-  
+
   // Reset validation feedback
   $("#urlValidationFeedback").html("");
-  
+
   // Disable button initially in standalone mode
   if (!isIntegratedMode) {
     $("#confirmSaveBtn").prop("disabled", true);
   } else {
     $("#confirmSaveBtn").prop("disabled", false);
   }
-  
+
   $("#saveModal").modal("show");
 }
 
@@ -173,7 +173,13 @@ async function replaceFile(serverUrl, fileId, apiToken, filename, blob) {
   return await response.json();
 }
 
-async function addFileToDataset(serverUrl, persistentIdOrDatasetId, apiToken, filename, blob) {
+async function addFileToDataset(
+  serverUrl,
+  persistentIdOrDatasetId,
+  apiToken,
+  filename,
+  blob
+) {
   const formData = new FormData();
   formData.append("file", blob, filename);
   formData.append(
@@ -186,7 +192,10 @@ async function addFileToDataset(serverUrl, persistentIdOrDatasetId, apiToken, fi
 
   // Construct the correct API endpoint
   let apiUrl;
-  if (persistentIdOrDatasetId.includes("doi:") || persistentIdOrDatasetId.includes("10.")) {
+  if (
+    persistentIdOrDatasetId.includes("doi:") ||
+    persistentIdOrDatasetId.includes("10.")
+  ) {
     // It's a persistent ID
     apiUrl = `${serverUrl}/api/datasets/:persistentId/add?persistentId=${encodeURIComponent(persistentIdOrDatasetId)}`;
   } else {
@@ -283,11 +292,19 @@ export async function saveToDataverse() {
     } else {
       // operationType === "add"
       const idToUse = persistentId || datasetId;
-      result = await addFileToDataset(serverUrl, idToUse, apiToken, filename, blob);
+      result = await addFileToDataset(
+        serverUrl,
+        idToUse,
+        apiToken,
+        filename,
+        blob
+      );
     }
 
     if (result.status === "OK") {
-      alert(`File ${operationType === "replace" ? "replaced" : "added"} successfully!`);
+      alert(
+        `File ${operationType === "replace" ? "replaced" : "added"} successfully!`
+      );
       $(".property-row").removeClass("changed");
       updateSaveButton();
     } else {

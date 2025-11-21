@@ -42,7 +42,12 @@ import {
   renderNamespaceTable,
 } from "./namespace-manager.js";
 import { setupAdvancedSearchHandlers } from "./advanced-search.js";
-import { setupAdvancedFilterHandlers, showFilterPanel, hideFilterPanel, initializeFilters } from "./advanced-filter.js";
+import {
+  setupAdvancedFilterHandlers,
+  showFilterPanel,
+  hideFilterPanel,
+  initializeFilters,
+} from "./advanced-filter.js";
 
 export function setupEventHandlers() {
   // Load local file button
@@ -111,14 +116,14 @@ export function setupEventHandlers() {
 
         // Render the data (always, even without shapes)
         renderData();
-        
+
         // Update namespace section visibility
         updateNamespaceSectionVisibility();
-        
+
         // Show filter panel and initialize filters when data is loaded
         showFilterPanel();
         initializeFilters();
-        
+
         // In standalone mode, ensure save button is visible
         const isStandaloneMode = !(getFileId() && getSiteUrl());
         if (isStandaloneMode) {
@@ -148,7 +153,7 @@ export function setupEventHandlers() {
       $("#loadApiTokenInput").val("");
       $("#loadUrlValidationFeedback").html("");
       $("#confirmLoadBtn").prop("disabled", true);
-      
+
       $("#loadDataverseModal").modal("show");
     });
 
@@ -156,7 +161,7 @@ export function setupEventHandlers() {
   $("#loadDataverseUrlInput").on("input", function () {
     const url = $(this).val().trim();
     const feedbackDiv = $("#loadUrlValidationFeedback");
-    
+
     if (!url) {
       feedbackDiv.html("");
       $("#confirmLoadBtn").prop("disabled", true);
@@ -164,15 +169,21 @@ export function setupEventHandlers() {
     }
 
     const parseResult = parseDataverseUrl(url);
-    
-    if (parseResult.valid && parseResult.type === 'replace') {
-      feedbackDiv.html('<span style="color: #5cb85c;"><span class="glyphicon glyphicon-ok"></span> Valid file URL</span>');
+
+    if (parseResult.valid && parseResult.type === "replace") {
+      feedbackDiv.html(
+        '<span style="color: #5cb85c;"><span class="glyphicon glyphicon-ok"></span> Valid file URL</span>'
+      );
       $("#confirmLoadBtn").prop("disabled", false);
-    } else if (parseResult.valid && parseResult.type === 'add') {
-      feedbackDiv.html('<span style="color: #d9534f;"><span class="glyphicon glyphicon-remove"></span> This is a dataset URL. Please provide a file URL.</span>');
+    } else if (parseResult.valid && parseResult.type === "add") {
+      feedbackDiv.html(
+        '<span style="color: #d9534f;"><span class="glyphicon glyphicon-remove"></span> This is a dataset URL. Please provide a file URL.</span>'
+      );
       $("#confirmLoadBtn").prop("disabled", true);
     } else {
-      feedbackDiv.html(`<span style="color: #d9534f;"><span class="glyphicon glyphicon-remove"></span> ${parseResult.error}</span>`);
+      feedbackDiv.html(
+        `<span style="color: #d9534f;"><span class="glyphicon glyphicon-remove"></span> ${parseResult.error}</span>`
+      );
       $("#confirmLoadBtn").prop("disabled", true);
     }
   });
@@ -183,45 +194,49 @@ export function setupEventHandlers() {
     .click(async function () {
       const url = $("#loadDataverseUrlInput").val().trim();
       const apiToken = $("#loadApiTokenInput").val().trim();
-      
+
       if (!url) {
         alert("Please enter a file URL.");
         return;
       }
 
       const parseResult = parseDataverseUrl(url);
-      if (!parseResult.valid || parseResult.type !== 'replace') {
+      if (!parseResult.valid || parseResult.type !== "replace") {
         alert("Please enter a valid file URL.");
         return;
       }
 
       // Close modal and show loading
       $("#loadDataverseModal").modal("hide");
-      
+
       try {
         // Show loading indicator
-        $("body").append('<div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; justify-content: center;"><div style="background: white; padding: 20px; border-radius: 5px;"><span class="glyphicon glyphicon-refresh spinning"></span> Loading file from Dataverse...</div></div>');
-        
+        $("body").append(
+          '<div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; justify-content: center;"><div style="background: white; padding: 20px; border-radius: 5px;"><span class="glyphicon glyphicon-refresh spinning"></span> Loading file from Dataverse...</div></div>'
+        );
+
         // Construct download URL
         const downloadUrl = `${parseResult.serverUrl}/api/access/datafile/${parseResult.fileId}`;
-        
+
         // Build fetch options
         const fetchOptions = {
           method: "GET",
-          headers: {}
+          headers: {},
         };
-        
+
         if (apiToken) {
           fetchOptions.headers["X-Dataverse-key"] = apiToken;
         }
-        
+
         // Fetch the file
         const response = await fetch(downloadUrl, fetchOptions);
-        
+
         if (!response.ok) {
-          throw new Error(`Failed to download file: ${response.status} ${response.statusText}`);
+          throw new Error(
+            `Failed to download file: ${response.status} ${response.statusText}`
+          );
         }
-        
+
         const fileText = await response.text();
         const parsedData = JSON.parse(fileText);
 
@@ -229,12 +244,13 @@ export function setupEventHandlers() {
         const contentDisposition = response.headers.get("Content-Disposition");
         let filename = "dataverse-file.jsonld";
         if (contentDisposition) {
-          const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+          const filenameMatch =
+            contentDisposition.match(/filename="?([^"]+)"?/);
           if (filenameMatch) {
             filename = filenameMatch[1];
           }
         }
-        
+
         // Set filename and IDs for export and future saves
         setOriginalFileName(filename);
         setFileId(parseResult.fileId);
@@ -279,25 +295,28 @@ export function setupEventHandlers() {
 
         // Render the data
         renderData();
-        
+
         // Update namespace section visibility
         updateNamespaceSectionVisibility();
-        
+
         // In standalone mode, ensure save button is visible
         const isStandaloneMode = !(getFileId() && getSiteUrl());
         if (isStandaloneMode) {
           $("#save-btn").removeClass("hidden");
         }
-        
+
         $("#content").prepend(`
           <div class="alert alert-success" style="margin-bottom: 10px;">
             <strong>Loaded from Dataverse:</strong> ${filename}
           </div>
         `);
-        
       } catch (error) {
         console.error("Error loading file from Dataverse:", error);
-        alert("Error loading file from Dataverse:\\n\\n" + error.message + "\\n\\nPlease check:\\n• The URL is correct\\n• The file is published (or provide an API token)\\n• The file is in JSON-LD format");
+        alert(
+          "Error loading file from Dataverse:\\n\\n" +
+            error.message +
+            "\\n\\nPlease check:\\n• The URL is correct\\n• The file is published (or provide an API token)\\n• The file is in JSON-LD format"
+        );
       } finally {
         // Remove loading overlay
         $("#loading-overlay").remove();
@@ -337,7 +356,7 @@ export function setupEventHandlers() {
         .html('<span class="glyphicon glyphicon-edit"></span> Enable Editing')
         .removeClass("btn-warning")
         .addClass("btn-primary");
-      
+
       // In standalone mode, keep save button visible even in view mode
       if (!isStandaloneMode) {
         $("#save-btn").addClass("hidden");
@@ -390,7 +409,7 @@ export function setupEventHandlers() {
   $("#dataverseUrlInput").on("input", function () {
     const url = $(this).val().trim();
     const feedbackDiv = $("#urlValidationFeedback");
-    
+
     if (!url) {
       feedbackDiv.html("");
       updateSaveButtonState();
@@ -398,14 +417,21 @@ export function setupEventHandlers() {
     }
 
     const parseResult = parseDataverseUrl(url);
-    
+
     if (parseResult.valid) {
-      const actionText = parseResult.type === 'replace' ? 'replace existing file' : 'add new file to dataset';
-      feedbackDiv.html(`<span style="color: #5cb85c;"><span class="glyphicon glyphicon-ok"></span> Valid URL - will ${actionText}</span>`);
+      const actionText =
+        parseResult.type === "replace"
+          ? "replace existing file"
+          : "add new file to dataset";
+      feedbackDiv.html(
+        `<span style="color: #5cb85c;"><span class="glyphicon glyphicon-ok"></span> Valid URL - will ${actionText}</span>`
+      );
     } else {
-      feedbackDiv.html(`<span style="color: #d9534f;"><span class="glyphicon glyphicon-remove"></span> ${parseResult.error}</span>`);
+      feedbackDiv.html(
+        `<span style="color: #d9534f;"><span class="glyphicon glyphicon-remove"></span> ${parseResult.error}</span>`
+      );
     }
-    
+
     updateSaveButtonState();
   });
 
@@ -424,15 +450,15 @@ export function setupEventHandlers() {
     const isStandalone = $("#dataverseUrlGroup").is(":visible");
     const apiToken = $("#apiTokenInput").val().trim();
     const filename = $("#filenameInput").val().trim();
-    
+
     let isValid = apiToken && filename;
-    
+
     if (isStandalone) {
       const url = $("#dataverseUrlInput").val().trim();
       const parseResult = parseDataverseUrl(url);
       isValid = isValid && parseResult.valid;
     }
-    
+
     $("#confirmSaveBtn").prop("disabled", !isValid);
   }
 
@@ -456,36 +482,6 @@ export function setupEventHandlers() {
   // Expand all
   $("#expand-all-btn").click(function () {
     $(".node-card").removeClass("collapsed");
-  });
-
-  // Toggle SHACL-only filter
-  $("#filter-shacl-btn").click(function () {
-    const btn = $(this);
-    $("body").toggleClass("filter-shacl-only");
-
-    if ($("body").hasClass("filter-shacl-only")) {
-      btn.addClass("active");
-      btn.html('<span class="glyphicon glyphicon-filter"></span> Show All');
-
-      // Hide nodes that have no SHACL-defined properties visible
-      $(".node-card").each(function () {
-        const card = $(this);
-        const visibleProps = card.find(
-          ".property-row:not(.extra-field)"
-        ).length;
-        if (visibleProps === 0) {
-          card.addClass("hidden-by-filter");
-        }
-      });
-    } else {
-      btn.removeClass("active");
-      btn.html(
-        '<span class="glyphicon glyphicon-filter"></span> Show SHACL Only'
-      );
-
-      // Show all nodes again
-      $(".node-card").removeClass("hidden-by-filter");
-    }
   });
 
   // Advanced Search - setup handlers
@@ -605,7 +601,7 @@ export function setupEventHandlers() {
 
   // Setup namespace management handlers
   setupNamespaceHandlers();
-  
+
   // Setup advanced filter handlers
   setupAdvancedFilterHandlers();
 }

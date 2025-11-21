@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Search counter displaying "X of Y matches"
   - Clear button with smooth fade animations
   - Case-sensitive toggle (Aa button)
-  - Regex search support (.* button) with error handling
+  - Regex search support (.\* button) with error handling
   - Previous/Next navigation buttons
   - Keyboard shortcuts: F3, Shift+F3, Enter
   - Current match highlighting with pulse animation

@@ -15,92 +15,99 @@
     />
     <link rel="stylesheet" href="css/cdi-preview.css" />
   </head>
+
   <body>
     <!-- Toolbar -->
-    <div class="toolbar">
-      <div style="margin-bottom: 15px">
-        <button id="toggle-edit-btn" class="btn btn-primary">
-          <span class="glyphicon glyphicon-edit"></span> Enable Editing
-        </button>
-        <button id="save-btn" class="btn btn-success hidden">
-          <span class="glyphicon glyphicon-floppy-disk"></span> Save to Dataverse
-        </button>
-        <button id="validate-btn" class="btn btn-info">
-          <span class="glyphicon glyphicon-ok-circle"></span> Validate
-        </button>
-        <button id="export-btn" class="btn btn-success">
-          <span class="glyphicon glyphicon-download-alt"></span> Export JSON-LD
-        </button>
-        <button id="collapse-all-btn" class="btn btn-default">
-          <span class="glyphicon glyphicon-collapse-up"></span> Collapse All
-        </button>
-        <button id="expand-all-btn" class="btn btn-default">
-          <span class="glyphicon glyphicon-expand"></span> Expand All
-        </button>
-        <button
-          id="filter-shacl-btn"
-          class="btn btn-default"
-          title="Toggle to show only SHACL-defined properties"
-        >
-          <span class="glyphicon glyphicon-filter"></span> Show SHACL Only
-        </button>
-        <span id="validation-status"></span>
-        <div id="validation-details" style="margin-top: 10px"></div>
+    <div class="toolbar" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 20px;">
+      <!-- Fragment wrapper to group toolbar sections -->
+      <div style="flex: 1 1 auto; min-width: min(100%, 600px);">
+        <!-- Controls buttons -->
+        <div style="margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 5px; align-items: center;">
+          <button id="toggle-edit-btn" class="btn btn-primary">
+            <span class="glyphicon glyphicon-edit"></span> Enable Editing
+          </button>
+          <button id="save-btn" class="btn btn-success hidden">
+            <span class="glyphicon glyphicon-floppy-disk"></span> Save to
+            Dataverse
+          </button>
+          <button id="validate-btn" class="btn btn-info">
+            <span class="glyphicon glyphicon-ok-circle"></span> Validate
+          </button>
+          <button id="export-btn" class="btn btn-success">
+            <span class="glyphicon glyphicon-download-alt"></span> Export
+            JSON-LD
+          </button>
+          <button id="collapse-all-btn" class="btn btn-default">
+            <span class="glyphicon glyphicon-collapse-up"></span> Collapse All
+          </button>
+          <button id="expand-all-btn" class="btn btn-default">
+            <span class="glyphicon glyphicon-expand"></span> Expand All
+          </button>
+          <span id="validation-status"></span>
+          <div id="validation-details" style="margin-top: 10px"></div>
+        </div>
+        <!-- Loading buttons -->
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+          <input
+            type="file"
+            id="local-file-input"
+            accept="application/ld+json,application/json,.json,.jsonld"
+            style="display: none"
+          />
+          <button
+            id="load-local-btn"
+            class="btn btn-primary"
+            style="display: none"
+            title="Load a CDI JSON-LD file from your computer"
+          >
+            <span class="glyphicon glyphicon-folder-open"></span> Load Local
+            File
+          </button>
+          <button
+            id="load-dataverse-btn"
+            class="btn btn-primary"
+            style="display: none"
+            title="Load a file from Dataverse using a URL"
+          >
+            <span class="glyphicon glyphicon-cloud-download"></span> Load from
+            Dataverse
+          </button>
+          <label for="shape-selector" style="margin: 0; white-space: nowrap"
+            >SHACL Shape:</label
+          >
+          <select id="shape-selector" class="form-control" style="width: 300px">
+            <option value="" selected>-- Select SHACL shapes --</option>
+            <option value="ddi-cdi-official">DDI-CDI 1.0 (Official)</option>
+            <option value="cdif-core">CDIF Discovery Core</option>
+            <option value="dcat-ap">DCAT-AP 3.0</option>
+            <option value="datacube">W3C DataCube</option>
+            <option value="skos">
+              SKOS (Simple Knowledge Organization System)
+            </option>
+            <option value="local-fallback">DDI-CDI Local Built-in</option>
+            <option value="custom">Custom URL...</option>
+          </select>
+          <input
+            type="text"
+            id="custom-shape-url"
+            class="form-control"
+            placeholder="Enter SHACL shape URL"
+            style="width: 300px; display: none"
+          />
+        </div>
       </div>
-      <div style="display: flex; gap: 10px; align-items: center">
-        <input
-          type="file"
-          id="local-file-input"
-          accept="application/ld+json,application/json,.json,.jsonld"
-          style="display: none"
-        />
-        <button
-          id="load-local-btn"
-          class="btn btn-primary"
-          style="display: none"
-          title="Load a CDI JSON-LD file from your computer"
+      <!-- Enhanced Search Controls -->
+      <div style="flex: 0 1 auto; min-width: min(100%, 450px);">
+        <div
+          style="margin-left: auto; display: flex; align-items: left; gap: 5px"
         >
-          <span class="glyphicon glyphicon-folder-open"></span> Load Local File
-        </button>
-        <button
-          id="load-dataverse-btn"
-          class="btn btn-primary"
-          style="display: none"
-          title="Load a file from Dataverse using a URL"
-        >
-          <span class="glyphicon glyphicon-cloud-download"></span> Load from Dataverse
-        </button>
-        <label for="shape-selector" style="margin: 0; white-space: nowrap"
-          >SHACL Shape:</label
-        >
-        <select id="shape-selector" class="form-control" style="width: 300px">
-          <option value="" selected>-- Select SHACL shapes --</option>
-          <option value="ddi-cdi-official">DDI-CDI 1.0 (Official)</option>
-          <option value="cdif-core">CDIF Discovery Core</option>
-          <option value="dcat-ap">DCAT-AP 3.0</option>
-          <option value="datacube">W3C DataCube</option>
-          <option value="skos">
-            SKOS (Simple Knowledge Organization System)
-          </option>
-          <option value="local-fallback">DDI-CDI Local Built-in</option>
-          <option value="custom">Custom URL...</option>
-        </select>
-        <input
-          type="text"
-          id="custom-shape-url"
-          class="form-control"
-          placeholder="Enter SHACL shape URL"
-          style="width: 300px; display: none"
-        />
-        <!-- Enhanced Search Controls -->
-        <div style="margin-left: auto; display: flex; align-items: center; gap: 5px;">
-          <div style="position: relative;">
+          <div style="position: relative">
             <input
               type="text"
               id="search-input"
               class="form-control"
               placeholder="Search nodes and properties..."
-              style="width: 300px; padding-right: 30px;"
+              style="width: 300px; padding-right: 30px"
             />
             <button
               id="clear-search-btn"
@@ -126,7 +133,7 @@
             id="toggle-case-btn"
             class="btn btn-default btn-sm"
             title="Toggle case-sensitive search"
-            style="min-width: 40px;"
+            style="min-width: 40px"
           >
             <strong>Aa</strong>
           </button>
@@ -134,7 +141,7 @@
             id="toggle-regex-btn"
             class="btn btn-default btn-sm"
             title="Toggle regex search"
-            style="min-width: 40px;"
+            style="min-width: 40px"
           >
             <strong>.*</strong>
           </button>
@@ -164,28 +171,110 @@
             "
           ></span>
         </div>
+        <div>
+          <!-- Search Scope and Advanced Filters Button -->
+          <div
+            style="
+              margin-top: 8px;
+              display: flex;
+              flex-wrap: wrap;
+              align-items: center;
+              gap: 10px;
+            "
+          >
+            <button id="toggle-filter-panel" class="btn btn-default btn-sm">
+              <span class="glyphicon glyphicon-filter"></span> Advanced Filters
+              <span
+                id="active-filter-badge"
+                class="active-filter-badge"
+                style="display: none; margin-left: 5px"
+              ></span>
+            </button>
+            <div
+              style="
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                gap: 5px;
+              "
+            >
+              <label style="font-size: 12px; color: #6c757d; margin: 0"
+                >Search in:</label
+              >
+              <label style="font-size: 12px; margin: 0; white-space: nowrap">
+                <input
+                  type="checkbox"
+                  class="search-scope-checkbox"
+                  value="names"
+                  checked
+                />
+                Names
+              </label>
+              <label style="font-size: 12px; margin: 0; white-space: nowrap">
+                <input
+                  type="checkbox"
+                  class="search-scope-checkbox"
+                  value="values"
+                  checked
+                />
+                Values
+              </label>
+              <label style="font-size: 12px; margin: 0; white-space: nowrap">
+                <input
+                  type="checkbox"
+                  class="search-scope-checkbox"
+                  value="ids"
+                  checked
+                />
+                IDs
+              </label>
+              <label style="font-size: 12px; margin: 0; white-space: nowrap">
+                <input
+                  type="checkbox"
+                  class="search-scope-checkbox"
+                  value="types"
+                  checked
+                />
+                Types
+              </label>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- Advanced Filter Panel -->
-    <div id="filter-panel" class="filter-panel" style="display: none; margin-bottom: 15px;">
-      <div style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;" id="filter-panel-header">
-        <div>
-          <span id="filter-panel-chevron" class="glyphicon glyphicon-chevron-down"></span>
-          <strong style="margin-left: 5px;">Advanced Filters</strong>
-          <span id="active-filter-badge" class="active-filter-badge" style="display: none;"></span>
-        </div>
+    <div
+      id="filter-panel"
+      class="filter-panel"
+      style="display: none; margin-bottom: 15px"
+    >
+      <div
+        style="
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 10px;
+          background: #f5f5f5;
+          border-bottom: 1px solid #ddd;
+        "
+      >
+        <strong>Advanced Filters</strong>
         <button id="clear-all-filters-btn" class="btn btn-xs btn-default">
           Clear All
         </button>
       </div>
-      <div id="filter-panel-content" style="display: none; margin-top: 15px;">
+      <div id="filter-panel-content" style="padding: 15px">
         <!-- Validation Status Filter -->
         <div class="filter-row">
           <label class="filter-label">
             <span class="glyphicon glyphicon-check"></span> Validation Status
           </label>
-          <select id="validation-filter" class="form-control" style="width: 100%;">
+          <select
+            id="validation-filter"
+            class="form-control"
+            style="width: 100%"
+          >
             <option value="all">All Nodes</option>
             <option value="valid">Valid Only</option>
             <option value="invalid">Invalid Only</option>
@@ -201,85 +290,47 @@
           </label>
           <div>
             <label class="radio-inline">
-              <input type="radio" name="property-status" value="all" checked> All
+              <input type="radio" name="property-status" value="all" checked />
+              All
             </label>
             <label class="radio-inline">
-              <input type="radio" name="property-status" value="shacl-only"> SHACL Only
+              <input type="radio" name="property-status" value="shacl-only" />
+              SHACL Only
             </label>
             <label class="radio-inline">
-              <input type="radio" name="property-status" value="extra-only"> Extra Only
-            </label>
-          </div>
-        </div>
-
-        <!-- Hide Empty Properties -->
-        <div class="filter-row">
-          <label>
-            <input type="checkbox" id="hide-empty-checkbox"> Hide empty properties
-          </label>
-        </div>
-
-        <!-- Search Scope -->
-        <div class="filter-row">
-          <label class="filter-label">
-            <span class="glyphicon glyphicon-search"></span> Search In
-          </label>
-          <div>
-            <label class="checkbox-inline">
-              <input type="checkbox" class="search-scope-checkbox" value="names" checked> Property Names
-            </label>
-            <label class="checkbox-inline">
-              <input type="checkbox" class="search-scope-checkbox" value="values" checked> Values
-            </label>
-            <label class="checkbox-inline">
-              <input type="checkbox" class="search-scope-checkbox" value="ids" checked> Node IDs
-            </label>
-            <label class="checkbox-inline">
-              <input type="checkbox" class="search-scope-checkbox" value="types" checked> Node Types
+              <input type="radio" name="property-status" value="extra-only" />
+              Extra Only
             </label>
           </div>
         </div>
       </div>
     </div>
-
-    <!-- Header -->
-    <div class="preview-header">
-      <h3>CDI Data Viewer & Editor</h3>
-      <p>
-        Displaying DDI-CDI (Cross Domain Integration) metadata. Edit mode allows
-        you to modify properties. Use the Validate button to check conformance
-        against SHACL shapes.
-      </p>
+    <!-- Namespace Management Section -->
+    <div id="namespace-section" style="margin-bottom: 20px; display: none">
       <div
-        id="normalization-notice"
         style="
-          display: none;
-          margin-top: 10px;
-          padding: 8px;
-          background: #d1ecf1;
-          border-left: 3px solid #17a2b8;
-          border-radius: 3px;
+          background: #f8f9fa;
+          border: 1px solid #dee2e6;
+          border-radius: 4px;
+          padding: 15px;
         "
       >
-        <span
-          class="glyphicon glyphicon-info-sign"
-          style="margin-right: 5px"
-        ></span>
-        <strong>Note:</strong> This JSON-LD was automatically normalized to
-        <code>@graph</code> format for editing. The structure has been
-        preserved.
-      </div>
-    </div>
-
-    <!-- Namespace Management Section -->
-    <div id="namespace-section" style="margin-bottom: 20px; display: none;">
-      <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; padding: 15px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-          <h4 style="margin: 0; font-size: 16px;">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+          "
+        >
+          <h4 style="margin: 0; font-size: 16px">
             <span class="glyphicon glyphicon-tag"></span> Namespace Prefixes
           </h4>
           <div>
-            <button id="add-namespace-btn" class="btn btn-sm btn-success hidden">
+            <button
+              id="add-namespace-btn"
+              class="btn btn-sm btn-success hidden"
+            >
               <span class="glyphicon glyphicon-plus"></span> Add Namespace
             </button>
             <button id="toggle-namespace-btn" class="btn btn-sm btn-default">
@@ -288,18 +339,24 @@
           </div>
         </div>
         <div id="namespace-content">
-          <table class="table table-condensed table-bordered" style="margin-bottom: 0; background: white;">
+          <table
+            class="table table-condensed table-bordered"
+            style="margin-bottom: 0; background: white"
+          >
             <thead>
               <tr>
-                <th style="width: 150px;">Prefix</th>
+                <th style="width: 150px">Prefix</th>
                 <th>Namespace URI</th>
-                <th style="width: 80px; text-align: center;">Actions</th>
+                <th style="width: 80px; text-align: center">Actions</th>
               </tr>
             </thead>
             <tbody id="namespace-table-body">
               <tr>
-                <td colspan="3" style="text-align: center; color: #999;">
-                  <em>No namespaces defined. Load a file or create a new document.</em>
+                <td colspan="3" style="text-align: center; color: #999">
+                  <em
+                    >No namespaces defined. Load a file or create a new
+                    document.</em
+                  >
                 </td>
               </tr>
             </tbody>
@@ -335,9 +392,13 @@
 
     <!-- Content Area -->
     <div id="content"></div>
-    
+
     <!-- Add Root Node Component (at bottom of form) -->
-    <div id="add-root-node-container" style="margin-top: 20px; padding: 15px; border-top: 2px solid #ddd;" class="hidden">
+    <div
+      id="add-root-node-container"
+      style="margin-top: 20px; padding: 15px; border-top: 2px solid #ddd"
+      class="hidden"
+    >
       <!-- Unified add component will be rendered here -->
     </div>
 
@@ -373,9 +434,9 @@
                 Enter a URL to a file in Dataverse (JSF, SPA, or API format).
                 The file will be downloaded and loaded into the editor.
               </small>
-              <div id="loadUrlValidationFeedback" style="margin-top: 5px;"></div>
+              <div id="loadUrlValidationFeedback" style="margin-top: 5px"></div>
             </div>
-            
+
             <!-- API Token Input (Optional) -->
             <div class="form-group">
               <label for="loadApiTokenInput">API Token (Optional):</label>
@@ -386,16 +447,20 @@
                 placeholder="Only needed for unpublished files"
               />
               <small class="help-block">
-                Leave empty for published files. Required for draft/unpublished files.
+                Leave empty for published files. Required for draft/unpublished
+                files.
               </small>
             </div>
-            
+
             <div class="alert alert-info">
               <strong>Supported URL formats:</strong>
-              <ul style="margin-bottom: 0;">
+              <ul style="margin-bottom: 0">
                 <li>JSF: <code>file.xhtml?fileId=...</code></li>
                 <li>SPA: <code>spa/files?id=...</code></li>
-                <li>API: <code>/api/files/123</code> or <code>/api/access/datafile/123</code></li>
+                <li>
+                  API: <code>/api/files/123</code> or
+                  <code>/api/access/datafile/123</code>
+                </li>
               </ul>
             </div>
           </div>
@@ -403,7 +468,12 @@
             <button type="button" class="btn btn-default" data-dismiss="modal">
               Cancel
             </button>
-            <button type="button" class="btn btn-primary" id="confirmLoadBtn" disabled>
+            <button
+              type="button"
+              class="btn btn-primary"
+              id="confirmLoadBtn"
+              disabled
+            >
               <span class="glyphicon glyphicon-download"></span> Load File
             </button>
           </div>
@@ -431,7 +501,11 @@
           </div>
           <div class="modal-body">
             <!-- URL Input (Standalone mode only) -->
-            <div class="form-group" id="dataverseUrlGroup" style="display: none;">
+            <div
+              class="form-group"
+              id="dataverseUrlGroup"
+              style="display: none"
+            >
               <label for="dataverseUrlInput">Dataverse URL:</label>
               <input
                 type="text"
@@ -440,11 +514,12 @@
                 placeholder="https://demo.dataverse.org/dataset.xhtml?persistentId=doi:10.../..."
               />
               <small class="help-block">
-                Enter a Dataverse dataset URL (to add new file) or file URL (to replace existing file)
+                Enter a Dataverse dataset URL (to add new file) or file URL (to
+                replace existing file)
               </small>
-              <div id="urlValidationFeedback" style="margin-top: 5px;"></div>
+              <div id="urlValidationFeedback" style="margin-top: 5px"></div>
             </div>
-            
+
             <!-- Filename Input -->
             <div class="form-group">
               <label for="filenameInput">Filename:</label>
@@ -458,7 +533,7 @@
                 The filename for your JSON-LD file in Dataverse
               </small>
             </div>
-            
+
             <!-- API Token Input -->
             <div class="form-group">
               <label for="apiTokenInput">Dataverse API Token:</label>
@@ -478,7 +553,7 @@
                 >
               </small>
             </div>
-            
+
             <!-- Info Alert -->
             <div class="alert alert-info">
               <strong>What will be saved:</strong>
@@ -493,7 +568,12 @@
             <button type="button" class="btn btn-default" data-dismiss="modal">
               Cancel
             </button>
-            <button type="button" class="btn btn-primary" id="confirmSaveBtn" disabled>
+            <button
+              type="button"
+              class="btn btn-primary"
+              id="confirmSaveBtn"
+              disabled
+            >
               <span class="glyphicon glyphicon-floppy-disk"></span> Save to
               Dataverse
             </button>
@@ -507,7 +587,12 @@
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
               <span aria-hidden="true">&times;</span>
             </button>
             <h4 class="modal-title">
@@ -517,30 +602,43 @@
           <div class="modal-body">
             <div class="form-group">
               <label for="namespacePrefixInput"><strong>Prefix:</strong></label>
-              <input 
-                type="text" 
-                class="form-control" 
-                id="namespacePrefixInput" 
+              <input
+                type="text"
+                class="form-control"
+                id="namespacePrefixInput"
                 placeholder="e.g., schema, dcat, myorg"
                 pattern="[a-zA-Z][a-zA-Z0-9_-]*"
+              />
+              <small class="help-block"
+                >Letters, numbers, hyphens, and underscores only. Must start
+                with a letter.</small
               >
-              <small class="help-block">Letters, numbers, hyphens, and underscores only. Must start with a letter.</small>
             </div>
             <div class="form-group">
-              <label for="namespaceUriInput"><strong>Namespace URI:</strong></label>
-              <input 
-                type="url" 
-                class="form-control" 
-                id="namespaceUriInput" 
-                placeholder="e.g., http://schema.org/, https://www.w3.org/ns/dcat#"
+              <label for="namespaceUriInput"
+                ><strong>Namespace URI:</strong></label
               >
-              <small class="help-block">Full URI including protocol (http:// or https://)</small>
+              <input
+                type="url"
+                class="form-control"
+                id="namespaceUriInput"
+                placeholder="e.g., http://schema.org/, https://www.w3.org/ns/dcat#"
+              />
+              <small class="help-block"
+                >Full URI including protocol (http:// or https://)</small
+              >
             </div>
             <div id="namespaceValidationFeedback"></div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-            <button type="button" class="btn btn-primary" id="confirmNamespaceBtn">
+            <button type="button" class="btn btn-default" data-dismiss="modal">
+              Cancel
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              id="confirmNamespaceBtn"
+            >
               <span class="glyphicon glyphicon-ok"></span> Add Namespace
             </button>
           </div>
