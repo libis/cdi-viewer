@@ -12,7 +12,6 @@ import {
   setValidationReport,
 } from "./state.js";
 import { jsonLdToN3Store } from "./cdi-shacl-loader.js";
-import { initializeFilters } from "./advanced-filter.js";
 
 // RDF factory for creating RDF/JS compliant datasets
 // Use rdfDataModel directly and add dataset method via Object.assign to preserve prototype
@@ -26,6 +25,10 @@ const rdf = Object.assign(
 
 // Track timeout for clearing status messages
 let statusClearTimeout = null;
+
+// Track debounced validation
+let validationDebounceTimeout = null;
+let isValidationRunning = false;
 
 /**
  * Clears any pending status message timeout
@@ -65,10 +68,42 @@ function storeToDataset(store) {
 }
 
 /**
+ * Schedules validation with debouncing (3 seconds)
+ * Ensures only one validation runs at a time
+ */
+export function scheduleValidation() {
+  // Clear any pending debounce
+  if (validationDebounceTimeout) {
+    clearTimeout(validationDebounceTimeout);
+  }
+
+  // Schedule new validation
+  validationDebounceTimeout = setTimeout(async () => {
+    validationDebounceTimeout = null;
+    
+    // Wait if validation is already running
+    if (isValidationRunning) {
+      // Reschedule after current validation completes
+      scheduleValidation();
+      return;
+    }
+    
+    await validateData();
+  }, 3000);
+}
+
+/**
  * Validates the current JSON-LD data against loaded SHACL shapes.
  * Displays validation results in the UI.
  */
 export async function validateData() {
+  // Prevent parallel execution
+  if (isValidationRunning) {
+    return;
+  }
+  
+  isValidationRunning = true;
+  
   // Clear any pending timeout from previous messages (e.g., "Shapes loaded")
   clearStatusTimeout();
 
@@ -237,7 +272,23 @@ export async function validateData() {
         "</span>"
     );
     $("#validation-details").empty();
+  } finally {
+    // Always release the lock
+    isValidationRunning = false;
   }
+}
+
+/**
+ * Triggers immediate validation (for manual triggers like shape changes)
+ */
+export async function validateDataImmediate() {
+  // Clear any pending debounce
+  if (validationDebounceTimeout) {
+    clearTimeout(validationDebounceTimeout);
+    validationDebounceTimeout = null;
+  }
+  
+  await validateData();
 }
 
 /**

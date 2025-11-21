@@ -232,6 +232,17 @@ export function updateNamespaceSectionVisibility() {
   if (jsonData && jsonData["@context"]) {
     $("#namespace-section").show();
     renderNamespaceTable();
+    
+    // Keep content collapsed by default
+    const content = $("#namespace-content");
+    if (!content.data("manually-toggled")) {
+      content.hide();
+      const btn = $("#toggle-namespace-btn");
+      btn.find(".glyphicon")
+        .removeClass("glyphicon-chevron-up")
+        .addClass("glyphicon-chevron-down");
+      btn.html('<span class="glyphicon glyphicon-chevron-down"></span> Expand');
+    }
   } else {
     $("#namespace-section").hide();
   }
@@ -245,6 +256,9 @@ export function setupNamespaceHandlers() {
   $("#toggle-namespace-btn").click(function () {
     const content = $("#namespace-content");
     const icon = $(this).find(".glyphicon");
+    
+    // Mark as manually toggled
+    content.data("manually-toggled", true);
 
     if (content.is(":visible")) {
       content.slideUp();

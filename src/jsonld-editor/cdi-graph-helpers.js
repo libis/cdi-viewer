@@ -224,7 +224,7 @@ export function renderAddRootNodeComponent() {
   const unifiedComponent = createUnifiedAddComponent({
     type: "rootNode",
     suggestions: suggestions,
-    onAdd: (selectedType, suggestion) => {
+    onAdd: (selectedType) => {
       createAndAddRootNode(selectedType);
     },
     onAddCustom: (fullName) => {

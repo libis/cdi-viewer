@@ -25,7 +25,7 @@ import {
 import { normalizeToGraphFormat } from "./cdi-json-ld-helpers.js";
 import { loadShapes } from "./cdi-shacl-loader.js";
 import { renderData } from "./render.js";
-import { validateData, setValidationStatus } from "./validation.js";
+import { validateDataImmediate, setValidationStatus } from "./validation.js";
 import {
   collectChangesFromDOM,
   saveChanges,
@@ -33,19 +33,15 @@ import {
   exportData,
 } from "./data-extraction.js";
 import { renderAddRootNodeComponent } from "./cdi-graph-helpers.js";
-import { highlightText } from "./render.js";
 import { parseDataverseUrl } from "./dataverse-url-parser.js";
-import { getFileId, getSiteUrl, getOriginalFileName } from "./state.js";
+import { getFileId, getSiteUrl } from "./state.js";
 import {
   setupNamespaceHandlers,
   updateNamespaceSectionVisibility,
-  renderNamespaceTable,
 } from "./namespace-manager.js";
 import { setupAdvancedSearchHandlers } from "./advanced-search.js";
 import {
   setupAdvancedFilterHandlers,
-  showFilterPanel,
-  hideFilterPanel,
   initializeFilters,
 } from "./advanced-filter.js";
 
@@ -120,9 +116,14 @@ export function setupEventHandlers() {
         // Update namespace section visibility
         updateNamespaceSectionVisibility();
 
-        // Show filter panel and initialize filters when data is loaded
-        showFilterPanel();
+        // Initialize filters when data is loaded (but don't auto-show panel)
         initializeFilters();
+
+        // Trigger validation if shapes are loaded
+        if (getShaclShapesStore()) {
+          await validateDataImmediate();
+          initializeFilters();
+        }
 
         // In standalone mode, ensure save button is visible
         const isStandaloneMode = !(getFileId() && getSiteUrl());
@@ -348,7 +349,7 @@ export function setupEventHandlers() {
       $("#add-namespace-btn").removeClass("hidden");
 
       // Auto-validate when entering edit mode
-      await validateData();
+      await validateDataImmediate();
       // Update filter counts after validation completes
       initializeFilters();
     } else {
@@ -371,7 +372,7 @@ export function setupEventHandlers() {
   // Save changes
   $("#save-btn").click(async function () {
     // Validate before saving
-    await validateData();
+    await validateDataImmediate();
     // Update filter counts after validation completes
     initializeFilters();
 
@@ -462,13 +463,6 @@ export function setupEventHandlers() {
     $("#confirmSaveBtn").prop("disabled", !isValid);
   }
 
-  // Validate
-  $("#validate-btn").click(async function () {
-    await validateData();
-    // Update filter counts after validation completes
-    initializeFilters();
-  });
-
   // Export
   $("#export-btn").click(function () {
     exportData();
@@ -533,18 +527,18 @@ export function setupEventHandlers() {
 
         // Re-validate if in edit mode
         if (getIsEditMode()) {
-          await validateData();
+          await validateDataImmediate();
           // Update filter counts after validation completes
           initializeFilters();
         } else {
           // Use the centralized status function with auto-clear
           setValidationStatus(
-            '<span class="label label-success">Shapes loaded</span>',
+            '<span class="label label-success">Custom shapes loaded</span>',
             2000
           );
         }
       } catch (error) {
-        console.error("Error loading shape:", error);
+        console.error("Error loading custom shape:", error);
         $("#validation-status").html(
           '<span class="validation-badge invalid">Shape load failed</span>'
         );
@@ -577,7 +571,7 @@ export function setupEventHandlers() {
 
         // Re-validate if in edit mode
         if (getIsEditMode()) {
-          await validateData();
+          await validateDataImmediate();
           // Update filter counts after validation completes
           initializeFilters();
         } else {
