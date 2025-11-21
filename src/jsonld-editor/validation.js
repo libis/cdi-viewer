@@ -23,6 +23,34 @@ const rdf = Object.assign(
   }
 );
 
+// Track timeout for clearing status messages
+let statusClearTimeout = null;
+
+/**
+ * Clears any pending status message timeout
+ */
+function clearStatusTimeout() {
+  if (statusClearTimeout) {
+    clearTimeout(statusClearTimeout);
+    statusClearTimeout = null;
+  }
+}
+
+/**
+ * Sets a status message with optional auto-clear
+ */
+export function setValidationStatus(html, autoClearMs = 0) {
+  clearStatusTimeout();
+  $("#validation-status").html(html);
+  
+  if (autoClearMs > 0) {
+    statusClearTimeout = setTimeout(() => {
+      $("#validation-status").html("");
+      statusClearTimeout = null;
+    }, autoClearMs);
+  }
+}
+
 /**
  * Convert N3 Store to RDF/JS Dataset
  */
@@ -36,9 +64,13 @@ function storeToDataset(store) {
 }
 
 /**
- * Runs validation end-to-end on the current jsonData and updates #validation-status
+ * Validates the current JSON-LD data against loaded SHACL shapes.
+ * Displays validation results in the UI.
  */
 export async function validateData() {
+  // Clear any pending timeout from previous messages (e.g., "Shapes loaded")
+  clearStatusTimeout();
+  
   $("#validation-status").html(
     '<span class="label label-info">Validating...</span>'
   );

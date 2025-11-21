@@ -23,7 +23,7 @@ import {
 import { normalizeToGraphFormat } from "./cdi-json-ld-helpers.js";
 import { loadShapes } from "./cdi-shacl-loader.js";
 import { renderData } from "./render.js";
-import { validateData } from "./validation.js";
+import { validateData, setValidationStatus } from "./validation.js";
 import {
   collectChangesFromDOM,
   saveChanges,
@@ -32,6 +32,8 @@ import {
 } from "./data-extraction.js";
 import { addRootNode } from "./cdi-graph-helpers.js";
 import { highlightText } from "./render.js";
+import { parseDataverseUrl } from "./dataverse-url-parser.js";
+import { getFileId, getSiteUrl, getOriginalFileName } from "./state.js";
 
 export function setupEventHandlers() {
   // Load local file button
@@ -186,6 +188,56 @@ export function setupEventHandlers() {
     }
   });
 
+  // URL validation for standalone mode
+  $("#dataverseUrlInput").on("input", function () {
+    const url = $(this).val().trim();
+    const feedbackDiv = $("#urlValidationFeedback");
+    
+    if (!url) {
+      feedbackDiv.html("");
+      updateSaveButtonState();
+      return;
+    }
+
+    const parseResult = parseDataverseUrl(url);
+    
+    if (parseResult.valid) {
+      const actionText = parseResult.type === 'replace' ? 'replace existing file' : 'add new file to dataset';
+      feedbackDiv.html(`<span style="color: #5cb85c;"><span class="glyphicon glyphicon-ok"></span> Valid URL - will ${actionText}</span>`);
+    } else {
+      feedbackDiv.html(`<span style="color: #d9534f;"><span class="glyphicon glyphicon-remove"></span> ${parseResult.error}</span>`);
+    }
+    
+    updateSaveButtonState();
+  });
+
+  // API token validation
+  $("#apiTokenInput").on("input", function () {
+    updateSaveButtonState();
+  });
+
+  // Filename validation
+  $("#filenameInput").on("input", function () {
+    updateSaveButtonState();
+  });
+
+  // Function to update save button state
+  function updateSaveButtonState() {
+    const isStandalone = $("#dataverseUrlGroup").is(":visible");
+    const apiToken = $("#apiTokenInput").val().trim();
+    const filename = $("#filenameInput").val().trim();
+    
+    let isValid = apiToken && filename;
+    
+    if (isStandalone) {
+      const url = $("#dataverseUrlInput").val().trim();
+      const parseResult = parseDataverseUrl(url);
+      isValid = isValid && parseResult.valid;
+    }
+    
+    $("#confirmSaveBtn").prop("disabled", !isValid);
+  }
+
   // Validate
   $("#validate-btn").click(function () {
     validateData();
@@ -321,12 +373,11 @@ export function setupEventHandlers() {
         if (getIsEditMode()) {
           validateData();
         } else {
-          $("#validation-status").html(
-            '<span class="label label-success">Shapes loaded</span>'
+          // Use the centralized status function with auto-clear
+          setValidationStatus(
+            '<span class="label label-success">Shapes loaded</span>',
+            2000
           );
-          setTimeout(() => {
-            $("#validation-status").html("");
-          }, 2000);
         }
       } catch (error) {
         console.error("Error loading shape:", error);
@@ -364,12 +415,11 @@ export function setupEventHandlers() {
         if (getIsEditMode()) {
           validateData();
         } else {
-          $("#validation-status").html(
-            '<span class="label label-success">Custom shapes loaded</span>'
+          // Use the centralized status function with auto-clear
+          setValidationStatus(
+            '<span class="label label-success">Custom shapes loaded</span>',
+            2000
           );
-          setTimeout(() => {
-            $("#validation-status").html("");
-          }, 2000);
         }
       } catch (error) {
         console.error("Error loading custom shape:", error);

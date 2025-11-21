@@ -10,6 +10,7 @@ import {
   getFileId,
   getOriginalFileName,
 } from "./state.js";
+import { parseDataverseUrl } from "./dataverse-url-parser.js";
 
 export function updateSaveButton() {
   const hasChanges = $(".property-row.changed").length > 0;
@@ -111,22 +112,150 @@ export function saveChanges() {
   // First, collect any changes from the DOM
   collectChangesFromDOM();
 
-  // Clear API token input and show modal
+  // Detect if we're in integrated mode (has fileId and siteUrl)
+  const fileId = getFileId();
+  const siteUrl = getSiteUrl();
+  const isIntegratedMode = !!(fileId && siteUrl);
+
+  // Show/hide URL field based on mode
+  if (isIntegratedMode) {
+    $("#dataverseUrlGroup").hide();
+    $("#dataverseUrlInput").val("");
+  } else {
+    $("#dataverseUrlGroup").show();
+  }
+
+  // Set filename suggestion
+  const originalFileName = getOriginalFileName();
+  $("#filenameInput").val(originalFileName || "metadata.jsonld");
+
+  // Clear API token input
   $("#apiTokenInput").val("");
+  
+  // Reset validation feedback
+  $("#urlValidationFeedback").html("");
+  
+  // Disable button initially in standalone mode
+  if (!isIntegratedMode) {
+    $("#confirmSaveBtn").prop("disabled", true);
+  } else {
+    $("#confirmSaveBtn").prop("disabled", false);
+  }
+  
   $("#saveModal").modal("show");
+}
+
+async function replaceFile(serverUrl, fileId, apiToken, filename, blob) {
+  const formData = new FormData();
+  formData.append("file", blob, filename);
+  formData.append(
+    "jsonData",
+    JSON.stringify({
+      description: "Updated CDI metadata",
+      categories: ["Data"],
+      forceReplace: true,
+    })
+  );
+
+  const response = await fetch(`${serverUrl}/api/files/${fileId}/replace`, {
+    method: "POST",
+    headers: {
+      "X-Dataverse-key": apiToken,
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`API error: ${response.status} - ${errorText}`);
+  }
+
+  return await response.json();
+}
+
+async function addFileToDataset(serverUrl, persistentIdOrDatasetId, apiToken, filename, blob) {
+  const formData = new FormData();
+  formData.append("file", blob, filename);
+  formData.append(
+    "jsonData",
+    JSON.stringify({
+      description: "CDI metadata file",
+      categories: ["Data"],
+    })
+  );
+
+  // Construct the correct API endpoint
+  let apiUrl;
+  if (persistentIdOrDatasetId.includes("doi:") || persistentIdOrDatasetId.includes("10.")) {
+    // It's a persistent ID
+    apiUrl = `${serverUrl}/api/datasets/:persistentId/add?persistentId=${encodeURIComponent(persistentIdOrDatasetId)}`;
+  } else {
+    // It's a dataset ID
+    apiUrl = `${serverUrl}/api/datasets/${persistentIdOrDatasetId}/add`;
+  }
+
+  const response = await fetch(apiUrl, {
+    method: "POST",
+    headers: {
+      "X-Dataverse-key": apiToken,
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`API error: ${response.status} - ${errorText}`);
+  }
+
+  return await response.json();
 }
 
 export async function saveToDataverse() {
   const jsonData = getJsonData();
-  const siteUrl = getSiteUrl();
-  const fileId = getFileId();
-  const originalFileName = getOriginalFileName();
-
   const apiToken = $("#apiTokenInput").val().trim();
+  const filename = $("#filenameInput").val().trim();
 
   if (!apiToken) {
     alert("Please enter your API token.");
     return;
+  }
+
+  if (!filename) {
+    alert("Please enter a filename.");
+    return;
+  }
+
+  // Detect mode
+  const integratedFileId = getFileId();
+  const integratedSiteUrl = getSiteUrl();
+  const isIntegratedMode = !!(integratedFileId && integratedSiteUrl);
+
+  let serverUrl, fileId, persistentId, datasetId, operationType;
+
+  if (isIntegratedMode) {
+    // Integrated mode: always replace
+    serverUrl = integratedSiteUrl;
+    fileId = integratedFileId;
+    operationType = "replace";
+  } else {
+    // Standalone mode: parse URL
+    const dataverseUrl = $("#dataverseUrlInput").val().trim();
+    if (!dataverseUrl) {
+      alert("Please enter a Dataverse URL.");
+      return;
+    }
+
+    const parseResult = parseDataverseUrl(dataverseUrl);
+    if (!parseResult.valid) {
+      alert("Invalid Dataverse URL: " + parseResult.error);
+      return;
+    }
+
+    serverUrl = parseResult.serverUrl;
+    operationType = parseResult.type;
+    fileId = parseResult.fileId;
+    persistentId = parseResult.persistentId;
+    datasetId = parseResult.datasetId;
   }
 
   // Close the modal and show loading
@@ -137,22 +266,9 @@ export async function saveToDataverse() {
     const jsonldString = JSON.stringify(jsonData, null, 2);
 
     // Use the exact MIME type that matches the external tool registration
-    // Note: Dataverse's replace API strips spaces from MIME type parameters
     const mimeType =
       'application/ld+json;profile="http://www.w3.org/ns/json-ld#flattened http://www.w3.org/ns/json-ld#compacted https://ddialliance.org/specification/ddi-cdi/1.0"';
     const blob = new Blob([jsonldString], { type: mimeType });
-
-    // Create form data
-    const formData = new FormData();
-    formData.append("file", blob, originalFileName);
-    formData.append(
-      "jsonData",
-      JSON.stringify({
-        description: "Updated CDI metadata",
-        categories: ["Data"],
-        forceReplace: true,
-      })
-    );
 
     // Show saving indicator
     $("#save-btn")
@@ -161,23 +277,17 @@ export async function saveToDataverse() {
         '<span class="glyphicon glyphicon-refresh spinning"></span> Saving...'
       );
 
-    // Call Dataverse API to replace file
-    const response = await fetch(`${siteUrl}/api/files/${fileId}/replace`, {
-      method: "POST",
-      headers: {
-        "X-Dataverse-key": apiToken,
-      },
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`API error: ${response.status} - ${errorText}`);
+    let result;
+    if (operationType === "replace") {
+      result = await replaceFile(serverUrl, fileId, apiToken, filename, blob);
+    } else {
+      // operationType === "add"
+      const idToUse = persistentId || datasetId;
+      result = await addFileToDataset(serverUrl, idToUse, apiToken, filename, blob);
     }
 
-    const result = await response.json();
-
     if (result.status === "OK") {
+      alert(`File ${operationType === "replace" ? "replaced" : "added"} successfully!`);
       $(".property-row").removeClass("changed");
       updateSaveButton();
     } else {
@@ -195,7 +305,7 @@ export async function saveToDataverse() {
     $("#save-btn")
       .prop("disabled", false)
       .html(
-        '<span class="glyphicon glyphicon-floppy-disk"></span> Save Changes'
+        '<span class="glyphicon glyphicon-floppy-disk"></span> Save to Dataverse'
       );
   }
 }
@@ -214,9 +324,13 @@ export function exportData() {
   const blob = new Blob([dataStr], { type: mimeType });
   const url = URL.createObjectURL(blob);
 
+  // Use original filename or default
+  const originalFileName = getOriginalFileName();
+  const filename = originalFileName || "cdi-data.jsonld";
+
   const a = document.createElement("a");
   a.href = url;
-  a.download = "cdi-data.jsonld";
+  a.download = filename;
   a.click();
 
   URL.revokeObjectURL(url);

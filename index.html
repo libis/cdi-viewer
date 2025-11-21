@@ -23,7 +23,7 @@
           <span class="glyphicon glyphicon-edit"></span> Enable Editing
         </button>
         <button id="save-btn" class="btn btn-success hidden">
-          <span class="glyphicon glyphicon-floppy-disk"></span> Save Changes
+          <span class="glyphicon glyphicon-floppy-disk"></span> Save to Dataverse
         </button>
         <button id="add-root-node-btn" class="btn btn-primary hidden">
           <span class="glyphicon glyphicon-plus-sign"></span> Add Root Node
@@ -173,10 +173,36 @@
             </h4>
           </div>
           <div class="modal-body">
-            <p>
-              To save your changes back to Dataverse, you need to provide an API
-              token with write access to this dataset.
-            </p>
+            <!-- URL Input (Standalone mode only) -->
+            <div class="form-group" id="dataverseUrlGroup" style="display: none;">
+              <label for="dataverseUrlInput">Dataverse URL:</label>
+              <input
+                type="text"
+                class="form-control"
+                id="dataverseUrlInput"
+                placeholder="https://demo.dataverse.org/dataset.xhtml?persistentId=doi:10.../..."
+              />
+              <small class="help-block">
+                Enter a Dataverse dataset URL (to add new file) or file URL (to replace existing file)
+              </small>
+              <div id="urlValidationFeedback" style="margin-top: 5px;"></div>
+            </div>
+            
+            <!-- Filename Input -->
+            <div class="form-group">
+              <label for="filenameInput">Filename:</label>
+              <input
+                type="text"
+                class="form-control"
+                id="filenameInput"
+                placeholder="metadata.jsonld"
+              />
+              <small class="help-block">
+                The filename for your JSON-LD file in Dataverse
+              </small>
+            </div>
+            
+            <!-- API Token Input -->
             <div class="form-group">
               <label for="apiTokenInput">Dataverse API Token:</label>
               <input
@@ -195,6 +221,8 @@
                 >
               </small>
             </div>
+            
+            <!-- Info Alert -->
             <div class="alert alert-info">
               <strong>What will be saved:</strong>
               <ul>
@@ -202,17 +230,13 @@
                 <li>New properties you've added</li>
                 <li>Deleted properties (will be removed)</li>
               </ul>
-              <p>
-                <strong>Note:</strong> This will replace the existing file in
-                Dataverse with your modified version.
-              </p>
             </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-default" data-dismiss="modal">
               Cancel
             </button>
-            <button type="button" class="btn btn-primary" id="confirmSaveBtn">
+            <button type="button" class="btn btn-primary" id="confirmSaveBtn" disabled>
               <span class="glyphicon glyphicon-floppy-disk"></span> Save to
               Dataverse
             </button>
