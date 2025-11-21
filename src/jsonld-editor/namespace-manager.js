@@ -161,7 +161,8 @@ export function renderNamespaceTable() {
   const tbody = $("#namespace-table-body");
   tbody.empty();
 
-  const entries = Object.entries(namespaces);
+  // Filter out JSON-LD keywords (@ prefixed keys)
+  const entries = Object.entries(namespaces).filter(([prefix]) => !prefix.startsWith('@'));
 
   if (entries.length === 0) {
     tbody.append(`

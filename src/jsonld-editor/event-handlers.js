@@ -305,7 +305,7 @@ export function setupEventHandlers() {
     });
 
   // Toggle edit mode
-  $("#toggle-edit-btn").click(function () {
+  $("#toggle-edit-btn").click(async function () {
     // Collect any changes before switching modes
     collectChangesFromDOM();
 
@@ -329,7 +329,9 @@ export function setupEventHandlers() {
       $("#add-namespace-btn").removeClass("hidden");
 
       // Auto-validate when entering edit mode
-      validateData();
+      await validateData();
+      // Update filter counts after validation completes
+      initializeFilters();
     } else {
       $(this)
         .html('<span class="glyphicon glyphicon-edit"></span> Enable Editing')
@@ -348,9 +350,11 @@ export function setupEventHandlers() {
   });
 
   // Save changes
-  $("#save-btn").click(function () {
+  $("#save-btn").click(async function () {
     // Validate before saving
-    validateData();
+    await validateData();
+    // Update filter counts after validation completes
+    initializeFilters();
 
     // Check if validation passed
     setTimeout(() => {
@@ -433,8 +437,10 @@ export function setupEventHandlers() {
   }
 
   // Validate
-  $("#validate-btn").click(function () {
-    validateData();
+  $("#validate-btn").click(async function () {
+    await validateData();
+    // Update filter counts after validation completes
+    initializeFilters();
   });
 
   // Export
@@ -531,7 +537,9 @@ export function setupEventHandlers() {
 
         // Re-validate if in edit mode
         if (getIsEditMode()) {
-          validateData();
+          await validateData();
+          // Update filter counts after validation completes
+          initializeFilters();
         } else {
           // Use the centralized status function with auto-clear
           setValidationStatus(
@@ -573,7 +581,9 @@ export function setupEventHandlers() {
 
         // Re-validate if in edit mode
         if (getIsEditMode()) {
-          validateData();
+          await validateData();
+          // Update filter counts after validation completes
+          initializeFilters();
         } else {
           // Use the centralized status function with auto-clear
           setValidationStatus(

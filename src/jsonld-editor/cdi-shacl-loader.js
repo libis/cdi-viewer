@@ -234,10 +234,30 @@ export async function jsonLdToN3Store(jsonLdData) {
     };
 
     // Convert JSON-LD to N-Quads format
-    // Need base URI to resolve relative # identifiers
+    // Extract base URI from context if available, otherwise use DDI-CDI default
+    let baseUri = "http://ddialliance.org/Specification/DDI-CDI/1.0/RDF/";
+    
+    // Try to extract @vocab or cdi namespace from context as base
+    if (jsonLdData["@context"]) {
+      const context = jsonLdData["@context"];
+      if (typeof context === "string") {
+        // Context is a URL reference, use DDI-CDI default
+        baseUri = "http://ddialliance.org/Specification/DDI-CDI/1.0/RDF/";
+      } else if (typeof context === "object") {
+        // Look for @vocab or cdi prefix
+        if (context["@vocab"]) {
+          baseUri = context["@vocab"];
+        } else if (context["cdi"]) {
+          baseUri = context["cdi"];
+        }
+      }
+    }
+    
+    console.log(`Using base URI for relative IDs: ${baseUri}`);
+    
     const nquads = await jsonld.toRDF(jsonLdData, {
       format: "application/n-quads",
-      base: "http://example.org/data",
+      base: baseUri,
       documentLoader: customLoader,
     });
 

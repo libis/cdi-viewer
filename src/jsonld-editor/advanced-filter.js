@@ -108,9 +108,11 @@ function applyValidationFilter() {
     let show = false;
     
     if (filterState.validation === "valid") {
-      show = card.find(".property-row.invalid, .validation-message").length === 0;
+      // Valid: node doesn't have .invalid class AND has no invalid properties
+      show = !card.hasClass("invalid") && card.find(".property-row.invalid, .validation-message").length === 0;
     } else if (filterState.validation === "invalid") {
-      show = card.find(".property-row.invalid, .validation-message").length > 0;
+      // Invalid: node has .invalid class OR has invalid properties
+      show = card.hasClass("invalid") || card.find(".property-row.invalid, .validation-message").length > 0;
     } else if (filterState.validation === "modified") {
       show = card.find(".modified").length > 0;
     } else if (filterState.validation === "missing-required") {
@@ -183,8 +185,8 @@ function applyEmptyValueFilter() {
 function updateValidationFilterCounts() {
   const counts = {
     all: $(".node-card").length,
-    valid: $(".node-card").not(":has(.property-row.invalid, .validation-message)").length,
-    invalid: $(".node-card:has(.property-row.invalid, .validation-message)").length,
+    valid: $(".node-card").not(".invalid").not(":has(.property-row.invalid, .validation-message)").length,
+    invalid: $(".node-card.invalid, .node-card:has(.property-row.invalid, .validation-message)").length,
     modified: $(".node-card:has(.modified)").length,
     missingRequired: $(".node-card:has(.required.empty, .property-row.required:has(.value-display:empty))").length
   };

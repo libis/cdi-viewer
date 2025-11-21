@@ -219,9 +219,6 @@ export async function validateData() {
 
     // Update property rows with validation results
     updatePropertyValidation(violations);
-    
-    // Update filter counts after validation
-    initializeFilters();
   } catch (error) {
     console.error("Validation error:", error);
 
@@ -247,6 +244,15 @@ export async function validateData() {
  * Update property rows with validation results
  */
 function updatePropertyValidation(violations) {
+  console.log(`updatePropertyValidation called with ${violations.length} violations`);
+  
+  // Debug: Log all node IDs in the DOM
+  const allNodeIds = [];
+  $(".node-card").each(function() {
+    allNodeIds.push($(this).attr("data-node-id"));
+  });
+  console.log(`DOM contains ${allNodeIds.length} nodes with IDs:`, allNodeIds);
+  
   // Clear previous validation states
   $(".property-row")
     .removeClass("invalid")
@@ -268,11 +274,20 @@ function updatePropertyValidation(violations) {
     const nodeId = violation.focusNode;
     const path = violation.path;
     
+    console.log(`Processing violation for nodeId: ${nodeId}, path: ${path}, message: ${violation.message}`);
+    
+    // Extract fragment from full URI if present (e.g., "http://example.org/data#Mass" -> "#Mass")
+    // The HTML uses relative fragments while validation reports use full URIs
+    let nodeIdFragment = nodeId;
+    if (nodeId && nodeId.includes('#')) {
+      nodeIdFragment = '#' + nodeId.split('#').pop();
+    }
+    
     // Handle property-level violations
     if (nodeId && path && path !== "unknown") {
-      // Find matching property row
+      // Try both full URI and fragment
       const propertyRow = $(
-        `.property-row[data-node-id="${nodeId}"][data-property="${path}"]`
+        `.property-row[data-node-id="${nodeId}"][data-property="${path}"], .property-row[data-node-id="${nodeIdFragment}"][data-property="${path}"]`
       );
 
       if (propertyRow.length > 0) {
@@ -298,10 +313,14 @@ function updatePropertyValidation(violations) {
     
     // Handle node-level violations (no specific path or path is "unknown")
     if (nodeId && (!path || path === "unknown")) {
-      const nodeCard = $(`.node-card[data-node-id="${nodeId}"]`);
+      // Try both full URI and fragment
+      const nodeCard = $(`.node-card[data-node-id="${nodeId}"], .node-card[data-node-id="${nodeIdFragment}"]`);
+      
+      console.log(`Node-level violation: Looking for node with ID "${nodeId}" or "${nodeIdFragment}", found: ${nodeCard.length}`);
       
       if (nodeCard.length > 0) {
         nodeCard.addClass("invalid");
+        console.log(`Added .invalid class to node ${nodeId}`);
         
         // Add validation icon to node header
         const message = violation.message || "Node validation failed";
@@ -327,4 +346,9 @@ function updatePropertyValidation(violations) {
   
   // Initialize tooltips
   setTimeout(initTooltips, 100);
+  
+  // Debug: Count how many nodes were marked as invalid
+  const invalidNodeCount = $(".node-card.invalid").length;
+  const invalidPropCount = $(".property-row.invalid").length;
+  console.log(`Validation complete: ${invalidNodeCount} invalid nodes, ${invalidPropCount} invalid properties`);
 }
