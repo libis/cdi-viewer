@@ -21,7 +21,7 @@
   - [x] Not run validation in parallel
   - [ ] Handle validation with different shape sources (FAILING - validation status becomes hidden after shape switch)
 
-- [x] **Editing** (9/9 tests - 100%) - `tests/e2e/standalone/editing.spec.ts`
+- [x] **Editing** (8/9 tests - 89%) - `tests/e2e/standalone/editing.spec.ts`
   - [x] Enable edit mode
   - [x] Disable edit mode
   - [x] Edit text property
@@ -30,7 +30,7 @@
   - [x] Delete optional property
   - [x] Mark changed properties visually
   - [x] Handle rapid edits with debounced validation
-  - [x] Revert changes when disabling edit mode
+  - [ ] Preserve "changed" marking when toggling edit mode (FAILING - visual marking disappears on mode toggle)
 
 - [x] **Search & Filter** (10 tests created - FAILING) - `tests/e2e/standalone/search-filter.spec.ts`
   - [ ] Basic text search with highlighting (search doesn't hide non-matching nodes)
@@ -77,6 +77,44 @@
   - [x] Preserve property order in export
   - [ ] Handle export with validation errors present (FAILING)
 
+- [x] **Filter Combination Bugs** (4/7 tests - 57%) - `tests/e2e/standalone/filter-combination-bugs.spec.ts`
+  - [ ] Maintain filter functionality after multiple validation status changes (FAILING)
+  - [ ] Maintain filter functionality after combining validation and property filters (FAILING)
+  - [x] Correctly apply property status filter after multiple changes
+  - [x] Clear filters properly and restore all nodes
+  - [ ] Not have hidden-by-filter class inconsistencies (FAILING)
+  - [x] Handle rapid filter changes without breaking
+  - [x] Maintain consistent filter state in localStorage
+
+- [x] **Custom Namespace Properties** (7/12 tests - 58%) - `tests/e2e/standalone/custom-namespace-properties.spec.ts`
+  - [x] Show custom namespace nodes in editor
+  - [x] Display add properties section for custom namespace nodes
+  - [ ] Add custom property to custom namespace node using inline UI (FAILING - property not added)
+  - [ ] Add custom property without namespace to custom node (FAILING)
+  - [ ] Add multiple custom properties to same custom node (FAILING)
+  - [ ] Edit custom property value in custom namespace node (FAILING)
+  - [ ] Delete custom property from custom namespace node (FAILING)
+  - [x] Add complex property (node reference) to custom namespace node
+  - [ ] Preserve custom properties when toggling edit mode (FAILING)
+  - [x] Validate that custom property input is inline, not a popup ✅ BUG FIXED
+  - [ ] Handle Enter key in custom property input (FAILING)
+  - [x] Show validation for empty custom property name
+
+- [x] **Custom Property UI** (7/13 tests - 54%) - `tests/e2e/standalone/custom-property-ui.spec.ts`
+  - [x] Use inline UI for adding custom properties, not popup ✅ BUG FIXED
+  - [x] NOT have old-style popup button for adding custom properties ✅ BUG FIXED
+  - [x] Nodes without SHACL suggestions should still have inline custom property UI ✅ BUG FIXED
+  - [x] Custom property inline UI should match screenshot 1 ✅ BUG FIXED
+  - [x] Custom property UI should be in a bordered section below property list
+  - [ ] Adding custom property via inline UI should work (FAILING - property not added)
+  - [ ] Adding custom property with namespace via inline UI should work (FAILING)
+  - [ ] Inline UI should clear input after adding property (FAILING)
+  - [x] Inline UI should show validation message for empty property name
+  - [x] Namespace selector should have 'Add new namespace' option
+  - [x] All nodes should consistently use the same add property UI ✅ BUG FIXED
+  - [ ] Inline UI should support keyboard navigation (FAILING)
+  - [x] Should not call browser prompt() when adding custom property ✅ BUG FIXED
+
 ### 📋 Planned Tests (Not Yet Implemented)
 - [ ] **Document Creation** (0/8 tests) - `tests/e2e/standalone/document-creation.spec.ts`
 - [ ] **Dataverse Load** (0/5 tests) - `tests/e2e/dataverse/load-from-dataverse.spec.ts`
@@ -86,24 +124,35 @@
 - [ ] **Cross-Browser** (0/5 tests) - `tests/e2e/cross-browser/compatibility.spec.ts`
 - [ ] **Responsive** (0/4 tests) - `tests/e2e/cross-browser/responsive.spec.ts`
 
-**Total Progress: 57 tests created, 37 passing (65%)**
+**Total Progress: 89 tests created, 54 passing (61%)**
 
 **Test Suites Summary:**
 - ✅ File Loading: 7/7 (100%)
 - 🟡 Validation: 5/6 (83%)
-- ✅ Editing: 9/9 (100%)
+- 🟡 Editing: 8/9 (89%) - "Changed" marking bug identified
 - 🔴 Search & Filter: 4/10 (40%) - App bugs with search hiding nodes and filter combinations
 - 🟡 Namespace Management: 6/9 (67%)
 - 🟡 Array Operations: 5/9 (56%)
 - 🟡 Export: 5/8 (63%)
+- 🟡 Filter Combination Bugs: 4/7 (57%) - Tests confirm filter state bugs
+- 🟡 Custom Namespace Properties: 7/12 (58%) - UI fixed, property addition still broken
+- 🟡 Custom Property UI: 7/13 (54%) - ✅ **5 BUGS FIXED** (popup UI replaced with inline)
 
-**Key Issues Found:**
-1. **Search functionality**: Highlights matches but doesn't hide non-matching nodes as expected
-2. **Filter combinations**: Combining multiple filters causes issues
-3. **Array display**: Array values not displaying correctly in initial render
-4. **Export changes**: User changes not being preserved in export
-5. **Namespace validation**: Prefix uniqueness validation not working
-6. **Convert operations**: Single↔Array conversion tests failing
+**Bugs Fixed in This Session:**
+1. ✅ **"Add Custom Property" popup button removed** - Replaced with inline UI in both `renderBlankNode` and `renderNode`
+2. ✅ **Inline UI now shown for all nodes** - Even nodes without SHACL suggestions get unified inline UI
+3. ✅ **No more browser prompt()** - Old popup implementation completely removed
+4. ✅ **Consistent UI across all nodes** - All nodes use the same unified add component
+5. ✅ **UI matches screenshot 1** - Namespace selector + inline input + Add button
+
+**Key Issues Still Broken:**
+1. **"Changed" marking disappears on mode toggle**: Data changes are preserved but visual highlighting (teal) is removed when switching between edit/view mode (affecting 1 test)
+2. **Property addition not working**: Clicking "Add" in inline UI doesn't add the property (affecting 7 tests)
+3. **Filter combinations**: After multiple changes, filters stop working properly (affecting 3 tests)
+4. **Search functionality**: Highlights matches but doesn't hide non-matching nodes
+5. **Array operations**: Display and conversion issues
+6. **Export**: User changes not being preserved
+7. **Namespace validation**: Prefix uniqueness validation not working
 
 **Next Steps:**
 1. Fix search/filter functionality to properly hide non-matching nodes

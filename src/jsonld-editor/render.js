@@ -181,26 +181,12 @@ export function renderNodeTree(node, index, depth) {
       );
       card.append(suggestionsSection);
     } else {
-      // Even with no SHACL suggestions, allow adding custom properties
-      const emptySection = $("<div>").addClass("add-property-section");
-      emptySection.append(
-        $("<h4>")
-          .text("Add Properties")
-          .css({ "margin-top": "0", "margin-bottom": "10px" })
+      // Even with no SHACL suggestions, allow adding custom properties using unified UI
+      const suggestionsSection = createPropertySuggestionsSection(
+        [], // No SHACL suggestions
+        id
       );
-      const addCustomBtn = $("<button>")
-        .addClass("btn btn-default")
-        .html(
-          '<span class="glyphicon glyphicon-edit"></span> Add Custom Property'
-        )
-        .click(function () {
-          const propName = prompt("Enter custom property name:");
-          if (propName) {
-            addPropertyToNode(id, propName, "", body);
-          }
-        });
-      emptySection.append(addCustomBtn);
-      card.append(emptySection);
+      card.append(suggestionsSection);
     }
   }
 
@@ -271,26 +257,12 @@ export function renderNode(node, index) {
       );
       card.append(suggestionsSection);
     } else {
-      // Even with no SHACL suggestions, allow adding custom properties
-      const emptySection = $("<div>").addClass("add-property-section");
-      emptySection.append(
-        $("<h4>")
-          .text("Add Properties")
-          .css({ "margin-top": "0", "margin-bottom": "10px" })
+      // Even with no SHACL suggestions, allow adding custom properties using unified UI
+      const suggestionsSection = createPropertySuggestionsSection(
+        [], // No SHACL suggestions
+        id
       );
-      const addCustomBtn = $("<button>")
-        .addClass("btn btn-default")
-        .html(
-          '<span class="glyphicon glyphicon-edit"></span> Add Custom Property'
-        )
-        .click(async function () {
-          const propName = await showPrompt("Enter custom property name:");
-          if (propName) {
-            addPropertyToNode(id, propName, "", body);
-          }
-        });
-      emptySection.append(addCustomBtn);
-      card.append(emptySection);
+      card.append(suggestionsSection);
     }
   }
 

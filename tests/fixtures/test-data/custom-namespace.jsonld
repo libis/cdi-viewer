@@ -1,0 +1,17 @@
+{
+  "@context": {
+    "myns": "http://example.org/myNamespace#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "@graph": [
+    {
+      "@id": "#customNode1",
+      "@type": "myns:CustomType",
+      "myns:customProperty": "initial value"
+    },
+    {
+      "@id": "#customNode2",
+      "@type": "myns:AnotherCustomType"
+    }
+  ]
+}

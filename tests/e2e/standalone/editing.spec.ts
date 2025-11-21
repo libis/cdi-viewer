@@ -261,7 +261,12 @@ test.describe('Editing Mode', () => {
     await expect(validationStatus).toBeVisible();
   });
 
-  test('should revert changes when disabling edit mode without save', async ({ page }) => {
+  test('should preserve "changed" marking when toggling edit mode', async ({ page }) => {
+    // BUG: Currently the "changed" visual marking (teal highlight) disappears when
+    // toggling between edit and view mode, even though the actual data change is preserved.
+    // EXPECTED: Changed nodes/properties should remain visually marked as "changed" 
+    // in both view and edit mode until explicitly saved or reverted.
+    
     await page.click('#toggle-edit-btn');
     await page.waitForTimeout(500);
     
@@ -269,25 +274,40 @@ test.describe('Editing Mode', () => {
     const input = page.locator('[data-testid="property-name"] input[type="text"]').first();
     const originalValue = await input.inputValue();
     
-    await input.fill('Temporary Change');
+    // Make a change
+    await input.fill('Modified Value');
     await page.keyboard.press('Tab');
     await page.waitForTimeout(500);
     
-    // Disable edit mode (should prompt or revert)
-    await page.click('#toggle-edit-btn');
+    // Verify changed marking appears in edit mode
+    const propertyRow = input.locator('xpath=ancestor::div[contains(@class, "property-row")][1]');
+    await expect(propertyRow).toHaveClass(/changed/);
+    
+    // Disable edit mode (switch to view mode)
+    await page.getByRole('button', { name: 'Disable Editing' }).click();
     await page.waitForTimeout(500);
     
-    // Re-enable to check value
-    await page.click('#toggle-edit-btn');
+    // BUG: The "changed" class is removed here, but it shouldn't be
+    // EXPECTED: Property should still have "changed" class in view mode
+    await expect(propertyRow).toHaveClass(/changed/);
+    
+    // Re-enable edit mode
+    await page.getByRole('button', { name: 'Enable Editing' }).click();
     await page.waitForTimeout(500);
     
     // ============= EXPECTED RESULTS =============
     
-    // Value should be reverted (if confirmation was implemented)
-    // OR value persists (if no confirmation)
-    // This test documents the behavior
+    // 1. The actual value change should be preserved
     const currentValue = await input.inputValue();
-    // Just verify input is accessible
-    expect(currentValue).toBeDefined();
+    expect(currentValue).toBe('Modified Value');
+    expect(currentValue).not.toBe(originalValue);
+    
+    // 2. BUG: The "changed" marking should still be present
+    // This currently fails because the class is removed when toggling modes
+    await expect(propertyRow).toHaveClass(/changed/);
+    
+    // 3. The node card should also maintain "changed" marking
+    const nodeCard = propertyRow.locator('xpath=ancestor::div[contains(@class, "node-card")][1]');
+    await expect(nodeCard).toHaveClass(/changed/);
   });
 });
