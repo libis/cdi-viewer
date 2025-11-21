@@ -18,11 +18,28 @@
 
   <body>
     <!-- Toolbar -->
-    <div class="toolbar" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 20px;">
+    <div
+      class="toolbar"
+      style="
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px;
+      "
+    >
       <!-- Fragment wrapper to group toolbar sections -->
-      <div style="flex: 1 1 auto; min-width: min(100%, 600px);">
+      <div style="flex: 1 1 auto; min-width: min(100%, 600px)">
         <!-- Controls buttons -->
-        <div style="margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 5px; align-items: center;">
+        <div
+          style="
+            margin-bottom: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            align-items: center;
+          "
+        >
           <button id="toggle-edit-btn" class="btn btn-primary">
             <span class="glyphicon glyphicon-edit"></span> Enable Editing
           </button>
@@ -47,7 +64,9 @@
           <div id="validation-details" style="margin-top: 10px"></div>
         </div>
         <!-- Loading buttons -->
-        <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+        <div
+          style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center"
+        >
           <input
             type="file"
             id="local-file-input"
@@ -97,7 +116,7 @@
         </div>
       </div>
       <!-- Enhanced Search Controls -->
-      <div style="flex: 0 1 auto; min-width: min(100%, 450px);">
+      <div style="flex: 0 1 auto; min-width: min(100%, 450px)">
         <div
           style="margin-left: auto; display: flex; align-items: left; gap: 5px"
         >
