@@ -13,7 +13,6 @@
 
 // Filter state
 const filterState = {
-  nodeTypes: [], // Empty = show all
   validation: "all", // all, valid, invalid, modified, missing-required
   propertyStatus: "all", // all, shacl-only, extra-only
   hideEmpty: false,
@@ -26,9 +25,6 @@ const filterState = {
 function getActiveFilterCount() {
   let count = 0;
   
-  if (filterState.nodeTypes.length > 0) {
-    count++;
-  }
   if (filterState.validation !== "all") {
     count++;
   }
@@ -63,14 +59,12 @@ function updateActiveFilterBadge() {
  * Clear all filters
  */
 export function clearAllFilters() {
-  filterState.nodeTypes = [];
   filterState.validation = "all";
   filterState.propertyStatus = "all";
   filterState.hideEmpty = false;
   filterState.searchScope = ["names", "values", "ids", "types"];
   
   // Update UI controls
-  $("#node-type-filter").val([]);
   $("#validation-filter").val("all");
   $("input[name='property-status'][value='all']").prop("checked", true);
   $("#hide-empty-checkbox").prop("checked", false);
@@ -87,9 +81,6 @@ export function clearAllFilters() {
  * Apply all active filters
  */
 export function applyFilters() {
-  // Apply node type filter
-  applyNodeTypeFilter();
-  
   // Apply validation filter
   applyValidationFilter();
   
@@ -101,28 +92,6 @@ export function applyFilters() {
   
   updateActiveFilterBadge();
   saveFilterState();
-}
-
-/**
- * Filter by node type
- */
-function applyNodeTypeFilter() {
-  if (filterState.nodeTypes.length === 0) {
-    // No filter = show all
-    $(".node-card").removeClass("hidden-by-type-filter");
-    return;
-  }
-  
-  $(".node-card").each(function() {
-    const card = $(this);
-    const nodeType = card.find(".node-type").text().trim();
-    
-    if (filterState.nodeTypes.includes(nodeType)) {
-      card.removeClass("hidden-by-type-filter");
-    } else {
-      card.addClass("hidden-by-type-filter");
-    }
-  });
 }
 
 /**
@@ -139,9 +108,9 @@ function applyValidationFilter() {
     let show = false;
     
     if (filterState.validation === "valid") {
-      show = card.find(".validation-error").length === 0;
+      show = card.find(".property-row.invalid, .validation-message").length === 0;
     } else if (filterState.validation === "invalid") {
-      show = card.find(".validation-error").length > 0;
+      show = card.find(".property-row.invalid, .validation-message").length > 0;
     } else if (filterState.validation === "modified") {
       show = card.find(".modified").length > 0;
     } else if (filterState.validation === "missing-required") {
@@ -209,58 +178,13 @@ function applyEmptyValueFilter() {
 }
 
 /**
- * Extract unique node types from document
- */
-function extractNodeTypes() {
-  const types = new Set();
-  
-  $(".node-card").each(function() {
-    const typeText = $(this).find(".node-type").text().trim();
-    if (typeText) {
-      types.add(typeText);
-    }
-  });
-  
-  return Array.from(types).sort();
-}
-
-/**
- * Populate node type filter dropdown
- */
-function populateNodeTypeFilter() {
-  const types = extractNodeTypes();
-  const select = $("#node-type-filter");
-  
-  select.empty();
-  
-  if (types.length === 0) {
-    select.append('<option value="">No nodes</option>');
-    return;
-  }
-  
-  types.forEach(type => {
-    const count = $(`.node-type:contains("${type}")`).length;
-    const option = $("<option>")
-      .val(type)
-      .text(`${type} (${count})`);
-    
-    // Select if in filter state
-    if (filterState.nodeTypes.includes(type)) {
-      option.prop("selected", true);
-    }
-    
-    select.append(option);
-  });
-}
-
-/**
  * Update validation filter counts
  */
 function updateValidationFilterCounts() {
   const counts = {
     all: $(".node-card").length,
-    valid: $(".node-card").not(":has(.validation-error)").length,
-    invalid: $(".node-card:has(.validation-error)").length,
+    valid: $(".node-card").not(":has(.property-row.invalid, .validation-message)").length,
+    invalid: $(".node-card:has(.property-row.invalid, .validation-message)").length,
     modified: $(".node-card:has(.modified)").length,
     missingRequired: $(".node-card:has(.required.empty, .property-row.required:has(.value-display:empty))").length
   };
@@ -340,12 +264,6 @@ export function setupAdvancedFilterHandlers() {
     clearAllFilters();
   });
   
-  // Node type filter
-  $("#node-type-filter").on("change", function() {
-    filterState.nodeTypes = $(this).val() || [];
-    applyFilters();
-  });
-  
   // Validation filter
   $("#validation-filter").on("change", function() {
     filterState.validation = $(this).val();
@@ -392,9 +310,6 @@ export function setupAdvancedFilterHandlers() {
  * Initialize filters when data is loaded
  */
 export function initializeFilters() {
-  // Populate node type filter
-  populateNodeTypeFilter();
-  
   // Update validation counts
   updateValidationFilterCounts();
   

@@ -250,15 +250,26 @@ function updatePropertyValidation(violations) {
   // Clear previous validation states
   $(".property-row")
     .removeClass("invalid")
-    .find(".validation-message")
+    .find(".validation-error-icon")
     .remove();
+  
+  $(".node-card")
+    .removeClass("invalid")
+    .find(".node-validation-icon")
+    .remove();
+
+  // Initialize tooltips at the end
+  const initTooltips = () => {
+    $('[data-toggle="tooltip"]').tooltip();
+  };
 
   // Group violations by focus node and path
   violations.forEach((violation) => {
-    if (violation.focusNode && violation.path) {
-      const nodeId = violation.focusNode;
-      const path = violation.path;
-
+    const nodeId = violation.focusNode;
+    const path = violation.path;
+    
+    // Handle property-level violations
+    if (nodeId && path && path !== "unknown") {
       // Find matching property row
       const propertyRow = $(
         `.property-row[data-node-id="${nodeId}"][data-property="${path}"]`
@@ -267,11 +278,53 @@ function updatePropertyValidation(violations) {
       if (propertyRow.length > 0) {
         propertyRow.addClass("invalid");
 
-        // Add validation message
+        // Add validation icon with tooltip
         const message = violation.message || "Validation failed";
-        const msgDiv = $("<div>").addClass("validation-message").text(message);
-        propertyRow.append(msgDiv);
+        const icon = $("<span>")
+          .addClass("glyphicon glyphicon-exclamation-sign validation-error-icon")
+          .attr("title", message)
+          .attr("data-toggle", "tooltip")
+          .attr("data-placement", "top");
+        
+        // Add icon to property label area
+        const labelArea = propertyRow.find(".property-label, .property-path").first();
+        if (labelArea.length > 0) {
+          labelArea.after(icon);
+        } else {
+          propertyRow.prepend(icon);
+        }
+      }
+    }
+    
+    // Handle node-level violations (no specific path or path is "unknown")
+    if (nodeId && (!path || path === "unknown")) {
+      const nodeCard = $(`.node-card[data-node-id="${nodeId}"]`);
+      
+      if (nodeCard.length > 0) {
+        nodeCard.addClass("invalid");
+        
+        // Add validation icon to node header
+        const message = violation.message || "Node validation failed";
+        const icon = $("<span>")
+          .addClass("glyphicon glyphicon-exclamation-sign node-validation-icon")
+          .attr("title", message)
+          .attr("data-toggle", "tooltip")
+          .attr("data-placement", "right")
+          .css({
+            "color": "#dc3545",
+            "margin-left": "10px",
+            "cursor": "help"
+          });
+        
+        // Add to node header after node type
+        const nodeType = nodeCard.find(".node-type").first();
+        if (nodeType.length > 0) {
+          nodeType.after(icon);
+        }
       }
     }
   });
+  
+  // Initialize tooltips
+  setTimeout(initTooltips, 100);
 }
