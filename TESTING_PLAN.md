@@ -105,6 +105,51 @@ await expect(page.locator('[data-testid="property-name"]')).toContainText('Sampl
 - Use **fresh browser context** for each test
 - Don't rely on **execution order**
 
+#### 6. **Handling Duplicate data-testid Values**
+
+**Problem**: When multiple elements share the same `data-testid`, Playwright throws a "strict mode violation" error:
+```
+Error: locator('[data-testid="property-identifier"]') resolved to 2 elements
+```
+
+**Root Cause**: Test data may contain duplicate property names across different nodes. For example, both `#dataset1` and `#variable1` might have an "identifier" property, resulting in multiple elements with `data-testid="property-identifier"`.
+
+**Solution**: Make selectors node-specific by including the parent `data-node-id` attribute:
+
+```typescript
+// ❌ BAD: Ambiguous selector (may match multiple elements)
+const property = page.locator('[data-testid="property-identifier"]');
+
+// ✅ GOOD: Node-specific selector (matches exactly one element)
+const property = page.locator('[data-node-id="#dataset1"][data-testid="property-identifier"]');
+```
+
+**Pattern for Dynamic Tests**:
+1. Find the parent context (e.g., property row or node card)
+2. Extract the `data-node-id` attribute
+3. Build a compound selector that includes both node ID and test ID
+
+```typescript
+// Example: Delete property test
+const deleteBtn = page.locator('[data-testid="delete-property-btn-identifier"]').first();
+const propertyRow = deleteBtn.locator('xpath=ancestor::div[contains(@class, "property-row")][1]');
+const nodeId = await propertyRow.getAttribute('data-node-id');
+const propertyKey = 'identifier';
+
+// Build node-specific selector
+const selector = `[data-node-id="${nodeId}"][data-testid="property-${propertyKey}"]`;
+const property = page.locator(selector);
+
+// Now assertions are precise
+await expect(property).toHaveClass(/deleted/);
+```
+
+**Key Takeaways**:
+- Always check for duplicate `data-testid` values when debugging "strict mode violation" errors
+- Use XPath `ancestor::` to navigate from a specific element to its parent container
+- Include parent context (like `data-node-id`) in selectors to disambiguate
+- If manual testing shows the feature works but the test fails, suspect selector ambiguity
+
 ---
 
 ## Testable Elements Reference
