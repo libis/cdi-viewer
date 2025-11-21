@@ -100,6 +100,7 @@ $(document).ready(async function () {
     if (!fileId || !siteUrl) {
       // Show load local file button instead of error
       $("#load-local-btn").show();
+      $("#load-dataverse-btn").show();
       $("#content").html(`
                         <div class="alert alert-info">
                             <strong>No Dataverse parameters detected.</strong> Use the "Load Local File" button in the top left to select a CDI JSON-LD file from your computer.
@@ -230,6 +231,7 @@ $(document).ready(async function () {
   } catch (error) {
     console.error("Error loading data:", error);
     $("#load-local-btn").show();
+    $("#load-dataverse-btn").show();
     $("#content").html(`
                     <div class="alert alert-danger">
                         <strong>Error:</strong> Failed to load CDI data. ${error.message}

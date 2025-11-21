@@ -19,6 +19,8 @@ import {
   setShaclShapes,
   setDefaultTypeNamespace,
   getValidationReport,
+  setFileId,
+  setSiteUrl,
 } from "./state.js";
 import { normalizeToGraphFormat } from "./cdi-json-ld-helpers.js";
 import { loadShapes } from "./cdi-shacl-loader.js";
@@ -115,6 +117,162 @@ export function setupEventHandlers() {
 
       // Reset input so same file can be selected again
       $(this).val("");
+    });
+
+  // Load from Dataverse button
+  $("#load-dataverse-btn")
+    .off("click")
+    .click(function () {
+      // Clear previous inputs
+      $("#loadDataverseUrlInput").val("");
+      $("#loadApiTokenInput").val("");
+      $("#loadUrlValidationFeedback").html("");
+      $("#confirmLoadBtn").prop("disabled", true);
+      
+      $("#loadDataverseModal").modal("show");
+    });
+
+  // URL validation for load modal
+  $("#loadDataverseUrlInput").on("input", function () {
+    const url = $(this).val().trim();
+    const feedbackDiv = $("#loadUrlValidationFeedback");
+    
+    if (!url) {
+      feedbackDiv.html("");
+      $("#confirmLoadBtn").prop("disabled", true);
+      return;
+    }
+
+    const parseResult = parseDataverseUrl(url);
+    
+    if (parseResult.valid && parseResult.type === 'replace') {
+      feedbackDiv.html('<span style="color: #5cb85c;"><span class="glyphicon glyphicon-ok"></span> Valid file URL</span>');
+      $("#confirmLoadBtn").prop("disabled", false);
+    } else if (parseResult.valid && parseResult.type === 'add') {
+      feedbackDiv.html('<span style="color: #d9534f;"><span class="glyphicon glyphicon-remove"></span> This is a dataset URL. Please provide a file URL.</span>');
+      $("#confirmLoadBtn").prop("disabled", true);
+    } else {
+      feedbackDiv.html(`<span style="color: #d9534f;"><span class="glyphicon glyphicon-remove"></span> ${parseResult.error}</span>`);
+      $("#confirmLoadBtn").prop("disabled", true);
+    }
+  });
+
+  // Confirm load from Dataverse
+  $("#confirmLoadBtn")
+    .off("click")
+    .click(async function () {
+      const url = $("#loadDataverseUrlInput").val().trim();
+      const apiToken = $("#loadApiTokenInput").val().trim();
+      
+      if (!url) {
+        alert("Please enter a file URL.");
+        return;
+      }
+
+      const parseResult = parseDataverseUrl(url);
+      if (!parseResult.valid || parseResult.type !== 'replace') {
+        alert("Please enter a valid file URL.");
+        return;
+      }
+
+      // Close modal and show loading
+      $("#loadDataverseModal").modal("hide");
+      
+      try {
+        // Show loading indicator
+        $("body").append('<div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; justify-content: center;"><div style="background: white; padding: 20px; border-radius: 5px;"><span class="glyphicon glyphicon-refresh spinning"></span> Loading file from Dataverse...</div></div>');
+        
+        // Construct download URL
+        const downloadUrl = `${parseResult.serverUrl}/api/access/datafile/${parseResult.fileId}`;
+        
+        // Build fetch options
+        const fetchOptions = {
+          method: "GET",
+          headers: {}
+        };
+        
+        if (apiToken) {
+          fetchOptions.headers["X-Dataverse-key"] = apiToken;
+        }
+        
+        // Fetch the file
+        const response = await fetch(downloadUrl, fetchOptions);
+        
+        if (!response.ok) {
+          throw new Error(`Failed to download file: ${response.status} ${response.statusText}`);
+        }
+        
+        const fileText = await response.text();
+        const parsedData = JSON.parse(fileText);
+
+        // Extract filename from response headers or URL
+        const contentDisposition = response.headers.get("Content-Disposition");
+        let filename = "dataverse-file.jsonld";
+        if (contentDisposition) {
+          const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+          if (filenameMatch) {
+            filename = filenameMatch[1];
+          }
+        }
+        
+        // Set filename and IDs for export and future saves
+        setOriginalFileName(filename);
+        setFileId(parseResult.fileId);
+        setSiteUrl(parseResult.serverUrl);
+
+        // Normalize to @graph format
+        const normalizedData = await normalizeToGraphFormat(parsedData);
+        setJsonData(normalizedData);
+
+        const jsonData = getJsonData();
+        if (!jsonData["@graph"]) {
+          throw new Error("Failed to normalize JSON-LD structure.");
+        }
+
+        setOriginalData(JSON.parse(JSON.stringify(jsonData)));
+
+        // Expand JSON-LD
+        try {
+          const expanded = await jsonld.expand(jsonData);
+          setExpandedJsonLd(expanded);
+        } catch (expandError) {
+          console.warn("Could not expand JSON-LD:", expandError);
+          setExpandedJsonLd(null);
+        }
+
+        // Load SHACL shapes if not already loaded
+        if (!getShaclShapesStore()) {
+          const selectedShape = $("#shape-selector").val();
+          if (selectedShape) {
+            try {
+              await loadShapes(selectedShape);
+              log(LOG_LEVEL.INFO, "SHACL shapes loaded for validation");
+            } catch (shapeError) {
+              console.error("Failed to load SHACL shapes:", shapeError);
+              alert(
+                "Warning: Failed to load SHACL shapes. Continuing in generic mode.\\n\\n" +
+                  shapeError.message
+              );
+            }
+          }
+        }
+
+        // Render the data
+        renderData();
+        
+        $("#content").prepend(`
+          <div class="alert alert-success" style="margin-bottom: 10px;">
+            <strong>Loaded from Dataverse:</strong> ${filename}
+          </div>
+        `);
+        
+      } catch (error) {
+        console.error("Error loading file from Dataverse:", error);
+        alert("Error loading file from Dataverse:\\n\\n" + error.message + "\\n\\nPlease check:\\n• The URL is correct\\n• The file is published (or provide an API token)\\n• The file is in JSON-LD format");
+      } finally {
+        // Remove loading overlay
+        $("#loading-overlay").remove();
+      }
     });
 
   // Toggle edit mode

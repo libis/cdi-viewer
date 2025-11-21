@@ -65,6 +65,14 @@
         >
           <span class="glyphicon glyphicon-folder-open"></span> Load Local File
         </button>
+        <button
+          id="load-dataverse-btn"
+          class="btn btn-primary"
+          style="display: none"
+          title="Load a file from Dataverse using a URL"
+        >
+          <span class="glyphicon glyphicon-cloud-download"></span> Load from Dataverse
+        </button>
         <label for="shape-selector" style="margin: 0; white-space: nowrap"
           >SHACL Shape:</label
         >
@@ -153,6 +161,76 @@
 
     <!-- Content Area -->
     <div id="content"></div>
+
+    <!-- Load from Dataverse Modal -->
+    <div class="modal fade" id="loadDataverseModal" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+            <h4 class="modal-title">
+              <span class="glyphicon glyphicon-cloud-download"></span>
+              Load File from Dataverse
+            </h4>
+          </div>
+          <div class="modal-body">
+            <!-- File URL Input -->
+            <div class="form-group">
+              <label for="loadDataverseUrlInput">Dataverse File URL:</label>
+              <input
+                type="text"
+                class="form-control"
+                id="loadDataverseUrlInput"
+                placeholder="https://demo.dataverse.org/file.xhtml?fileId=..."
+              />
+              <small class="help-block">
+                Enter a URL to a file in Dataverse (JSF, SPA, or API format).
+                The file will be downloaded and loaded into the editor.
+              </small>
+              <div id="loadUrlValidationFeedback" style="margin-top: 5px;"></div>
+            </div>
+            
+            <!-- API Token Input (Optional) -->
+            <div class="form-group">
+              <label for="loadApiTokenInput">API Token (Optional):</label>
+              <input
+                type="password"
+                class="form-control"
+                id="loadApiTokenInput"
+                placeholder="Only needed for unpublished files"
+              />
+              <small class="help-block">
+                Leave empty for published files. Required for draft/unpublished files.
+              </small>
+            </div>
+            
+            <div class="alert alert-info">
+              <strong>Supported URL formats:</strong>
+              <ul style="margin-bottom: 0;">
+                <li>JSF: <code>file.xhtml?fileId=...</code></li>
+                <li>SPA: <code>spa/files?id=...</code></li>
+                <li>API: <code>/api/files/123</code> or <code>/api/access/datafile/123</code></li>
+              </ul>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">
+              Cancel
+            </button>
+            <button type="button" class="btn btn-primary" id="confirmLoadBtn" disabled>
+              <span class="glyphicon glyphicon-download"></span> Load File
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Save to Dataverse Modal -->
     <div class="modal fade" id="saveModal" tabindex="-1" role="dialog">
