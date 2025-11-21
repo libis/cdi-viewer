@@ -59,7 +59,7 @@ test.describe('Validation', () => {
     await page.waitForTimeout(1000);
     
     // ============= ACTIONS =============
-    const inputs = page.locator('input[type="text"]');
+    const inputs = page.locator('[data-testid^="property-"] input[type="text"]');
     const count = await inputs.count();
     
     if (count > 0) {
@@ -188,7 +188,7 @@ test.describe('Validation', () => {
     
     // ============= ACTIONS =============
     // Try to trigger multiple validations quickly
-    const inputs = page.locator('input[type="text"]');
+    const inputs = page.locator('[data-testid^="property-"] input[type="text"]');
     const count = await inputs.count();
     
     if (count > 0) {

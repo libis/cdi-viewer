@@ -10,11 +10,30 @@
   - [x] Handle invalid JSON-LD
   - [x] Load Schema.org dataset (generic mode)
   - [x] Verify validation auto-runs
-  - [x] Verify UI state after loading
+  - [x] Handle edit mode toggle
+  - [x] Handle search functionality
+
+- [x] **Validation** (5/6 tests) - `tests/e2e/standalone/validation.spec.ts`
+  - [x] Auto-validate on file load
+  - [x] Debounce validation on rapid edits
+  - [x] Show validation details on violations
+  - [x] Validate after entering edit mode
+  - [x] Not run validation in parallel
+  - [ ] Handle validation with different shape sources (needs investigation)
 
 ### 🚧 In Progress Tests
-- [ ] **Editing** (0/15 tests) - `tests/e2e/standalone/editing.spec.ts`
-- [ ] **Validation** (0/12 tests) - `tests/e2e/standalone/validation.spec.ts`
+- [ ] **Editing** (2/9 tests) - `tests/e2e/standalone/editing.spec.ts`
+  - [x] Enable edit mode
+  - [x] Preserve required properties
+  - [ ] Disable edit mode (input selector issue)
+  - [ ] Edit text property (input selector issue)
+  - [ ] Handle empty text field (input selector issue)
+  - [ ] Delete optional property (behavior verification needed)
+  - [ ] Mark changed properties visually (input selector issue)
+  - [ ] Handle rapid edits with debounced validation (input selector issue)
+  - [ ] Revert changes when disabling edit mode (input selector issue)
+
+### 📋 Planned Tests
 - [ ] **Search & Filter** (0/10 tests) - `tests/e2e/standalone/search-filter.spec.ts`
 - [ ] **Namespace Management** (0/6 tests) - `tests/e2e/standalone/namespace-management.spec.ts`
 - [ ] **Document Creation** (0/8 tests) - `tests/e2e/standalone/document-creation.spec.ts`
@@ -29,7 +48,10 @@
 - [ ] **Cross-Browser** (0/5 tests) - `tests/e2e/cross-browser/compatibility.spec.ts`
 - [ ] **Responsive** (0/4 tests) - `tests/e2e/cross-browser/responsive.spec.ts`
 
-**Total Progress: 7/99 tests completed (7%)**
+**Total Progress: 14/99 tests completed (14%)**
+**File Loading: 7/7 (100%) ✅**
+**Validation: 5/6 (83%) 🟢**
+**Editing: 2/9 (22%) 🟡**
 
 ---
 

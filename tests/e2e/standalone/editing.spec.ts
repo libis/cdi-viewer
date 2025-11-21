@@ -27,7 +27,7 @@ test.describe('Editing Mode', () => {
     await page.click('#load-local-btn');
     await page.setInputFiles('#local-file-input', testFilePath);
     await expect(page.locator('.alert-success')).toBeVisible({ timeout: 10000 });
-    await expect(page.locator('.node-card')).toHaveCount(2);
+    await expect(page.locator('[data-testid^="node-card-"]')).toHaveCount(2);
   });
 
   test('should enable edit mode', async ({ page }) => {
@@ -133,7 +133,7 @@ test.describe('Editing Mode', () => {
     
     // ============= ACTIONS =============
     // Find a property with a delete button (optional properties)
-    const deleteButtons = page.locator('.delete-property-btn, button:has-text("×")').filter({ hasText: '' });
+    const deleteButtons = page.locator('[data-testid^="delete-property-btn-"]');
     const count = await deleteButtons.count();
     
     if (count > 0) {
@@ -173,7 +173,7 @@ test.describe('Editing Mode', () => {
       const propertyRow = firstRequired.locator('xpath=ancestor::div[contains(@class, "property-row")][1]');
       
       // Check for delete button in required property row
-      const deleteBtn = propertyRow.locator('.delete-property-btn, button:has-text("×")');
+      const deleteBtn = propertyRow.locator('[data-testid^="delete-property-btn-"]');
       const hasDeleteBtn = await deleteBtn.count() > 0;
       
       // Either no delete button exists, or it's disabled

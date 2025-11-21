@@ -184,10 +184,11 @@ export function renderNamespaceTable() {
 
   entries.forEach(([prefix, uri]) => {
     const isProtected = isProtectedNamespace(prefix);
-    const row = $("<tr>");
+    const row = $('<tr>')
+      .attr('data-testid', `namespace-row-${prefix.replace(/[^a-zA-Z0-9]/g, '_')}`);
 
     // Prefix column
-    const prefixCell = $("<td>").text(prefix);
+    const prefixCell = $('<td>').text(prefix);
     if (isProtected) {
       prefixCell.append(' <span class="label label-default">built-in</span>');
     }
@@ -202,10 +203,11 @@ export function renderNamespaceTable() {
     // Actions column
     const actionsCell = $("<td>").css("text-align", "center");
     if (!isProtected) {
-      const deleteBtn = $("<button>")
-        .addClass("btn btn-xs btn-danger")
+      const deleteBtn = $('<button>')
+        .addClass('btn btn-xs btn-danger')
+        .attr('data-testid', `delete-namespace-btn-${prefix.replace(/[^a-zA-Z0-9]/g, '_')}`)
         .html('<span class="glyphicon glyphicon-trash"></span>')
-        .attr("title", "Delete namespace")
+        .attr('title', 'Delete namespace')
         .click(function () {
           if (confirm(`Remove namespace prefix "${prefix}"?`)) {
             removeNamespace(prefix);
