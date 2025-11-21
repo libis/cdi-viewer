@@ -104,6 +104,12 @@ export function setupEventHandlers() {
 
         // Render the data (always, even without shapes)
         renderData();
+        
+        // In standalone mode, ensure save button is visible
+        const isStandaloneMode = !(getFileId() && getSiteUrl());
+        if (isStandaloneMode) {
+          $("#save-btn").removeClass("hidden");
+        }
 
         $("#content").prepend(`
                         <div class="alert alert-success" style="margin-bottom: 10px;">
@@ -260,6 +266,12 @@ export function setupEventHandlers() {
         // Render the data
         renderData();
         
+        // In standalone mode, ensure save button is visible
+        const isStandaloneMode = !(getFileId() && getSiteUrl());
+        if (isStandaloneMode) {
+          $("#save-btn").removeClass("hidden");
+        }
+        
         $("#content").prepend(`
           <div class="alert alert-success" style="margin-bottom: 10px;">
             <strong>Loaded from Dataverse:</strong> ${filename}
@@ -284,6 +296,11 @@ export function setupEventHandlers() {
     setIsEditMode(!currentEditMode);
     const isEditMode = getIsEditMode();
 
+    // Check if in standalone mode
+    const fileId = getFileId();
+    const siteUrl = getSiteUrl();
+    const isStandaloneMode = !(fileId && siteUrl);
+
     if (isEditMode) {
       $(this)
         .html('<span class="glyphicon glyphicon-eye-open"></span> View Mode')
@@ -299,7 +316,11 @@ export function setupEventHandlers() {
         .html('<span class="glyphicon glyphicon-edit"></span> Enable Editing')
         .removeClass("btn-warning")
         .addClass("btn-primary");
-      $("#save-btn").addClass("hidden");
+      
+      // In standalone mode, keep save button visible even in view mode
+      if (!isStandaloneMode) {
+        $("#save-btn").addClass("hidden");
+      }
       $("#add-root-node-btn").addClass("hidden");
     }
 
