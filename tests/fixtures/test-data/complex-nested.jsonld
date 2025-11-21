@@ -1,0 +1,94 @@
+{
+  "@context": {
+    "@vocab": "http://example.org/vocab#",
+    "ddi": "https://ddialliance.org/Specification/DDI-CDI/1.0/RDF/",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "@graph": [
+    {
+      "@id": "#study1",
+      "@type": "ddi:Study",
+      "identifier": "STUDY001",
+      "name": "Complex Study",
+      "hasDataset": {"@id": "#dataset1"}
+    },
+    {
+      "@id": "#dataset1",
+      "@type": "ddi:DataSet",
+      "identifier": "DS001",
+      "name": "Main Dataset",
+      "hasVariable": [
+        {"@id": "#var1"},
+        {"@id": "#var2"},
+        {"@id": "#var3"}
+      ],
+      "hasKey": {"@id": "#key1"}
+    },
+    {
+      "@id": "#var1",
+      "@type": "ddi:Variable",
+      "identifier": "VAR001",
+      "name": "Age",
+      "dataType": "xsd:integer",
+      "hasRepresentation": {"@id": "#repr1"}
+    },
+    {
+      "@id": "#var2",
+      "@type": "ddi:Variable",
+      "identifier": "VAR002",
+      "name": "Gender",
+      "dataType": "xsd:string"
+    },
+    {
+      "@id": "#var3",
+      "@type": "ddi:Variable",
+      "identifier": "VAR003",
+      "name": "Income",
+      "dataType": "xsd:decimal",
+      "hasRepresentation": {"@id": "#repr2"}
+    },
+    {
+      "@id": "#key1",
+      "@type": "ddi:PrimaryKey",
+      "identifier": "KEY001",
+      "name": "Primary Key",
+      "hasComponent": [
+        {"@id": "#keycomp1"}
+      ]
+    },
+    {
+      "@id": "#keycomp1",
+      "@type": "ddi:KeyComponent",
+      "identifier": "KC001",
+      "componentVariable": {"@id": "#var1"}
+    },
+    {
+      "@id": "#repr1",
+      "@type": "ddi:Representation",
+      "identifier": "REPR001",
+      "name": "Age Representation"
+    },
+    {
+      "@id": "#repr2",
+      "@type": "ddi:Representation",
+      "identifier": "REPR002",
+      "name": "Income Representation"
+    },
+    {
+      "@id": "#logical1",
+      "@type": "ddi:LogicalRecord",
+      "identifier": "LR001",
+      "name": "Record Structure",
+      "hasVariable": [
+        {"@id": "#var1"},
+        {"@id": "#var2"}
+      ]
+    },
+    {
+      "@id": "#physical1",
+      "@type": "ddi:PhysicalSegmentLayout",
+      "identifier": "PSL001",
+      "name": "Physical Layout"
+    }
+  ]
+}

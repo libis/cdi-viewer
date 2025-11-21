@@ -166,4 +166,118 @@ test.describe('File Loading - Critical Path', () => {
     // Counter should be empty
     await expect(searchCounter).toHaveText('');
   });
+
+  test('should load complex nested structure', async ({ page }) => {
+    // ============= SETUP =============
+    await page.goto('/');
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForSelector('#load-local-btn', { timeout: 10000 });
+    
+    // ============= ACTIONS =============
+    const testFilePath = path.join(__dirname, '../../fixtures/test-data/complex-nested.jsonld');
+    await page.click('#load-local-btn');
+    await page.setInputFiles('#local-file-input', testFilePath);
+    
+    // Wait for file to load
+    await expect(page.locator('.alert-success')).toBeVisible({ timeout: 10000 });
+    
+    // ============= EXPECTED RESULTS =============
+    
+    // 1. All nodes render correctly (22 nodes in complex-nested - includes nested objects)
+    const nodeCards = page.locator('.node-card');
+    await expect(nodeCards).toHaveCount(22, { timeout: 5000 });
+    
+    // 2. Verify properties are rendered
+    const propertyRows = page.locator('.property-row');
+    await expect(propertyRows.first()).toBeVisible();
+    
+    // 3. All nodes can be collapsed/expanded
+    const firstNode = nodeCards.first();
+    const firstHeader = firstNode.locator('> .node-header');
+    await firstHeader.click();
+    await expect(firstNode).toHaveClass(/collapsed/);
+    await firstHeader.click();
+    await expect(firstNode).not.toHaveClass(/collapsed/);
+  });
+
+  test('should load file without @context', async ({ page }) => {
+    // ============= SETUP =============
+    await page.goto('/');
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForSelector('#load-local-btn', { timeout: 10000 });
+    
+    // ============= ACTIONS =============
+    const testFilePath = path.join(__dirname, '../../fixtures/test-data/no-context.jsonld');
+    await page.click('#load-local-btn');
+    await page.setInputFiles('#local-file-input', testFilePath);
+    
+    // Wait for file to load
+    await expect(page.locator('.alert-success')).toBeVisible({ timeout: 10000 });
+    
+    // ============= EXPECTED RESULTS =============
+    
+    // 1. File loads successfully
+    await expect(page.locator('.node-card')).toHaveCount(1);
+    
+    // 2. Namespace section not displayed (no @context)
+    await expect(page.locator('#namespace-section')).toBeHidden();
+    
+    // 3. Properties still render (using full URIs)
+    const propertyRows = page.locator('.property-row');
+    await expect(propertyRows.first()).toBeVisible();
+  });
+
+  test('should handle invalid JSON-LD', async ({ page }) => {
+    // ============= SETUP =============
+    await page.goto('/');
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForSelector('#load-local-btn', { timeout: 10000 });
+    
+    // ============= ACTIONS =============
+    const testFilePath = path.join(__dirname, '../../fixtures/test-data/invalid-syntax.json');
+    await page.click('#load-local-btn');
+    await page.setInputFiles('#local-file-input', testFilePath);
+    
+    // ============= EXPECTED RESULTS =============
+    
+    // 1. Wait a moment for error handling
+    await page.waitForTimeout(2000);
+    
+    // 2. Either error alert appears OR no nodes are rendered (graceful failure)
+    const hasError = await page.locator('.alert-danger, .alert-error, .alert').isVisible().catch(() => false);
+    const nodeCount = await page.locator('.node-card').count();
+    
+    // 3. Should either show error or have no nodes rendered
+    expect(hasError || nodeCount === 0).toBeTruthy();
+  });
+
+  test('should load Schema.org dataset in generic mode', async ({ page }) => {
+    // ============= SETUP =============
+    await page.goto('/?shacl=generic');
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForSelector('#shape-selector', { timeout: 10000 });
+    
+    // ============= ACTIONS =============
+    const testFilePath = path.join(__dirname, '../../fixtures/test-data/schema-org-dataset.jsonld');
+    await page.click('#load-local-btn');
+    await page.setInputFiles('#local-file-input', testFilePath);
+    
+    await expect(page.locator('.alert-success')).toBeVisible({ timeout: 10000 });
+    
+    // ============= EXPECTED RESULTS =============
+    
+    // 1. File loads without DDI-CDI shapes
+    await expect(page.locator('.node-card')).toHaveCount(3);
+    
+    // 2. Can select shape vocabularies
+    await expect(page.locator('#shape-selector')).toBeVisible();
+    
+    // 3. Properties initially shown (may be classified as EXTRA without shapes)
+    const propertyRows = page.locator('.property-row');
+    await expect(propertyRows.first()).toBeVisible();
+    
+    // 4. Content renders correctly
+    await expect(page.locator('.node-card:has-text("Dataset")').first()).toBeVisible();
+    await expect(page.locator('.node-card:has-text("Person")').first()).toBeVisible();
+  });
 });

@@ -107,13 +107,16 @@ export function renderNodeTree(node, index, depth) {
   // Only indent depth > 0 with a constant 8px (not cumulative since nodes are nested)
   const card = $("<div>")
     .addClass("node-card tree-node")
-    .attr("data-node-id", id);
+    .attr("data-node-id", id)
+    .attr("data-testid", `node-card-${id.replace(/[^a-zA-Z0-9]/g, "_")}`);
   if (depth > 0) {
     card.css("margin-left", "8px");
   }
 
   // Header with collapse functionality
-  const header = $("<div>").addClass("node-header");
+  const header = $("<div>")
+    .addClass("node-header")
+    .attr("data-testid", `node-header-${id.replace(/[^a-zA-Z0-9]/g, "_")}`);
   const leftSide = $("<div>")
     .css("display", "flex")
     .css("align-items", "center");
@@ -122,10 +125,20 @@ export function renderNodeTree(node, index, depth) {
       .addClass("glyphicon glyphicon-chevron-down collapse-icon")
       .css("margin-right", "10px")
   );
-  leftSide.append($("<span>").addClass("node-id").text(id));
-  types.forEach((type) => {
+  leftSide.append(
+    $("<span>")
+      .addClass("node-id")
+      .attr("data-testid", `node-id-${id.replace(/[^a-zA-Z0-9]/g, "_")}`)
+      .text(id)
+  );
+  types.forEach((type, idx) => {
     if (type) {
-      leftSide.append($("<span>").addClass("node-type").text(type));
+      leftSide.append(
+        $("<span>")
+          .addClass("node-type")
+          .attr("data-testid", `node-type-${idx}`)
+          .text(type)
+      );
     }
   });
   header.append(leftSide);
@@ -138,7 +151,9 @@ export function renderNodeTree(node, index, depth) {
   card.append(header);
 
   // Body with properties
-  const body = $("<div>").addClass("node-body");
+  const body = $("<div>")
+    .addClass("node-body")
+    .attr("data-testid", `node-body-${id.replace(/[^a-zA-Z0-9]/g, "_")}`);
   if (!isEditMode) {
     body.addClass("view-mode");
   }
@@ -226,7 +241,9 @@ export function renderNode(node, index) {
   card.append(header);
 
   // Body with properties
-  const body = $("<div>").addClass("node-body");
+  const body = $("<div>")
+    .addClass("node-body")
+    .attr("data-testid", `node-body-${id.replace(/[^a-zA-Z0-9]/g, "_")}`);
   if (!isEditMode) {
     body.addClass("view-mode");
   }
@@ -339,7 +356,8 @@ function renderProperty(key, value, nodeId, nodeTypes) {
   const row = $("<div>")
     .addClass("property-row")
     .attr("data-property", key)
-    .attr("data-node-id", nodeId);
+    .attr("data-node-id", nodeId)
+    .attr("data-testid", `property-${key.replace(/[^a-zA-Z0-9]/g, "_")}`);
 
   // Classify property using SHACL (pass nodeId for URI expansion)
   const classification = classifyProperty(nodeTypes || [], key, nodeId);
@@ -356,11 +374,13 @@ function renderProperty(key, value, nodeId, nodeTypes) {
   }
 
   // Add property badge
-  const badge = $("<span>").addClass("property-badge");
+  const badge = $("<span>")
+    .addClass("property-badge")
+    .attr("data-testid", `badge-${key.replace(/[^a-zA-Z0-9]/g, "_")}`);
   if (classification.isRequired) {
     badge.addClass("required").text("REQUIRED");
   } else if (classification.isInShape) {
-    badge.addClass("optional").text("OPTIONAL");
+    badge.addClass("shacl-defined").text("SHACL");
   } else {
     badge.addClass("extra").text("EXTRA");
   }
@@ -376,12 +396,20 @@ function renderProperty(key, value, nodeId, nodeTypes) {
   }
 
   // Label
-  const label = $("<div>").addClass("property-label").text(humanizeKey(key));
-  const path = $("<div>").addClass("property-path").text(key);
+  const label = $("<div>")
+    .addClass("property-label")
+    .attr("data-testid", "property-label")
+    .text(humanizeKey(key));
+  const path = $("<div>")
+    .addClass("property-path")
+    .attr("data-testid", "property-path")
+    .text(key);
   row.append(label, path);
 
   // Value
-  const valueContainer = $("<div>").addClass("property-value");
+  const valueContainer = $("<div>")
+    .addClass("property-value")
+    .attr("data-testid", "property-value");
 
   // Helper: render a nested object value using a small inline node card
   function renderInlineObject(val) {
@@ -467,6 +495,7 @@ function renderProperty(key, value, nodeId, nodeTypes) {
       if (isEditMode) {
         const deleteBtn = $("<button>")
           .addClass("btn btn-xs delete-btn")
+          .attr("data-testid", `delete-array-value-btn-${idx}`)
           .html('<span class="glyphicon glyphicon-trash"></span>')
           .click(function () {
             if (confirm("Delete this value?")) {
@@ -483,6 +512,7 @@ function renderProperty(key, value, nodeId, nodeTypes) {
     if (isEditMode) {
       const addBtn = $("<button>")
         .addClass("btn btn-sm btn-default add-value-btn")
+        .attr("data-testid", `add-value-btn-${key.replace(/[^a-zA-Z0-9]/g, "_")}`)
         .html('<span class="glyphicon glyphicon-plus"></span> Add Value')
         .click(function () {
           const newValDiv = $("<div>").addClass("array-value");
@@ -511,6 +541,7 @@ function renderProperty(key, value, nodeId, nodeTypes) {
       // Add Reference/Object button for arrays
       const addRefBtn = $("<button>")
         .addClass("btn btn-sm btn-info add-reference-btn")
+        .attr("data-testid", `add-reference-btn-${key.replace(/[^a-zA-Z0-9]/g, "_")}`)
         .html(
           '<span class="glyphicon glyphicon-link"></span> Add Reference/Object'
         )
@@ -525,6 +556,7 @@ function renderProperty(key, value, nodeId, nodeTypes) {
     if (isEditMode) {
       const convertBtn = $("<button>")
         .addClass("btn btn-xs btn-default convert-btn")
+        .attr("data-testid", `convert-to-single-btn-${key.replace(/[^a-zA-Z0-9]/g, "_")}`)
         .html(
           '<span class="glyphicon glyphicon-resize-small"></span> Convert to Single'
         )
@@ -562,6 +594,7 @@ function renderProperty(key, value, nodeId, nodeTypes) {
       if (!classification.isRequired) {
         const deleteBtn = $("<button>")
           .addClass("btn btn-xs btn-danger")
+          .attr("data-testid", `delete-property-btn-${key.replace(/[^a-zA-Z0-9]/g, "_")}`)
           .html('<span class="glyphicon glyphicon-trash"></span> Delete')
           .click(function () {
             if (confirm("Delete this property?")) {
@@ -577,6 +610,7 @@ function renderProperty(key, value, nodeId, nodeTypes) {
       // Convert to Array button
       const convertToArrayBtn = $("<button>")
         .addClass("btn btn-xs btn-default")
+        .attr("data-testid", `convert-to-array-btn-${key.replace(/[^a-zA-Z0-9]/g, "_")}`)
         .html(
           '<span class="glyphicon glyphicon-resize-full"></span> Convert to Array'
         )
@@ -706,6 +740,7 @@ export function createValueInput(
     // Create a clickable button to jump to the referenced node
     const jumpBtn = $("<button>")
       .addClass("btn btn-sm btn-info reference-btn")
+      .attr("data-testid", `jump-to-node-btn-${refId.replace(/[^a-zA-Z0-9]/g, "_")}`)
       .html(`<span class="glyphicon glyphicon-arrow-right"></span> ${refId}`)
       .attr("title", "Click to jump to this node")
       .click(function (e) {
@@ -731,6 +766,7 @@ export function createValueInput(
 
     const jumpBtn = $("<button>")
       .addClass("btn btn-sm btn-info reference-btn")
+      .attr("data-testid", `jump-to-node-btn-${value.replace(/[^a-zA-Z0-9]/g, "_")}`)
       .html(`<span class="glyphicon glyphicon-arrow-right"></span> ${value}`)
       .attr("title", "Click to jump to this node")
       .click(function (e) {

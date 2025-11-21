@@ -20,7 +20,8 @@
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:report": "playwright show-report",
-    "test:coverage:all": "npm run test:coverage && npm run test:e2e"
+    "test:coverage:all": "npm run test:coverage && npm run test:e2e",
+    "clean": "rm -rf dist/ coverage/ test-results/ playwright-report/ blob-report/ node_modules/.cache/"
   },
   "repository": {
     "type": "git",

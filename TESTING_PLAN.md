@@ -1,5 +1,334 @@
 # CDI Viewer - Comprehensive Testing Plan
 
+## Test Implementation Progress
+
+### ✅ Completed Tests
+- [x] **File Loading** (7/7 tests) - `tests/e2e/standalone/file-loading.spec.ts`
+  - [x] Load local JSON-LD file
+  - [x] Load complex nested structure  
+  - [x] Load file without @context
+  - [x] Handle invalid JSON-LD
+  - [x] Load Schema.org dataset (generic mode)
+  - [x] Verify validation auto-runs
+  - [x] Verify UI state after loading
+
+### 🚧 In Progress Tests
+- [ ] **Editing** (0/15 tests) - `tests/e2e/standalone/editing.spec.ts`
+- [ ] **Validation** (0/12 tests) - `tests/e2e/standalone/validation.spec.ts`
+- [ ] **Search & Filter** (0/10 tests) - `tests/e2e/standalone/search-filter.spec.ts`
+- [ ] **Namespace Management** (0/6 tests) - `tests/e2e/standalone/namespace-management.spec.ts`
+- [ ] **Document Creation** (0/8 tests) - `tests/e2e/standalone/document-creation.spec.ts`
+- [ ] **Array Operations** (0/7 tests) - `tests/e2e/standalone/array-operations.spec.ts`
+- [ ] **Export** (0/5 tests) - `tests/e2e/standalone/export.spec.ts`
+
+### 📋 Planned Tests
+- [ ] **Dataverse Load** (0/5 tests) - `tests/e2e/dataverse/load-from-dataverse.spec.ts`
+- [ ] **Dataverse Save** (0/5 tests) - `tests/e2e/dataverse/save-to-dataverse.spec.ts`
+- [ ] **Integrated Mode** (0/6 tests) - `tests/e2e/dataverse/integrated-mode.spec.ts`
+- [ ] **Error Handling** (0/4 tests) - `tests/e2e/dataverse/error-handling.spec.ts`
+- [ ] **Cross-Browser** (0/5 tests) - `tests/e2e/cross-browser/compatibility.spec.ts`
+- [ ] **Responsive** (0/4 tests) - `tests/e2e/cross-browser/responsive.spec.ts`
+
+**Total Progress: 7/99 tests completed (7%)**
+
+---
+
+## Testing Methodology & Quality Standards
+
+### Core Principles
+
+#### 1. **Tests Find Bugs, Not Just Pass**
+- Tests should **fail when functionality is broken**
+- Tests should **reflect real user behavior**
+- **Never modify tests to pass** - fix the code instead
+- If a test fails, ask:
+  1. Is the test wrong? (Check actual UI behavior manually)
+  2. Is the code wrong? (Fix the bug)
+  3. Is the requirement wrong? (Update documentation)
+
+#### 2. **No Shortcuts in Test Implementation**
+- ❌ **BAD**: `await expect(page.locator('.node-type')).toBeVisible()` 
+  - *Problem: Doesn't verify WHICH type is shown*
+- ✅ **GOOD**: `await expect(page.locator('[data-testid="node-type-0"]')).toHaveText('WideDataSet')`
+  - *Verifies the exact type value*
+
+#### 3. **Test What Users See**
+- Verify **actual rendered content**, not just presence
+- Check **counts, text, values, states**
+- Test **interactions produce expected results**
+- Validate **error messages are clear and actionable**
+
+#### 4. **Comprehensive Assertions**
+```typescript
+// ❌ Insufficient
+await expect(page.locator('.node-card')).toBeVisible();
+
+// ✅ Comprehensive
+await expect(page.locator('.node-card')).toHaveCount(26);
+await expect(page.locator('[data-node-id="#Sample_Dataset"]')).toBeVisible();
+await expect(page.locator('[data-testid="node-type-0"]')).toHaveText('WideDataSet');
+await expect(page.locator('[data-testid="property-name"]')).toContainText('Sample Dataset');
+```
+
+#### 5. **Test Isolation**
+- Each test should be **independent**
+- Tests should **clean up after themselves**
+- Use **fresh browser context** for each test
+- Don't rely on **execution order**
+
+---
+
+## Testable Elements Reference
+
+### Static HTML Elements (index.html)
+
+#### Toolbar Buttons
+```typescript
+// Edit Mode Toggle
+'#toggle-edit-btn'                    // Text changes: "Enable Editing" → "View Mode"
+'#toggle-edit-btn .glyphicon'         // Icon changes: glyphicon-edit → glyphicon-eye-open
+
+// Save Button (Dataverse mode)
+'#save-btn'                           // Hidden initially, visible in edit mode
+
+// Export Button
+'#export-btn'                         // Always visible
+
+// Collapse/Expand All
+'#collapse-all-btn'                   // Collapses all node cards
+'#expand-all-btn'                     // Expands all node cards
+
+// Validation Status
+'#validation-status'                  // Shows validation badge
+'#validation-details'                 // Shows detailed violations
+```
+
+#### File Loading
+```typescript
+// Local File Input
+'#local-file-input'                   // File input (hidden)
+'#load-local-btn'                     // Triggers file input
+
+// Dataverse Loading
+'#load-dataverse-btn'                 // Opens Dataverse modal
+'#loadDataverseModal'                 // Modal for loading from Dataverse
+
+// Shape Selector
+'#shape-selector'                     // Dropdown for SHACL shapes
+'#custom-shape-url'                   // Input for custom shape URL (hidden by default)
+```
+
+#### Search & Filter
+```typescript
+// Search Input
+'#search-input'                       // Main search box
+'#clear-search-btn'                   // Clear search (× button)
+'#search-counter'                     // Shows "X of Y matches"
+
+// Search Controls
+'#toggle-case-btn'                    // Toggle case sensitivity
+'#toggle-regex-btn'                   // Toggle regex mode
+'#prev-match-btn'                     // Previous match
+'#next-match-btn'                     // Next match
+
+// Search Scope
+'input[name="search-scope"]'          // Radio buttons (all/keys/values/types)
+
+// Filter Panel
+'#toggle-filter-panel'                // Toggle filter panel visibility
+'#filter-panel'                       // Filter panel container
+'#validation-filter'                  // Dropdown: all/valid/invalid/modified/missing-required
+'input[name="property-status"]'       // Radio: all/shacl-only/extra-only
+'#clear-all-filters-btn'              // Clear all filters
+```
+
+#### Namespace Management
+```typescript
+'#namespace-section'                  // Namespace section container
+'#namespace-content'                  // Collapsible content
+'#toggle-namespace-btn'               // Collapse/expand button
+'#add-namespace-btn'                  // Add namespace (edit mode only)
+'#namespace-table-body'               // Table body with namespace rows
+'#namespaceModal'                     // Modal for add/edit namespace
+```
+
+#### Content Area
+```typescript
+'#content'                            // Main content container where nodes render
+'#add-root-node-container'            // Add root node component (edit mode)
+```
+
+### Dynamically Generated Elements (render.js)
+
+#### Node Cards
+```typescript
+// Node Card Container
+'.node-card'                          // All node cards
+'[data-node-id="<id>"]'               // Specific node by ID
+'[data-testid="node-card-<sanitized-id>"]'  // Test-specific selector
+
+// Node Header
+'.node-header'                        // Clickable header for collapse/expand
+'[data-testid="node-header-<sanitized-id>"]'
+'.collapse-icon'                      // Chevron icon (down when expanded, right when collapsed)
+
+// Node Identity
+'.node-id'                            // Node @id value
+'[data-testid="node-id-<sanitized-id>"]'
+'.node-type'                          // Node @type value(s)
+'[data-testid="node-type-0"]'         // First type
+'[data-testid="node-type-1"]'         // Second type (if multiple)
+
+// Node Body
+'.node-body'                          // Contains all properties
+'[data-testid="node-body"]'
+'.node-body.view-mode'                // View mode styling
+```
+
+#### Property Rows
+```typescript
+// Property Row Container
+'.property-row'                       // All property rows
+'[data-property="<key>"]'             // Specific property by key
+'[data-testid="property-<sanitized-key>"]'
+
+// Property Classification
+'.property-row.shacl-defined'         // SHACL-defined property
+'.property-row.extra-field'           // Extra field (not in shape)
+'.property-row.required'              // Required property
+'.property-row.changed'               // Modified in edit mode (teal highlight)
+
+// Property Badge
+'.property-badge'                     // Classification badge
+'[data-testid="badge-<sanitized-key>"]'
+'.property-badge.required'            // "REQUIRED" badge (red)
+'.property-badge.shacl-defined'       // "SHACL" badge (blue)
+'.property-badge.extra'               // "EXTRA" badge (yellow)
+
+// Property Labels
+'.property-label'                     // Human-readable label
+'[data-testid="property-label"]'
+'.property-path'                      // Technical path/key
+'[data-testid="property-path"]'
+
+// Property Values
+'.property-value'                     // Value container
+'[data-testid="property-value"]'
+'.value-display'                      // Text display (view mode)
+'input[data-property="<key>"]'        // Input field (edit mode)
+'select[data-property="<key>"]'       // Dropdown (edit mode)
+'.array-value'                        // Array value wrapper
+'[data-array-index="<n>"]'            // Array element by index
+```
+
+#### Buttons & Actions
+```typescript
+// Property Actions
+'.delete-property-btn'                // Delete property (× button)
+'.convert-to-array-btn'               // Convert single value to array
+'.convert-to-single-btn'              // Convert array to single value
+'.add-value-btn'                      // Add array element
+'.add-reference-btn'                  // Add reference/object
+'.jump-to-node-btn'                   // Jump to referenced node
+
+// Add Property Section
+'.add-property-section'               // Add properties section (edit mode)
+'.item-dropdown'                      // Property dropdown
+'.item-description'                   // Property description area
+'.add-item-btn'                       // Add selected property button
+'.custom-item-section'                // Custom property section
+```
+
+#### Inline Nested Nodes
+```typescript
+'.inline-node-card'                   // Nested object displayed inline
+'.node-reference-link'                // Reference link with jump button
+```
+
+#### Validation Indicators
+```typescript
+// Node-level validation
+'.node-card.valid'                    // Valid node
+'.node-card.invalid'                  // Invalid node
+'.validation-icon'                    // ✓ or ✗ icon
+
+// Property-level validation
+'.property-row.invalid'               // Invalid property
+'.validation-error-message'           // Error message
+```
+
+### Modals
+```typescript
+// Load from Dataverse
+'#loadDataverseModal'                 // Modal container
+'#file-url-input'                     // File URL input
+'#api-token-input'                    // API token input (optional)
+
+// Save to Dataverse
+'#saveModal'                          // Modal container
+'#save-as-new-radio'                  // Save as new file radio
+'#replace-existing-radio'             // Replace existing radio
+
+// Add/Edit Namespace
+'#namespaceModal'                     // Modal container
+'#namespace-prefix-input'             // Prefix input
+'#namespace-uri-input'                // URI input
+
+// Add Reference/Object
+'#addReferenceModal'                  // Modal container
+'#existingNodeSelect'                 // Existing node dropdown
+'#newNodeType'                        // New node type input
+'#confirmAddReference'                // Confirm button
+```
+
+### Alert Messages
+```typescript
+'.alert-success'                      // Success message
+'.alert-danger'                       // Error message
+'.alert-warning'                      // Warning message
+'.alert-info'                         // Info message
+```
+
+---
+
+## Element Identification Strategy
+
+### 1. Stable Selectors Priority
+1. **data-testid** attributes (most stable)
+2. **id** attributes (stable if unique)
+3. **data-*** custom attributes
+4. **CSS classes** (less stable, can change with styling)
+5. **Text content** (least stable, changes with i18n)
+
+### 2. Combining Selectors
+```typescript
+// ✅ Good: Specific and stable
+page.locator('[data-node-id="#Sample_Dataset"]')
+page.locator('[data-testid="property-name"]')
+
+// ✅ Good: Scoped within parent
+page.locator('.node-card').filter({ hasText: 'WideDataSet' })
+page.locator('[data-node-id="#Sample_Dataset"]').locator('[data-property="name"]')
+
+// ⚠️ Use carefully: Text-based
+page.locator('button:has-text("Enable Editing")')
+
+// ❌ Avoid: Too broad
+page.locator('.btn')
+page.locator('input')
+```
+
+### 3. Dynamic IDs
+For elements with dynamic IDs (like blank nodes), use:
+```typescript
+// Sanitize ID for test selector
+const sanitizedId = id.replace(/[^a-zA-Z0-9]/g, "_");
+// Results in: #Sample_Dataset → _Sample_Dataset
+//             _:b0 → __b0
+```
+
+---
+
 ## Overview
 
 This document outlines a comprehensive testing strategy for the CDI Viewer using Playwright for automated end-to-end testing. The tests cover both **standalone mode** (GitHub Pages) and **Dataverse integration mode** (previewer), ensuring all functionality works correctly in both contexts.

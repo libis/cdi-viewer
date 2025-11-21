@@ -1,0 +1,23 @@
+{
+  "@context": {
+    "@vocab": "http://example.org/vocab#",
+    "ddi": "https://ddialliance.org/Specification/DDI-CDI/1.0/RDF/",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "@graph": [
+    {
+      "@id": "#dataset1",
+      "@type": "ddi:DataSet",
+      "identifier": "DS001",
+      "name": "Simple Test Dataset",
+      "description": "A simple dataset for testing"
+    },
+    {
+      "@id": "#variable1",
+      "@type": "ddi:Variable",
+      "identifier": "VAR001",
+      "name": "Age Variable",
+      "dataType": "xsd:integer"
+    }
+  ]
+}

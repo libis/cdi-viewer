@@ -1,0 +1,10 @@
+{
+  "@graph": [
+    {
+      "@id": "http://example.org/dataset1",
+      "@type": "http://example.org/vocab#DataSet",
+      "http://example.org/vocab#name": "Dataset Without Context",
+      "http://example.org/vocab#identifier": "DS001"
+    }
+  ]
+}
