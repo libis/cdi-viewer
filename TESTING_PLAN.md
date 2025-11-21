@@ -19,7 +19,7 @@
   - [x] Show validation details on violations
   - [x] Validate after entering edit mode
   - [x] Not run validation in parallel
-  - [ ] Handle validation with different shape sources (validation status becomes hidden after shape switch)
+  - [ ] Handle validation with different shape sources (FAILING - validation status becomes hidden after shape switch)
 
 - [x] **Editing** (9/9 tests - 100%) - `tests/e2e/standalone/editing.spec.ts`
   - [x] Enable edit mode
@@ -32,33 +32,85 @@
   - [x] Handle rapid edits with debounced validation
   - [x] Revert changes when disabling edit mode
 
-### 📋 Planned Tests
-- [ ] **Search & Filter** (0/10 tests) - `tests/e2e/standalone/search-filter.spec.ts`
-- [ ] **Namespace Management** (0/6 tests) - `tests/e2e/standalone/namespace-management.spec.ts`
-- [ ] **Document Creation** (0/8 tests) - `tests/e2e/standalone/document-creation.spec.ts`
-- [ ] **Array Operations** (0/7 tests) - `tests/e2e/standalone/array-operations.spec.ts`
-- [ ] **Export** (0/5 tests) - `tests/e2e/standalone/export.spec.ts`
+- [x] **Search & Filter** (10 tests created - FAILING) - `tests/e2e/standalone/search-filter.spec.ts`
+  - [ ] Basic text search with highlighting (search doesn't hide non-matching nodes)
+  - [ ] Search across property values
+  - [ ] Filter by validation status (partially working)
+  - [ ] Filter by property status (partially working)
+  - [ ] Clear all filters
+  - [ ] Handle search with no results
+  - [ ] Work in edit mode
+  - [ ] Persist search when toggling edit mode
+  - [ ] Navigate between search results
+  - [ ] Case-sensitive search
+  - **Issues**: Search highlights text but doesn't hide non-matching nodes. Combining multiple filters has bugs.
 
-### 📋 Dataverse Integration Tests
+- [x] **Namespace Management** (6/9 tests - 67%) - `tests/e2e/standalone/namespace-management.spec.ts`
+  - [x] Display existing namespaces
+  - [x] Open add namespace modal
+  - [x] Add custom namespace
+  - [ ] Validate prefix uniqueness (FAILING)
+  - [x] Validate URI format
+  - [ ] Delete custom namespace (FAILING)
+  - [x] Protected namespaces handling
+  - [x] Edit namespace URI
+  - [ ] Toggle namespace section visibility (FAILING)
+
+- [x] **Array Operations** (5/9 tests - 56%) - `tests/e2e/standalone/array-operations.spec.ts`
+  - [ ] Display array values correctly (FAILING)
+  - [x] Add new value to array
+  - [x] Delete array value
+  - [x] Edit array value
+  - [ ] Convert single value to array (FAILING)
+  - [ ] Convert array to single value (FAILING)
+  - [x] Handle array with object references
+  - [x] Maintain array value order
+  - [ ] Validate array operations preserve data integrity (FAILING)
+
+- [x] **Export** (5/8 tests - 63%) - `tests/e2e/standalone/export.spec.ts`
+  - [x] Export JSON-LD data
+  - [x] Export with pretty-print formatting
+  - [ ] Preserve user changes in export (FAILING)
+  - [x] Include all namespaces in exported data
+  - [x] Export without requiring edit mode
+  - [ ] Use correct MIME type for export (FAILING)
+  - [x] Preserve property order in export
+  - [ ] Handle export with validation errors present (FAILING)
+
+### 📋 Planned Tests (Not Yet Implemented)
+- [ ] **Document Creation** (0/8 tests) - `tests/e2e/standalone/document-creation.spec.ts`
 - [ ] **Dataverse Load** (0/5 tests) - `tests/e2e/dataverse/load-from-dataverse.spec.ts`
 - [ ] **Dataverse Save** (0/5 tests) - `tests/e2e/dataverse/save-to-dataverse.spec.ts`
 - [ ] **Integrated Mode** (0/6 tests) - `tests/e2e/dataverse/integrated-mode.spec.ts`
 - [ ] **Error Handling** (0/4 tests) - `tests/e2e/dataverse/error-handling.spec.ts`
-
-### 📋 Cross-Browser Tests
 - [ ] **Cross-Browser** (0/5 tests) - `tests/e2e/cross-browser/compatibility.spec.ts`
 - [ ] **Responsive** (0/4 tests) - `tests/e2e/cross-browser/responsive.spec.ts`
 
-**Total Progress: 21/21 implemented tests (100% passing)**
+**Total Progress: 57 tests created, 37 passing (65%)**
 
-**Notes:**
-- ✅ All critical path tests passing
-- ✅ Custom modal dialogs implemented (replacing browser alert/confirm/prompt)
-- ✅ Delete property test now working with custom modals
-- Shape switching test failing: Validation status becomes hidden after switching shape sources - needs investigation
-**File Loading: 7/7 (100%) ✅**
-**Validation: 5/6 (83%) 🟢**
-**Editing: 2/9 (22%) 🟡**
+**Test Suites Summary:**
+- ✅ File Loading: 7/7 (100%)
+- 🟡 Validation: 5/6 (83%)
+- ✅ Editing: 9/9 (100%)
+- 🔴 Search & Filter: 4/10 (40%) - App bugs with search hiding nodes and filter combinations
+- 🟡 Namespace Management: 6/9 (67%)
+- 🟡 Array Operations: 5/9 (56%)
+- 🟡 Export: 5/8 (63%)
+
+**Key Issues Found:**
+1. **Search functionality**: Highlights matches but doesn't hide non-matching nodes as expected
+2. **Filter combinations**: Combining multiple filters causes issues
+3. **Array display**: Array values not displaying correctly in initial render
+4. **Export changes**: User changes not being preserved in export
+5. **Namespace validation**: Prefix uniqueness validation not working
+6. **Convert operations**: Single↔Array conversion tests failing
+
+**Next Steps:**
+1. Fix search/filter functionality to properly hide non-matching nodes
+2. Debug filter combination bugs
+3. Fix array operations and conversion features
+4. Ensure export preserves all user modifications
+5. Complete remaining test suites (Document Creation, Dataverse, Cross-Browser)
 
 ---
 

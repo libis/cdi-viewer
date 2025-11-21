@@ -1,0 +1,21 @@
+{
+  "@context": {
+    "@vocab": "http://example.org/vocab#",
+    "ddi": "https://ddialliance.org/Specification/DDI-CDI/1.0/RDF/",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "@graph": [
+    {
+      "@id": "#dataset1",
+      "@type": "ddi:DataSet",
+      "identifier": "DS001",
+      "name": "Dataset with Arrays",
+      "keywords": ["statistics", "survey", "demographics"],
+      "contributors": [
+        "John Doe",
+        "Jane Smith"
+      ],
+      "versions": ["1.0", "1.1", "2.0"]
+    }
+  ]
+}
