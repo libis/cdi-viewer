@@ -861,7 +861,9 @@ export function humanizeKey(key) {
     .join(" "); // Join back together
 }
 
-export function highlightText(element, searchTerm) {
+export function highlightText(element, searchTerm, options = {}) {
+  const { caseSensitive = false, useRegex = false } = options;
+  
   // Remove previous highlights
   element.find(".search-highlight").contents().unwrap();
 
@@ -871,21 +873,61 @@ export function highlightText(element, searchTerm) {
     .each(function () {
       const $this = $(this);
       const text = $this.text();
-      const lowerText = text.toLowerCase();
-      const index = lowerText.indexOf(searchTerm);
 
-      if (index >= 0) {
-        const before = text.substring(0, index);
-        const match = text.substring(index, index + searchTerm.length);
-        const after = text.substring(index + searchTerm.length);
+      if (useRegex) {
+        try {
+          const flags = caseSensitive ? "g" : "gi";
+          let lastIndex = 0;
+          let html = "";
+          let match;
+          
+          // Use a new regex for each match to reset lastIndex
+          const searchRegex = new RegExp(searchTerm, flags);
+          while ((match = searchRegex.exec(text)) !== null) {
+            // Add text before match
+            html += document.createTextNode(text.substring(lastIndex, match.index)).textContent;
+            // Add highlighted match
+            html += '<span class="search-highlight">' + 
+                    document.createTextNode(match[0]).textContent + 
+                    "</span>";
+            lastIndex = match.index + match[0].length;
+            // Prevent infinite loop on zero-length matches
+            if (match.index === searchRegex.lastIndex) {
+              searchRegex.lastIndex++;
+            }
+          }
+          // Add remaining text
+          html += document.createTextNode(text.substring(lastIndex)).textContent;
+          
+          if (lastIndex > 0) {
+            $this.html(html);
+          }
+        } catch (e) {
+          // Invalid regex - skip highlighting
+        }
+      } else {
+        // Simple string search
+        const compareText = caseSensitive ? text : text.toLowerCase();
+        const compareTerm = caseSensitive ? searchTerm : searchTerm.toLowerCase();
+        let index = compareText.indexOf(compareTerm);
 
-        $this.html(
-          document.createTextNode(before).textContent +
-            '<span class="search-highlight">' +
-            document.createTextNode(match).textContent +
-            "</span>" +
-            document.createTextNode(after).textContent
-        );
+        if (index >= 0) {
+          let html = "";
+          let lastIndex = 0;
+          
+          // Find all occurrences
+          while (index >= 0) {
+            html += document.createTextNode(text.substring(lastIndex, index)).textContent;
+            html += '<span class="search-highlight">' +
+                    document.createTextNode(text.substring(index, index + compareTerm.length)).textContent +
+                    "</span>";
+            lastIndex = index + compareTerm.length;
+            index = compareText.indexOf(compareTerm, lastIndex);
+          }
+          html += document.createTextNode(text.substring(lastIndex)).textContent;
+          
+          $this.html(html);
+        }
       }
     });
 }

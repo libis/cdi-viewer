@@ -133,18 +133,27 @@ export function performSearch() {
   // Set the search predicate in filter system
   setSearchPredicate(predicate);
 
-  // Build list of matching nodes (for navigation and highlighting)
+  // Build list of matching nodes (for highlighting)
+  searchMatches = [];
   $(".node-card").each(function () {
     const card = $(this);
     if (predicate(card)) {
       card.removeClass("collapsed");
-      highlightText(card, searchTerm);
-      searchMatches.push(card[0]);
+      highlightText(card, searchTerm, { caseSensitive, useRegex });
     }
   });
 
   // Apply all filters (including search predicate)
   applyFilters();
+
+  // Build searchMatches from all visible highlight spans
+  $(".search-highlight").each(function () {
+    const highlight = $(this);
+    // Only include highlights in visible cards
+    if (!highlight.closest(".node-card").hasClass("hidden-by-filter")) {
+      searchMatches.push(this);
+    }
+  });
 
   // Reset current match index
   currentMatchIndex = -1;
@@ -165,15 +174,16 @@ function updateSearchCounter() {
   const counter = $("#search-counter");
 
   if (lastSearchTerm === "") {
-    counter.text("");
+    counter.text("").hide();
   } else if (searchMatches.length === 0) {
-    counter.text("No matches").css("color", "#dc3545");
+    counter.text("No matches").css("color", "#dc3545").show();
   } else if (currentMatchIndex >= 0) {
     counter
       .text(`${currentMatchIndex + 1} of ${searchMatches.length}`)
-      .css("color", "#28a745");
+      .css("color", "#28a745")
+      .show();
   } else {
-    counter.text(`${searchMatches.length} found`).css("color", "#28a745");
+    counter.text(`${searchMatches.length} found`).css("color", "#28a745").show();
   }
 }
 
@@ -202,17 +212,22 @@ export function navigateToMatch(direction) {
       (currentMatchIndex - 1 + searchMatches.length) % searchMatches.length;
   }
 
-  // Scroll to match and highlight it
-  const matchCard = $(searchMatches[currentMatchIndex]);
+  // Get the current highlight element
+  const highlight = $(searchMatches[currentMatchIndex]);
 
-  // Remove previous current match highlight
+  // Remove previous current match styling
   $(".current-search-match").removeClass("current-search-match");
 
-  // Add current match highlight
-  matchCard.addClass("current-search-match");
+  // Add current match styling to this highlight
+  highlight.addClass("current-search-match");
 
-  // Scroll to match
-  matchCard[0].scrollIntoView({ behavior: "smooth", block: "center" });
+  // Find and expand the parent card
+  const parentCard = highlight.closest(".node-card");
+  parentCard.parents(".node-card").removeClass("collapsed");
+  parentCard.removeClass("collapsed");
+
+  // Scroll to the highlight
+  highlight[0].scrollIntoView({ behavior: "smooth", block: "center" });
 
   // Update counter
   updateSearchCounter();
