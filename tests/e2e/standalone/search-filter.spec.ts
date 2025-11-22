@@ -30,7 +30,7 @@ test.describe('Search Functionality', () => {
     await page.waitForTimeout(500);
     
     // Verify matches are highlighted
-    const matches = page.locator('.search-match');
+    const matches = page.locator('.search-highlight');
     const matchCount = await matches.count();
     expect(matchCount).toBeGreaterThan(0);
     
@@ -73,7 +73,7 @@ test.describe('Search Functionality', () => {
     await page.fill('#search-input', 'dataset');
     await page.waitForTimeout(500);
     
-    const insensitiveMatches = await page.locator('.search-match').count();
+    const insensitiveMatches = await page.locator('.search-highlight').count();
     expect(insensitiveMatches).toBeGreaterThan(0);
     
     // Enable case-sensitive
@@ -84,7 +84,7 @@ test.describe('Search Functionality', () => {
     await page.fill('#search-input', 'dataset');
     await page.waitForTimeout(500);
     
-    const sensitiveMatches = await page.locator('.search-match').count();
+    const sensitiveMatches = await page.locator('.search-highlight').count();
     
     // Note: If data has mixed case, counts should differ
     // If all lowercase, they'll be the same
@@ -100,7 +100,7 @@ test.describe('Search Functionality', () => {
     await page.fill('#search-input', '\\bd\\w+');
     await page.waitForTimeout(500);
     
-    const matches = await page.locator('.search-match').count();
+    const matches = await page.locator('.search-highlight').count();
     expect(matches).toBeGreaterThan(0);
   });
 
@@ -109,7 +109,7 @@ test.describe('Search Functionality', () => {
     await page.fill('#search-input', 'identifier');
     await page.waitForTimeout(500);
     
-    const allMatches = await page.locator('.search-match').count();
+    const allMatches = await page.locator('.search-highlight').count();
     expect(allMatches).toBeGreaterThan(0);
     
     // Uncheck values scope (if scope controls exist)
@@ -118,7 +118,7 @@ test.describe('Search Functionality', () => {
       await valuesCheckbox.uncheck();
       await page.waitForTimeout(500);
       
-      const scopedMatches = await page.locator('.search-match').count();
+      const scopedMatches = await page.locator('.search-highlight').count();
       // Should have fewer matches when excluding values
       expect(scopedMatches).toBeLessThanOrEqual(allMatches);
     }
@@ -129,7 +129,7 @@ test.describe('Search Functionality', () => {
     await page.fill('#search-input', 'dataset');
     await page.waitForTimeout(500);
     
-    expect(await page.locator('.search-match').count()).toBeGreaterThan(0);
+    expect(await page.locator('.search-highlight').count()).toBeGreaterThan(0);
     
     // Clear search
     await page.click('#clear-search-btn');
@@ -137,7 +137,7 @@ test.describe('Search Functionality', () => {
     
     // Verify cleared
     expect(await page.locator('#search-input').inputValue()).toBe('');
-    expect(await page.locator('.search-match').count()).toBe(0);
+    expect(await page.locator('.search-highlight').count()).toBe(0);
     await expect(page.locator('#search-counter')).toBeHidden();
   });
 
@@ -145,7 +145,7 @@ test.describe('Search Functionality', () => {
     await page.fill('#search-input', 'xyznonexistent123');
     await page.waitForTimeout(500);
     
-    const matches = await page.locator('.search-match').count();
+    const matches = await page.locator('.search-highlight').count();
     expect(matches).toBe(0);
     
     const counter = page.locator('#search-counter');
@@ -158,7 +158,7 @@ test.describe('Search Functionality', () => {
     await page.fill('#search-input', 'dataset');
     await page.waitForTimeout(500);
     
-    const viewModeMatches = await page.locator('.search-match').count();
+    const viewModeMatches = await page.locator('.search-highlight').count();
     expect(viewModeMatches).toBeGreaterThan(0);
     
     // Enable edit mode
@@ -166,7 +166,7 @@ test.describe('Search Functionality', () => {
     await page.waitForTimeout(500);
     
     // Verify search still active
-    const editModeMatches = await page.locator('.search-match').count();
+    const editModeMatches = await page.locator('.search-highlight').count();
     expect(editModeMatches).toBe(viewModeMatches);
     
     const searchValue = await page.locator('#search-input').inputValue();
@@ -394,7 +394,7 @@ test.describe('Search and Filter Integration', () => {
     await page.waitForTimeout(500);
     
     // Both should be active
-    const searchMatches = await page.locator('.search-match').count();
+    const searchMatches = await page.locator('.search-highlight').count();
     const visibleNodes = await page.locator('.node-card:visible').count();
     
     expect(searchMatches).toBeGreaterThanOrEqual(0);
@@ -427,7 +427,7 @@ test.describe('Search and Filter Integration', () => {
     await page.fill('#search-input', 'dataset');
     await page.waitForTimeout(500);
     
-    const searchMatches = await page.locator('.search-match').count();
+    const searchMatches = await page.locator('.search-highlight').count();
     
     // Apply and clear filters
     await page.click('#toggle-filter-panel');
@@ -437,7 +437,7 @@ test.describe('Search and Filter Integration', () => {
     await page.waitForTimeout(300);
     
     // Search should still be active
-    const stillSearchMatches = await page.locator('.search-match').count();
+    const stillSearchMatches = await page.locator('.search-highlight').count();
     expect(stillSearchMatches).toBe(searchMatches);
     
     const searchValue = await page.locator('#search-input').inputValue();
