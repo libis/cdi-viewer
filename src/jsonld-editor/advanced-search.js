@@ -83,8 +83,6 @@ export function performSearch() {
 
   // Create search predicate function
   const predicate = (card) => {
-    const nodeId = card.attr("data-node-id");
-
     // Check node ID - only check THIS node's ID, not inline children
     if (searchInIds) {
       const nodeIdText = card.find("> .node-header .node-id").first().text();

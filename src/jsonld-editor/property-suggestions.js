@@ -8,6 +8,7 @@ import {
   getShaclShapesStore,
   getJsonData,
   getDefaultTypeNamespace,
+  addChangedElement,
 } from "./state.js";
 import { expandCompactIri } from "./cdi-json-ld-helpers.js";
 import { humanizeKey } from "./text-utils.js";
@@ -340,6 +341,15 @@ export function addComplexPropertyToNode(nodeId, suggestion) {
     if (newCard.length) {
       newCard[0].scrollIntoView({ behavior: "smooth", block: "center" });
       newCard.addClass("changed");
+      
+      // Track all new properties as changed
+      newCard.find(".property-row").each(function () {
+        const propertyKey = $(this).attr("data-property");
+        if (propertyKey && propertyKey !== "@id" && propertyKey !== "@type") {
+          const compositeId = `${newNodeId}.${propertyKey}`;
+          addChangedElement(compositeId);
+        }
+      });
     }
   }, 100);
 }

@@ -16,6 +16,7 @@ import {
   setJsonData,
   setOriginalData,
   setOriginalFileName,
+  addChangedElement,
 } from "./state.js";
 import { humanizeKey } from "./text-utils.js";
 import { updateNamespaceSectionVisibility } from "./namespace-manager.js";
@@ -223,11 +224,79 @@ export function createAndAddRootNode(nodeType) {
   console.log("Added new root node:", newNode);
 }
 
+export function deleteNode(nodeId) {
+  const jsonData = getJsonData();
+  if (!jsonData || !jsonData["@graph"]) {
+    return false;
+  }
+
+  // Find and remove the node from @graph
+  const nodeIndex = jsonData["@graph"].findIndex((n) => n["@id"] === nodeId);
+  if (nodeIndex === -1) {
+    return false;
+  }
+
+  jsonData["@graph"].splice(nodeIndex, 1);
+
+  // Clean up all references to this node in other nodes
+  jsonData["@graph"].forEach((node) => {
+    const parentNodeId = node["@id"];
+    Object.keys(node).forEach((key) => {
+      if (key === "@id" || key === "@type" || key === "@context") {
+        return;
+      }
+
+      const value = node[key];
+      let wasModified = false;
+
+      if (Array.isArray(value)) {
+        const originalLength = value.length;
+        // Remove from array
+        node[key] = value.filter((item) => {
+          if (typeof item === "object" && item["@id"] === nodeId) {
+            return false;
+          }
+          if (typeof item === "string" && item === nodeId) {
+            return false;
+          }
+          return true;
+        });
+        wasModified = node[key].length !== originalLength;
+        // If array is now empty, remove the property
+        if (node[key].length === 0) {
+          delete node[key];
+        }
+      } else if (typeof value === "object" && value !== null && value["@id"] === nodeId) {
+        // Remove property with single object reference
+        delete node[key];
+        wasModified = true;
+      } else if (typeof value === "string" && value === nodeId) {
+        // Remove property with single string reference
+        delete node[key];
+        wasModified = true;
+      }
+
+      // Track the modification
+      if (wasModified && parentNodeId) {
+        const compositeId = `${parentNodeId}.${key}`;
+        addChangedElement(compositeId);
+      }
+    });
+  });
+
+  return true;
+}
+
 export function addPropertyToNode(nodeId, propertyKey, initialValue) {
   const node = getNodeById(nodeId);
 
   if (node) {
     node[propertyKey] = initialValue;
+    
+    // Track this as a change with persistent Set
+    const compositeId = `${nodeId}.${propertyKey}`;
+    addChangedElement(compositeId);
+    
     return true;
   }
   return false;

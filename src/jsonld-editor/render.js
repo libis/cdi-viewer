@@ -2,7 +2,13 @@
 
 // === CDI Previewer: Tree Rendering & Node/Property Display ===
 
-import { getJsonData, getIsEditMode, getShaclShapesStore } from "./state.js";
+import {
+  getJsonData,
+  getIsEditMode,
+  getShaclShapesStore,
+  addChangedElement,
+  hasChangedElement,
+} from "./state.js";
 import { classifyProperty } from "./cdi-shacl-helpers.js";
 import { scheduleValidation } from "./validation.js";
 import { humanizeKey } from "./text-utils.js";
@@ -16,6 +22,7 @@ import {
   getAllNodesForReference,
   addReferenceToProperty,
   createAndReferenceNewNode,
+  deleteNode,
 } from "./cdi-graph-helpers.js";
 import { showAlert, showConfirm } from "./modal-dialogs.js";
 import {
@@ -147,6 +154,33 @@ export function renderNodeTree(node, index, depth) {
   });
   header.append(leftSide);
 
+  // Add delete button in edit mode
+  if (isEditMode) {
+    const deleteBtn = $("<button>")
+      .addClass("btn btn-xs btn-danger delete-node-btn")
+      .attr("data-testid", `delete-node-btn-${id.replace(/[^a-zA-Z0-9]/g, "_")}`)
+      .html('<span class="glyphicon glyphicon-trash"></span>')
+      .css("margin-left", "10px")
+      .click(async function (e) {
+        e.stopPropagation(); // Prevent header collapse toggle
+        if (
+          await showConfirm(
+            `Delete node ${id} and all references to it?`,
+            {
+              title: "Delete Node",
+              confirmText: "Delete",
+            }
+          )
+        ) {
+          if (deleteNode(id)) {
+            // Re-render to show updated graph
+            renderData();
+          }
+        }
+      });
+    header.append(deleteBtn);
+  }
+
   // Add click handler to collapse/expand
   header.click(function () {
     card.toggleClass("collapsed");
@@ -231,6 +265,12 @@ function renderProperty(key, value, nodeId, nodeTypes) {
     .attr("data-property", key)
     .attr("data-node-id", nodeId)
     .attr("data-testid", `property-${key.replace(/[^a-zA-Z0-9]/g, "_")}`);
+
+  // Check if this property has been changed (persistent tracking)
+  const compositeId = `${nodeId}.${key}`;
+  if (hasChangedElement(compositeId)) {
+    row.addClass("changed");
+  }
 
   // Classify property using SHACL (pass nodeId for URI expansion)
   const classification = classifyProperty(nodeTypes || [], key, nodeId);
@@ -379,6 +419,10 @@ function renderProperty(key, value, nodeId, nodeTypes) {
             ) {
               valDiv.remove();
               row.addClass("changed");
+              // Track this change persistently with composite ID
+              const propertyKey = row.attr("data-property");
+              const compositeId = `${nodeId}.${propertyKey}`;
+              addChangedElement(compositeId);
             }
           });
         valDiv.append(deleteBtn);
@@ -738,7 +782,13 @@ export function createValueInput(
 
       // Mark as changed when selection changes
       select.on("change", function () {
-        $(this).closest(".property-row").addClass("changed");
+        const row = $(this).closest(".property-row");
+        row.addClass("changed");
+        // Track this change persistently with composite ID
+        const propertyKey = row.attr("data-property");
+        const cardNodeId = row.closest(".node-card").find(".node-id").first().text();
+        const compositeId = `${cardNodeId}.${propertyKey}`;
+        addChangedElement(compositeId);
       });
 
       return select;
@@ -757,7 +807,13 @@ export function createValueInput(
     input.attr("data-original", valueStr);
     input.on("input", function () {
       // Mark as changed
-      $(this).closest(".property-row").addClass("changed");
+      const row = $(this).closest(".property-row");
+      row.addClass("changed");
+      // Track this change persistently with composite ID
+      const propertyKey = row.attr("data-property");
+      const cardNodeId = row.closest(".node-card").find(".node-id").first().text();
+      const compositeId = `${cardNodeId}.${propertyKey}`;
+      addChangedElement(compositeId);
 
       // Schedule auto-validation
       scheduleValidation();

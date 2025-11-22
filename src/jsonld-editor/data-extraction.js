@@ -9,40 +9,86 @@ import {
   getSiteUrl,
   getFileId,
   getOriginalFileName,
+  getChangedElementsCount,
+  getAllChangedElements,
+  clearChangedElements,
 } from "./state.js";
 import { parseDataverseUrl } from "./dataverse-url-parser.js";
 import { showAlert } from "./modal-dialogs.js";
 import { getNodeById } from "./graph-structure.js";
 
 export function collectChangesFromDOM() {
-  // Check if there are any actual changes
-  const hasChanges = $(".property-row.changed").length > 0;
+  // Check if there are any actual changes using the persistent Set
+  const hasChanges = getChangedElementsCount() > 0;
   if (!hasChanges) {
     return; // No changes, keep original jsonData unchanged
   }
 
-  // Update only the changed properties in jsonData, preserve everything else
-  $(".node-card").each(function () {
-    const $card = $(this);
-    const nodeId = $card.find(".node-id").first().text();
+  // Get all changed composite IDs from the Set
+  const changedIds = getAllChangedElements();
 
-    // Find the node in jsonData using graph utilities
-    const node = getNodeById(nodeId);
-    if (!node) {
-      return; // Skip if not found
+  // Parse composite IDs and group by nodeId
+  const changesByNode = new Map();
+  changedIds.forEach((compositeId) => {
+    const dotIndex = compositeId.indexOf(".");
+    if (dotIndex === -1) {
+      return; // Invalid format
     }
 
-    // Only update properties that have changed IN THIS NODE (not nested nodes)
-    // Use children().find() to get only direct properties, not nested node properties
-    $card
-      .children(".node-body")
-      .find(".property-row.changed")
-      .each(function () {
-        const key = $(this).attr("data-property");
-        const inputs = $(this).find("input, textarea, select");
+    const nodeId = compositeId.substring(0, dotIndex);
+    const propertyKey = compositeId.substring(dotIndex + 1);
 
-        if (inputs.length === 1) {
-          // Single value
+    if (!changesByNode.has(nodeId)) {
+      changesByNode.set(nodeId, new Set());
+    }
+    changesByNode.get(nodeId).add(propertyKey);
+  });
+
+  // Update only the changed properties in jsonData
+  changesByNode.forEach((propertyKeys, nodeId) => {
+    const node = getNodeById(nodeId);
+    if (!node) {
+      return;
+    }
+
+    // Find the card for this node
+    const $card = $(`.node-card`).filter(function () {
+      return $(this).find(".node-id").first().text() === nodeId;
+    });
+
+    if ($card.length === 0) {
+      return;
+    }
+
+    // Update each changed property
+    propertyKeys.forEach((key) => {
+      const $propertyRow = $card.find(`.property-row[data-property="${key}"]`);
+      if ($propertyRow.length === 0) {
+        return;
+      }
+
+      const inputs = $propertyRow.find("input, textarea, select");
+
+      // Determine if the original value was an array by checking the current node structure
+      const originalValue = node[key];
+      const wasArray = Array.isArray(originalValue);
+
+      if (wasArray) {
+        // Array of values - collect all inputs
+        const values = [];
+        inputs.each(function () {
+          let val = $(this).val();
+          try {
+            val = JSON.parse(val);
+          } catch (e) {
+            // Keep as string
+          }
+          values.push(val);
+        });
+        node[key] = values;
+      } else {
+        // Single value - use the first input only
+        if (inputs.length > 0) {
           const input = inputs.eq(0);
           let val = input.val();
 
@@ -52,27 +98,18 @@ export function collectChangesFromDOM() {
             // Keep as string if not valid JSON
           }
           node[key] = val;
-        } else if (inputs.length > 1) {
-          // Array of values
-          const values = [];
-          inputs.each(function () {
-            let val = $(this).val();
-            try {
-              val = JSON.parse(val);
-            } catch (e) {
-              // Keep as string
-            }
-            values.push(val);
-          });
-          node[key] = values;
         }
-      });
+      }
+    });
   });
 
   // jsonData['@graph'] is already updated in place - no need to replace it
+  // NOTE: We do NOT clear the changed tracking here - that only happens after save/export
+}
 
-  // Clear the 'changed' class from all rows after collecting changes
-  $(".property-row.changed").removeClass("changed");
+export function updateSaveButton() {
+  const hasChanges = getChangedElementsCount() > 0;
+  $("#save-btn").prop("disabled", !hasChanges);
 }
 
 export function saveChanges() {
@@ -272,7 +309,10 @@ export async function saveToDataverse() {
       await showAlert(
         `File ${operationType === "replace" ? "replaced" : "added"} successfully!`
       );
-      $(".property-row").removeClass("changed");
+      // Clear changed tracking after successful save
+      $(".property-row.changed").removeClass("changed");
+      clearChangedElements();
+      updateSaveButton();
     } else {
       throw new Error("Unexpected response: " + JSON.stringify(result));
     }
@@ -298,6 +338,11 @@ export function exportData() {
 
   // Collect any changes from DOM before exporting
   collectChangesFromDOM();
+
+  // Clear changed tracking after collecting (export means data is saved)
+  $(".property-row.changed").removeClass("changed");
+  clearChangedElements();
+  updateSaveButton();
 
   const dataStr = JSON.stringify(jsonData, null, 2);
   // Use the exact MIME type that matches the external tool registration

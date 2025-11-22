@@ -60,6 +60,29 @@ export const state = {
   defaultTypeNamespace: null,
 };
 
+// Persistent change tracking - survives mode toggles and re-renders
+const changedElements = new Set();
+
+export function addChangedElement(compositeId) {
+  changedElements.add(compositeId);
+}
+
+export function hasChangedElement(compositeId) {
+  return changedElements.has(compositeId);
+}
+
+export function clearChangedElements() {
+  changedElements.clear();
+}
+
+export function getAllChangedElements() {
+  return Array.from(changedElements);
+}
+
+export function getChangedElementsCount() {
+  return changedElements.size;
+}
+
 // Getters and setters for state properties
 export function getJsonData() {
   return state.jsonData;

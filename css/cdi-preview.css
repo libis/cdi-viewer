@@ -143,6 +143,13 @@ body {
     background: #e7f6f8;
 }
 
+.view-mode .property-row.changed {
+    /* Make changed properties more visible in view mode */
+    border-left-width: 4px;
+    border-left-color: #17a2b8;
+    background: #d1ecf1;
+}
+
 .property-badge {
     position: absolute;
     top: 10px;
@@ -336,6 +343,22 @@ body {
 .delete-btn:hover {
     background: #dc3545;
     color: white;
+}
+
+.delete-node-btn {
+    color: white;
+    background: #dc3545;
+    border: 1px solid #dc3545;
+    cursor: pointer;
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-size: 0.85em;
+    transition: all 0.2s;
+}
+
+.delete-node-btn:hover {
+    background: #c82333;
+    border-color: #bd2130;
 }
 
 .property-info {
