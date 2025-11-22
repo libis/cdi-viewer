@@ -155,15 +155,13 @@ export function renderNamespaceTable() {
   );
 
   if (entries.length === 0) {
-    tbody.append(`
-      <tr>
-        <td colspan="3" style="text-align: center; color: #999;">
-          <em>No namespaces defined. Click "Add Namespace" to add one.</em>
-        </td>
-      </tr>
-    `);
+    // Hide the entire namespace section if no namespaces
+    $("#namespace-section").hide();
     return;
   }
+
+  // Show the section since we have namespaces
+  $("#namespace-section").show();
 
   // Sort by prefix name
   entries.sort((a, b) => a[0].localeCompare(b[0]));
