@@ -153,18 +153,8 @@ All planned features for v1.0 release have been implemented. Focus now on:
 
 **Failing Tests by Priority:**
 
-**Critical (Affects Core Functionality - 11 tests):**
-1. Property addition to custom namespace nodes not working (7 tests in custom-namespace-properties.spec.ts)
-   - **BUG**: Adding properties to nodes with custom namespace types (e.g., myns:CustomType) fails
-   - Add custom property to custom namespace node using inline UI
-   - Add custom property without prefix to custom namespace node
-   - Add multiple custom properties to same custom node
-   - Edit custom property value in custom namespace node
-   - Delete custom property from custom namespace node
-   - Add complex property (node reference) to custom namespace node
-   - Show validation for empty custom property name
-   - **NOTE**: Regular DDI-CDI property addition works fine - only custom namespace nodes affected
-2. Advanced filtering broken (10 tests in search-filter.spec.ts)
+**Critical (Affects Core Functionality - 4 tests):**
+1. Advanced filtering broken (10 tests in search-filter.spec.ts)
    - Filter by validation status (valid/invalid)
    - Filter by property status (SHACL/extra)
    - Combined filters
@@ -173,31 +163,31 @@ All planned features for v1.0 release have been implemented. Focus now on:
    - Filter count badge
    - Bottom-up filtering (parent visibility)
    - Search and filter independence
-3. "Changed" marking disappears on mode toggle (1 test in editing.spec.ts)
+2. "Changed" marking disappears on mode toggle (1 test in editing.spec.ts)
    - Visual teal highlight removed when switching edit/view mode
    - Data is preserved but visual indicator lost
-4. Validation status becomes hidden after shape switch (1 test in validation.spec.ts)
+3. Validation status becomes hidden after shape switch (1 test in validation.spec.ts)
    - Switching between different SHACL shape sources
 
 **High Priority (User Experience Issues - 17 tests):**
-5. Array operations not working correctly (4 tests in array-operations.spec.ts)
+4. Array operations not working correctly (4 tests in array-operations.spec.ts)
    - Display array values correctly
    - Add values to array
    - Remove values from array
    - Validate array operations preserve data integrity
-6. Export doesn't preserve user changes (3 tests in export.spec.ts)
+5. Export doesn't preserve user changes (3 tests in export.spec.ts)
    - Export modified data with all changes
    - Export with new namespaces
    - Handle export with validation errors present
-7. Filter combination bugs (3 tests in filter-combination-bugs.spec.ts)
+6. Filter combination bugs (3 tests in filter-combination-bugs.spec.ts)
    - Maintain filter functionality after multiple validation status changes
    - Maintain filters after adding custom properties
    - Verify combined filters work correctly
-8. Namespace validation not working (3 tests in namespace-management.spec.ts)
+7. Namespace validation not working (3 tests in namespace-management.spec.ts)
    - Validate duplicate prefix rejection
    - Validate invalid prefix format
    - Toggle namespace section visibility
-9. Custom property UI issues (6 tests in custom-property-ui.spec.ts)
+8. Custom property UI issues (6 tests in custom-property-ui.spec.ts)
    - Show inline add component for all nodes
    - Show namespace selector in add component
    - Allow custom property name input
@@ -205,7 +195,17 @@ All planned features for v1.0 release have been implemented. Focus now on:
    - Clear input after successful add
    - Show error for invalid property names
 
-**Medium Priority (Test Infrastructure & Edge Cases - 33 tests):**
+**Medium Priority (Test Infrastructure & Edge Cases - 40 tests):**
+9. Custom namespace property addition tests (7 tests in custom-namespace-properties.spec.ts)
+   - **NOTE**: Feature works correctly (manually verified) - tests use wrong CSS selectors
+   - **FIX NEEDED**: Update tests to use `[data-testid="property-path"]` instead of `.property-name`
+   - Add custom property to custom namespace node using inline UI
+   - Add custom property without prefix to custom namespace node
+   - Add multiple custom properties to same custom node
+   - Edit custom property value in custom namespace node
+   - Delete custom property from custom namespace node
+   - Add complex property (node reference) to custom namespace node
+   - Handle Enter key in custom property input
 10. Document creation tests need selector refinement (8 tests in document-creation.spec.ts)
     - Feature exists but automated tests have timing/selector issues
     - Add Root Node dropdown, buttons not being found
@@ -233,11 +233,12 @@ All planned features for v1.0 release have been implemented. Focus now on:
     - Touch interactions
 
 **Total: 61 failing tests out of 137 (76 passing, 55% pass rate)**
+**Note: After recent fixes, 78 tests passing (57% pass rate) - 59 failing**
 
 **Action Plan:**
-- Address Critical tests first (11 tests) - core functionality blockers
+- Address Critical tests first (4 tests) - core functionality blockers
 - Then High Priority tests (17 tests) - user experience issues
-- Medium Priority tests last (33 tests) - mostly test infrastructure refinement
+- Medium Priority tests last (40 tests) - mostly test infrastructure refinement
 - Regression testing after each fix
 - Performance optimization if needed
 

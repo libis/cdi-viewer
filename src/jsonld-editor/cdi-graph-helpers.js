@@ -228,7 +228,7 @@ export function renderAddRootNodeComponent() {
     name: type.name,
     label: type.label,
     path: type.name,
-    description: `Add a ${type.label} node`,
+    // No description needed - it's redundant for root nodes
   }));
 
   // Create unified component

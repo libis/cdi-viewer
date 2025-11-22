@@ -69,7 +69,6 @@ export function createUnifiedAddComponent(options) {
       .attr("data-required", suggestion.required || false)
       .attr("data-complex", suggestion.isComplex || false)
       .attr("data-max-count", suggestion.maxCount || "")
-      .attr("data-description", suggestion.description || "")
       .data("suggestion", suggestion);
 
     let text = suggestion.label;
@@ -89,16 +88,6 @@ export function createUnifiedAddComponent(options) {
 
   dropdownWrapper.append(dropdown);
   dropdownRow.append(dropdownWrapper);
-
-  // Description area (shows when item is selected)
-  const descArea = $("<div>").addClass("item-description").css({
-    margin: "5px 0 10px 0",
-    padding: "8px",
-    background: "#f0f0f0",
-    "border-left": "3px solid #007bff",
-    display: "none",
-    "font-size": "13px",
-  });
 
   // Add button for dropdown selection
   const addBtn = $("<button>")
@@ -125,23 +114,10 @@ export function createUnifiedAddComponent(options) {
       }
 
       dropdown.val("");
-      descArea.hide();
     });
 
   dropdownRow.append(addBtn);
   section.append(dropdownRow);
-  section.append(descArea);
-
-  // Show description on selection change
-  dropdown.on("change", function () {
-    const selectedOption = $(this).find("option:selected");
-    const description = selectedOption.attr("data-description");
-    if (description) {
-      descArea.text(description).show();
-    } else {
-      descArea.hide();
-    }
-  });
 
   // ===== Custom item input section =====
   const customSection = $("<div>").addClass("custom-item-section").css({
