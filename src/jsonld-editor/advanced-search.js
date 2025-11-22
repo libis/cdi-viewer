@@ -1,7 +1,7 @@
 // Author: Eryk Kulikowski @ KU Leuven (2025). Apache 2.0 License
 
 /**
- * Advanced Search & Filter Module
+ * Advanced Search Module
  *
  * Provides enhanced search capabilities:
  * - Case-sensitive search
@@ -11,18 +11,6 @@
  */
 
 import { highlightText } from "./render.js";
-
-// Filter state
-const filterState = {
-  searchScope: ["names", "values", "ids", "types"], // What to search in
-};
-
-/**
- * Get current filter state
- */
-export function getFilterState() {
-  return { ...filterState };
-}
 
 // Search state
 let searchMatches = [];
@@ -86,12 +74,11 @@ export function performSearch() {
   // Build search results (for highlighting and navigation)
   searchMatches = [];
 
-  // Get search scope from filter state
-  const filterState = getFilterState();
-  const searchInNames = filterState.searchScope.includes("names");
-  const searchInValues = filterState.searchScope.includes("values");
-  const searchInIds = filterState.searchScope.includes("ids");
-  const searchInTypes = filterState.searchScope.includes("types");
+  // Search all scopes by default
+  const searchInNames = true;
+  const searchInValues = true;
+  const searchInIds = true;
+  const searchInTypes = true;
 
   // Create search predicate function
   const predicate = (card) => {
@@ -177,11 +164,7 @@ export function performSearch() {
 
   // Build searchMatches from all visible highlight spans
   $(".search-highlight").each(function () {
-    const highlight = $(this);
-    // Only include highlights in visible cards
-    if (!highlight.closest(".node-card").hasClass("hidden-by-filter")) {
-      searchMatches.push(this);
-    }
+    searchMatches.push(this);
   });
 
   // Reset current match index

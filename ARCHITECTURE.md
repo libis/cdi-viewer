@@ -78,33 +78,26 @@ Export or Save to Dataverse
 
 **Key Functions:**
 
-- `applyFilters()` - Apply all active filters
-- `applyNodeTypeFilter()` - Filter by @type
-- `applyValidationFilter()` - Filter by validation status
-- `applyPropertyStatusFilter()` - Filter SHACL/extra properties
-- `applyEmptyValueFilter()` - Hide properties with empty values
-- `extractNodeTypes()` - Get unique @types from document
-- `populateNodeTypeFilter()` - Fill dropdown with types
-- `updateValidationFilterCounts()` - Update counts in dropdown
-- `clearAllFilters()` - Reset all filters
-- `saveFilterState()`, `loadFilterState()` - LocalStorage persistence
-- `initializeFilters()` - Called when data loads
-- `getFilterState()` - Expose filter state to other modules
-- `setupAdvancedFilterHandlers()` - Wire up all filter controls
+- `performSearch()` - Execute search with current settings
+- `navigateToMatch(direction)` - Move to next/previous match
+- `clearSearch()` - Clear search and highlights
+- `toggleCaseSensitive()` - Toggle case-sensitive mode
+- `toggleRegex()` - Toggle regex mode
+- `setupAdvancedSearchHandlers()` - Wire up all search controls
 
-**Filter Types:**
+**Search Features:**
 
-1. Validation status (all/valid/invalid/modified/missing required)
-2. Property status (all/SHACL only/extra only)
-3. Hide empty properties (toggle)
-4. Search scope (names/values/IDs/types checkboxes)
+1. Case-sensitive search toggle
+2. Regex pattern matching
+3. Previous/Next navigation
+4. Match counter (X of Y)
+5. Keyboard shortcuts (F3, Shift+F3, Enter)
 
 **Integration:**
 
 - Called from event-handlers.js
-- Called from validation.js (initializeFilters after validation)
-- Uses CSS classes: `.hidden-by-type-filter`, `.hidden-by-validation-filter`, `.hidden-by-property-filter`, `.hidden-by-empty-filter`
-- State persists to localStorage
+- Uses CSS classes: `.search-highlight`, `.current-search-match`
+- Search state maintained in module scope
 
 ### src/jsonld-editor/unified-add-component.js
 

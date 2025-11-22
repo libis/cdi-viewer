@@ -343,7 +343,7 @@ export function setupEventHandlers() {
       renderAddRootNodeComponent();
       $("#add-namespace-btn").removeClass("hidden");
 
-      // Render first, then validate and initialize filters
+      // Render first, then auto-validate
       renderData();
 
       // Auto-validate when entering edit mode

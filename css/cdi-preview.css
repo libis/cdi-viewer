@@ -233,11 +233,6 @@ body {
     word-break: break-all;
 }
 
-/* Hide nodes with no SHACL properties when filter is active */
-.node-card.hidden-by-filter {
-    display: none !important;
-}
-
 .toolbar {
     position: sticky;
     top: 0;
@@ -545,7 +540,7 @@ body {
     flex: 1;
 }
 
-/* Advanced Search & Filter Styles */
+/* Advanced Search Styles */
 .current-search-match {
   box-shadow: 0 0 0 3px #007bff !important;
   animation: pulse 1s ease-in-out;
@@ -571,50 +566,6 @@ body {
   color: #dc3545;
   font-size: 12px;
   margin-left: 5px;
-}
-
-/* Filter Panel Styles */
-.filter-panel {
-  background: #f8f9fa;
-  border: 1px solid #dee2e6;
-  border-radius: 4px;
-  padding: 15px;
-}
-
-.filter-panel-header {
-  cursor: pointer;
-  user-select: none;
-}
-
-.filter-panel-content {
-  margin-top: 15px;
-}
-
-.filter-row {
-  margin-bottom: 10px;
-}
-
-.filter-label {
-  font-weight: bold;
-  display: block;
-  margin-bottom: 5px;
-  font-size: 13px;
-}
-
-.active-filter-badge {
-  background: #007bff;
-  color: white;
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: 11px;
-  margin-left: 5px;
-  font-weight: normal;
-}
-
-/* Hide filtered elements */
-.node-card.hidden-by-filter,
-.property-row.hidden-by-filter {
-  display: none;
 }
 
 /* Custom Modal Dialogs */

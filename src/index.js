@@ -50,7 +50,7 @@ import "./jsonld-editor/render.js";
 // Data extraction
 import "./jsonld-editor/data-extraction.js";
 
-// Advanced search and filter
+// Advanced search
 import "./jsonld-editor/advanced-search.js";
 
 // Event handlers

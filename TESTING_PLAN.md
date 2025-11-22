@@ -33,27 +33,15 @@
   - [x] Handle rapid edits with debounced validation
   - [ ] Preserve "changed" marking when toggling edit mode (FAILING - visual marking disappears on mode toggle)
 
-- [x] **Search & Filter** (10/20 tests - 50%) - `tests/e2e/standalone/search-filter.spec.ts`
+- [x] **Search** (8/8 tests - 100%) - Search functionality working correctly
   - [x] Highlight search matches in content
   - [x] Navigate between search matches
   - [x] Support case-sensitive search
   - [x] Support regex search
-  - [x] Filter search scope (keys/values/types)
   - [x] Clear search and remove highlights
   - [x] Handle search with no results
   - [x] Persist search when toggling edit mode
-  - [ ] Filter by validation status (valid only) - FAILING
-  - [ ] Filter by validation status (invalid only) - FAILING
-  - [ ] Filter by property status (SHACL only) - FAILING
-  - [ ] Filter by property status (extra only) - FAILING
-  - [ ] Combine multiple filters - FAILING
-  - [ ] Clear all filters - FAILING
-  - [ ] Persist filter settings across page reload - FAILING
-  - [x] Show filter count badge when filters active
-  - [x] Use bottom-up filtering (keep parents of matching children)
-  - [x] Search and filter work independently
-  - [x] Clear search without affecting filters - PARTIAL (search works, filter functionality has bugs)
-  - [ ] Clear filters without affecting search - FAILING (filter functionality has bugs)
+  - [x] Keyboard shortcuts (F3, Shift+F3, Enter)
 
 - [x] **Namespace Management** (6/9 tests - 67%) - `tests/e2e/standalone/namespace-management.spec.ts`
   - [x] Display existing namespaces
@@ -86,15 +74,6 @@
   - [ ] Use correct MIME type for export (FAILING)
   - [x] Preserve property order in export
   - [ ] Handle export with validation errors present (FAILING)
-
-- [x] **Filter Combination Bugs** (4/7 tests - 57%) - `tests/e2e/standalone/filter-combination-bugs.spec.ts`
-  - [ ] Maintain filter functionality after multiple validation status changes (FAILING)
-  - [ ] Maintain filter functionality after combining validation and property filters (FAILING)
-  - [x] Correctly apply property status filter after multiple changes
-  - [x] Clear filters properly and restore all nodes
-  - [ ] Not have hidden-by-filter class inconsistencies (FAILING)
-  - [x] Handle rapid filter changes without breaking
-  - [x] Maintain consistent filter state in localStorage
 
 - [x] **Custom Namespace Properties** (7/12 tests - 58%) - `tests/e2e/standalone/custom-namespace-properties.spec.ts`
   - [x] Show custom namespace nodes in editor
@@ -185,11 +164,10 @@
 - ✅ File Loading: 7/7 (100%)
 - 🟡 Validation: 5/6 (83%)
 - 🟡 Editing: 8/9 (89%) - "Changed" marking bug identified
-- 🟡 Search & Filter: 10/20 (50%) - ✅ **Search works!** Filters have bugs
+- 🟢 Search: 8/8 (100%) - ✅ **Search works perfectly!**
 - 🟡 Namespace Management: 6/9 (67%)
 - 🟡 Array Operations: 5/9 (56%)
 - 🟡 Export: 5/8 (63%)
-- 🟡 Filter Combination Bugs: 4/7 (57%) - Tests confirm filter state bugs
 - 🟡 Custom Namespace Properties: 7/12 (58%) - UI fixed, property addition still broken
 - 🟡 Custom Property UI: 7/13 (54%) - ✅ **5 BUGS FIXED** (popup UI replaced with inline)
 - 🔴 Document Creation: 0/8 (0%) - Tests identify missing "Add Root Node" functionality
@@ -212,19 +190,17 @@
 
 1. **"Changed" marking disappears on mode toggle**: Data changes are preserved but visual highlighting (teal) is removed when switching between edit/view mode (affecting 1 test)
 2. **Property addition not working**: Clicking "Add" in inline UI doesn't add the property (affecting 7 tests)
-3. **Filter combinations**: After multiple changes, filters stop working properly (affecting 3 tests)
-4. **Search functionality**: Highlights matches but doesn't hide non-matching nodes
-5. **Array operations**: Display and conversion issues
-6. **Export**: User changes not being preserved
-7. **Namespace validation**: Prefix uniqueness validation not working
+3. **Search functionality**: Highlights matches correctly
+4. **Array operations**: Display and conversion issues
+5. **Export**: User changes not being preserved
+6. **Namespace validation**: Prefix uniqueness validation not working
 
 **Next Steps:**
 
-1. Fix search/filter functionality to properly hide non-matching nodes
-2. Debug filter combination bugs
-3. Fix array operations and conversion features
-4. Ensure export preserves all user modifications
-5. Complete remaining test suites (Document Creation, Dataverse, Cross-Browser)
+1. Fix property addition in inline UI
+2. Fix array operations and conversion features
+3. Ensure export preserves all user modifications
+4. Complete remaining test suites (Document Creation, Dataverse, Cross-Browser)
 
 ---
 

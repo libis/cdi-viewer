@@ -2,7 +2,7 @@
 
 ## ✅ Recently Completed (November 2025)
 
-### Advanced Search & Filter (November 21, 2025)
+### Advanced Search (November 21, 2025)
 
 - ✅ **Enhanced Search:**
   - Search counter showing "X of Y matches"
@@ -12,22 +12,7 @@
   - Previous/Next navigation buttons
   - Keyboard shortcuts: F3, Shift+F3, Enter
   - Current match highlighting with pulse animation
-  - Integration with filter scope selection
-- ✅ **Advanced Filter Panel:**
-  - Collapsible panel with chevron toggle
-  - Active filter badge showing count of active filters
-  - Node type multi-select filter with counts
-  - Validation status filter (all/valid/invalid/modified/missing required)
-  - Property status filter (all/SHACL only/extra only)
-  - Hide empty properties toggle
-  - Search scope selection (names/values/IDs/types)
-  - Clear all filters button
-- ✅ **Integration & Persistence:**
-  - LocalStorage state persistence across sessions
-  - Auto-update after validation runs
-  - All filters work together correctly
-  - CSS classes for all filter types
-  - Modular architecture (advanced-search.js, advanced-filter.js)
+  - Modular architecture (advanced-search.js)
 
 ### SPARQL Target Support (November 2025)
 
@@ -137,12 +122,11 @@ All planned features for v1.0 release have been implemented. Focus now on:
 - Create new document → add nodes → add properties → export
 - Load file → validate → fix violations → re-validate
 - Add namespace → use in custom property → save → reload
-- Search with filters → navigate matches → modify → save
+- Search → navigate matches → modify → save
 
 **UI/UX Testing:**
 
 - Advanced search (case/regex, navigation, keyboard shortcuts)
-- Filter panel (all filter types, persistence)
 - All button visibility states
 - Modal interactions
 - Namespace management
@@ -153,43 +137,34 @@ All planned features for v1.0 release have been implemented. Focus now on:
 
 **Failing Tests by Priority:**
 
-**Critical (Affects Core Functionality - 4 tests):**
+**Critical (Affects Core Functionality):**
 
-1. Advanced filtering broken (10 tests in search-filter.spec.ts)
-   - Filter by validation status (valid/invalid)
-   - Filter by property status (SHACL/extra)
-   - Combined filters
-   - Clear all filters
-   - Filter persistence in localStorage
-   - Filter count badge
-   - Bottom-up filtering (parent visibility)
-   - Search and filter independence
-2. "Changed" marking disappears on mode toggle (1 test in editing.spec.ts)
+1. "Changed" marking disappears on mode toggle (1 test in editing.spec.ts)
    - Visual teal highlight removed when switching edit/view mode
    - Data is preserved but visual indicator lost
-3. Validation status becomes hidden after shape switch (1 test in validation.spec.ts)
+2. Validation status becomes hidden after shape switch (1 test in validation.spec.ts)
    - Switching between different SHACL shape sources
 
-**High Priority (User Experience Issues - 17 tests):** 4. Array operations not working correctly (4 tests in array-operations.spec.ts)
+**High Priority (User Experience Issues - 10 tests):**
+
+3. Array operations not working correctly (4 tests in array-operations.spec.ts)
 
 - Display array values correctly
 - Add values to array
 - Remove values from array
 - Validate array operations preserve data integrity
 
-5. Export doesn't preserve user changes (3 tests in export.spec.ts)
-   - Export modified data with all changes
-   - Export with new namespaces
-   - Handle export with validation errors present
-6. Filter combination bugs (3 tests in filter-combination-bugs.spec.ts)
-   - Maintain filter functionality after multiple validation status changes
-   - Maintain filters after adding custom properties
-   - Verify combined filters work correctly
-7. Namespace validation not working (3 tests in namespace-management.spec.ts)
+4. Export doesn't preserve user changes (3 tests in export.spec.ts)
+- Export modified data with all changes
+- Export with new namespaces
+- Handle export with validation errors present
+
+5. Namespace validation not working (3 tests in namespace-management.spec.ts)
    - Validate duplicate prefix rejection
    - Validate invalid prefix format
    - Toggle namespace section visibility
-8. Custom property UI issues (6 tests in custom-property-ui.spec.ts)
+
+6. Custom property UI issues (6 tests in custom-property-ui.spec.ts)
    - Show inline add component for all nodes
    - Show namespace selector in add component
    - Allow custom property name input
@@ -197,7 +172,9 @@ All planned features for v1.0 release have been implemented. Focus now on:
    - Clear input after successful add
    - Show error for invalid property names
 
-**Medium Priority (Test Infrastructure & Edge Cases - 40 tests):** 9. Custom namespace property addition tests (7 tests in custom-namespace-properties.spec.ts)
+**Medium Priority (Test Infrastructure & Edge Cases - 33 tests):**
+
+7. Custom namespace property addition tests (7 tests in custom-namespace-properties.spec.ts)
 
 - **NOTE**: Feature works correctly (manually verified) - tests use wrong CSS selectors
 - **FIX NEEDED**: Update tests to use `[data-testid="property-path"]` instead of `.property-name`
@@ -209,40 +186,39 @@ All planned features for v1.0 release have been implemented. Focus now on:
 - Add complex property (node reference) to custom namespace node
 - Handle Enter key in custom property input
 
-10. Document creation tests need selector refinement (8 tests in document-creation.spec.ts)
+8. Document creation tests need selector refinement (8 tests in document-creation.spec.ts)
     - Feature exists but automated tests have timing/selector issues
     - Add Root Node dropdown, buttons not being found
-11. Dataverse save workflow tests (4 tests in save-to-dataverse.spec.ts)
+9. Dataverse save workflow tests (4 tests in save-to-dataverse.spec.ts)
     - Save modal structure different than expected
     - Feature works manually, needs selector updates
-12. Dataverse load workflow tests (3 tests in load-from-dataverse.spec.ts)
+10. Dataverse load workflow tests (3 tests in load-from-dataverse.spec.ts)
     - Load from Dataverse button selectors
     - API token input handling
     - Multiple URL format parsing
-13. Integrated mode tests (2 tests in integrated-mode.spec.ts)
+11. Integrated mode tests (2 tests in integrated-mode.spec.ts)
     - Pre-fill filename in save modal
     - Handle missing fileId parameter
-14. Error handling tests (2 tests in error-handling.spec.ts)
+12. Error handling tests (2 tests in error-handling.spec.ts)
     - Handle invalid JSON-LD file (missing test fixture)
     - Handle network error when loading shapes
-15. Cross-browser compatibility tests (3 tests in compatibility.spec.ts)
+13. Cross-browser compatibility tests (3 tests in compatibility.spec.ts)
     - Edit mode change tracking timing
     - Export download handling
     - Collapse/expand class application
-16. Responsive design tests (4 tests in responsive.spec.ts)
+14. Responsive design tests (4 tests in responsive.spec.ts)
     - Mobile view layout (375px)
     - Tablet view controls (768px)
     - Desktop view layout (1920px)
     - Touch interactions
 
-**Total: 61 failing tests out of 137 (76 passing, 55% pass rate)**
-**Note: After recent fixes, 78 tests passing (57% pass rate) - 59 failing**
+**Total: 45 failing tests out of 124 (79 passing, 64% pass rate)**
 
 **Action Plan:**
 
-- Address Critical tests first (4 tests) - core functionality blockers
-- Then High Priority tests (17 tests) - user experience issues
-- Medium Priority tests last (40 tests) - mostly test infrastructure refinement
+- Address Critical tests first (2 tests) - core functionality blockers
+- Then High Priority tests (10 tests) - user experience issues
+- Medium Priority tests last (33 tests) - mostly test infrastructure refinement
 - Regression testing after each fix
 - Performance optimization if needed
 
