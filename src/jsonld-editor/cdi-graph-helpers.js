@@ -111,10 +111,7 @@ export function getExpandedPropertyUri(nodeId, propertyKey) {
 export function getAvailableNodeTypes() {
   const shaclShapesStore = getShaclShapesStore();
 
-  console.log("[getAvailableNodeTypes] shaclShapesStore:", shaclShapesStore);
-
   if (!shaclShapesStore) {
-    console.log("[getAvailableNodeTypes] No SHACL shapes store - returning empty array");
     return [];
   }
 
@@ -130,8 +127,6 @@ export function getAvailableNodeTypes() {
       null
     );
 
-    console.log("[getAvailableNodeTypes] Found", targetClassQuads.length, "targetClass quads in default graph");
-
     // If nothing in default graph, try all graphs
     if (targetClassQuads.length === 0) {
       targetClassQuads = shaclShapesStore.getQuads(
@@ -139,7 +134,6 @@ export function getAvailableNodeTypes() {
         "http://www.w3.org/ns/shacl#targetClass",
         null
       );
-      console.log("[getAvailableNodeTypes] Found", targetClassQuads.length, "targetClass quads in all graphs");
     }
 
     targetClassQuads.forEach((quad) => {
@@ -157,9 +151,7 @@ export function getAvailableNodeTypes() {
   }
 
   // Convert Set to Array and sort by label
-  const result = Array.from(nodeTypes).sort((a, b) => a.label.localeCompare(b.label));
-  console.log("[getAvailableNodeTypes] Returning", result.length, "node types");
-  return result;
+  return Array.from(nodeTypes).sort((a, b) => a.label.localeCompare(b.label));
 }
 
 // Initialize a new empty JSON-LD document based on the selected SHACL shape
