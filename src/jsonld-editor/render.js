@@ -866,8 +866,9 @@ export function highlightText(element, searchTerm, options = {}) {
   
   // Remove previous highlights
   element.find(".search-highlight").contents().unwrap();
+  element.find("input.search-highlight, textarea.search-highlight").removeClass("search-highlight");
 
-  // Highlight matching text
+  // Highlight matching text in regular elements
   element
     .find(".property-label, .property-path, .value-display, .node-id")
     .each(function () {
@@ -930,4 +931,29 @@ export function highlightText(element, searchTerm, options = {}) {
         }
       }
     });
+
+  // Handle input/textarea elements (can't highlight their internal text, so add class to the element)
+  element.find("input, textarea").each(function () {
+    const $this = $(this);
+    const value = $this.val();
+
+    let matches = false;
+    if (useRegex) {
+      try {
+        const flags = caseSensitive ? "gi" : "gi";
+        const searchRegex = new RegExp(searchTerm, flags);
+        matches = searchRegex.test(value);
+      } catch (e) {
+        // Invalid regex
+      }
+    } else {
+      const compareValue = caseSensitive ? value : value.toLowerCase();
+      const compareTerm = caseSensitive ? searchTerm : searchTerm.toLowerCase();
+      matches = compareValue.includes(compareTerm);
+    }
+
+    if (matches) {
+      $this.addClass("search-highlight");
+    }
+  });
 }

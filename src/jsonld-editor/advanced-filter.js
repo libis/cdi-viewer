@@ -260,6 +260,17 @@ function loadFilterState() {
     const saved = localStorage.getItem("cdi-viewer-filters");
     if (saved) {
       Object.assign(filterState, JSON.parse(saved));
+      
+      // Update UI controls to match loaded state
+      $("#validation-filter").val(filterState.validation);
+      $(`input[name='property-status'][value='${filterState.propertyStatus}']`).prop("checked", true);
+      
+      // Update search scope checkboxes
+      $(".search-scope-checkbox").prop("checked", false);
+      filterState.searchScope.forEach((scope) => {
+        $(`#search-scope-${scope}`).prop("checked", true);
+      });
+      
       updateActiveFilterBadge();
     }
   } catch (e) {
@@ -348,14 +359,10 @@ export function setupAdvancedFilterHandlers() {
  * Initialize filters when data is loaded
  */
 export function initializeFilters() {
-  // Reset validation filter to 'all' to prevent hiding nodes after validation
-  filterState.validation = "all";
-  $("#validation-filter").val("all");
-
   // Update validation counts
   updateValidationFilterCounts();
 
-  // Apply saved filters (except validation which we just reset)
+  // Apply current filters (including any loaded from localStorage)
   applyFilters();
 }
 

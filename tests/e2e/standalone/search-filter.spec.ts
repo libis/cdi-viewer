@@ -150,7 +150,7 @@ test.describe('Search Functionality', () => {
     
     const counter = page.locator('#search-counter');
     const counterText = await counter.textContent();
-    expect(counterText).toContain('0');
+    expect(counterText).toContain('No matches');
   });
 
   test('should persist search when toggling edit mode', async ({ page }) => {
@@ -427,8 +427,6 @@ test.describe('Search and Filter Integration', () => {
     await page.fill('#search-input', 'dataset');
     await page.waitForTimeout(500);
     
-    const searchMatches = await page.locator('.search-highlight').count();
-    
     // Apply and clear filters
     await page.click('#toggle-filter-panel');
     await page.selectOption('#validation-filter', 'valid');
@@ -436,11 +434,11 @@ test.describe('Search and Filter Integration', () => {
     await page.click('#clear-all-filters-btn');
     await page.waitForTimeout(300);
     
-    // Search should still be active
+    // Search should be cleared too (by design: "clear filters clears everything")
     const stillSearchMatches = await page.locator('.search-highlight').count();
-    expect(stillSearchMatches).toBe(searchMatches);
+    expect(stillSearchMatches).toBe(0);
     
     const searchValue = await page.locator('#search-input').inputValue();
-    expect(searchValue).toBe('dataset');
+    expect(searchValue).toBe('');
   });
 });

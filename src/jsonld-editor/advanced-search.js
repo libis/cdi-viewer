@@ -63,6 +63,7 @@ export function performSearch() {
 
   // Clear previous highlights
   $(".search-highlight").contents().unwrap();
+  $("input.search-highlight, textarea.search-highlight").removeClass("search-highlight");
   $(".current-search-match").removeClass("current-search-match");
 
   if (searchTerm === "") {

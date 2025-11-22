@@ -39,7 +39,7 @@ import {
   setupNamespaceHandlers,
   updateNamespaceSectionVisibility,
 } from "./namespace-manager.js";
-import { setupAdvancedSearchHandlers } from "./advanced-search.js";
+import { setupAdvancedSearchHandlers, performSearch } from "./advanced-search.js";
 import {
   setupAdvancedFilterHandlers,
   initializeFilters,
@@ -348,6 +348,9 @@ export function setupEventHandlers() {
       renderAddRootNodeComponent();
       $("#add-namespace-btn").removeClass("hidden");
 
+      // Render first, then validate and initialize filters
+      renderData();
+
       // Auto-validate when entering edit mode
       await validateDataImmediate();
       // Update filter counts after validation completes
@@ -364,9 +367,13 @@ export function setupEventHandlers() {
       }
       $("#add-root-node-container").addClass("hidden");
       $("#add-namespace-btn").addClass("hidden");
-    }
 
-    renderData();
+      renderData();
+    }
+    // Re-apply search highlights after re-rendering (use setTimeout to ensure DOM is ready)
+    setTimeout(() => {
+      performSearch();
+    }, 0);
   });
 
   // Save changes
