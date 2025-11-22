@@ -23,7 +23,6 @@ export function collectChangesFromDOM() {
 
   // Check if there are any actual changes
   const hasChanges = $(".property-row.changed").length > 0;
-  console.log("collectChangesFromDOM: Found", hasChanges, "changed rows");
   if (!hasChanges) {
     return; // No changes, keep original jsonData unchanged
   }
@@ -36,7 +35,6 @@ export function collectChangesFromDOM() {
     // Find the node in jsonData
     const node = jsonData["@graph"].find((n) => n["@id"] === nodeId);
     if (!node) {
-      console.warn("collectChangesFromDOM: Node not found:", nodeId);
       return; // Skip if not found
     }
 
@@ -49,26 +47,10 @@ export function collectChangesFromDOM() {
         const key = $(this).attr("data-property");
         const inputs = $(this).find("input, textarea, select");
 
-        console.log(
-          "collectChangesFromDOM: Updating",
-          nodeId,
-          key,
-          "with",
-          inputs.length,
-          "inputs"
-        );
-
         if (inputs.length === 1) {
           // Single value
           const input = inputs.eq(0);
           let val = input.val();
-
-          console.log(
-            "collectChangesFromDOM: Old value:",
-            node[key],
-            "-> New value:",
-            val
-          );
 
           try {
             val = JSON.parse(val);
@@ -88,18 +70,11 @@ export function collectChangesFromDOM() {
             }
             values.push(val);
           });
-          console.log(
-            "collectChangesFromDOM: Old value:",
-            node[key],
-            "-> New value:",
-            values
-          );
           node[key] = values;
         }
       });
   });
 
-  console.log("collectChangesFromDOM: Complete. Updated jsonData:", jsonData);
   // jsonData['@graph'] is already updated in place - no need to replace it
 
   // Clear the 'changed' class from all rows after collecting changes

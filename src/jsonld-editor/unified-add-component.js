@@ -19,7 +19,6 @@ import { extractNamespaces } from "./namespace-manager.js";
  * @param {Array} options.suggestions - Array of suggestions (properties or node types)
  * @param {Function} options.onAdd - Callback when item is added: (item, suggestion) => void
  * @param {Function} options.onAddCustom - Callback when custom item is added: (fullName) => void
- * @param {string} options.nodeId - Node ID (for properties only)
  * @returns {jQuery} The complete add component
  */
 export function createUnifiedAddComponent(options) {
@@ -40,9 +39,10 @@ export function createUnifiedAddComponent(options) {
   const section = $("<div>").addClass("unified-add-section");
 
   // Title
-  section.append(
-    $("<h4>").text(title).css({ "margin-top": "0", "margin-bottom": "10px" })
-  );
+  const titleElement = $("<h4>")
+    .text(title)
+    .css({ "margin-top": "0", "margin-bottom": "10px" });
+  section.append(titleElement);
 
   // Sort suggestions: required first, then alphabetically
   const sortedSuggestions = [...suggestions].sort((a, b) => {
@@ -146,29 +146,11 @@ export function createUnifiedAddComponent(options) {
     .css({ display: "flex", gap: "5px", "align-items": "center" });
 
   // Namespace selector
-  const namespaces = extractNamespaces();
   const namespaceSelect = $("<select>")
     .addClass("form-control namespace-selector")
     .css({ width: "150px" });
 
-  namespaceSelect.append($("<option>").val("").text("(no prefix)"));
-
-  Object.keys(namespaces)
-    .sort()
-    .forEach((prefix) => {
-      // Skip special JSON-LD keywords
-      if (!prefix.startsWith("@")) {
-        namespaceSelect.append(
-          $("<option>")
-            .val(prefix)
-            .text(prefix + ":")
-        );
-      }
-    });
-
-  namespaceSelect.append(
-    $("<option>").val("__ADD_NEW__").text("+ Add new namespace...")
-  );
+  populateNamespaceSelector(namespaceSelect);
 
   customInputRow.append(namespaceSelect);
 
@@ -234,37 +216,46 @@ export function createUnifiedAddComponent(options) {
 }
 
 /**
+ * Helper function to populate a namespace selector with current namespaces
+ * @param {jQuery} selectElement - The select element to populate
+ * @param {string} [currentValue] - Optional current value to restore
+ */
+function populateNamespaceSelector(selectElement, currentValue) {
+  const namespaces = extractNamespaces();
+
+  selectElement.empty();
+  selectElement.append($("<option>").val("").text("(no prefix)"));
+
+  Object.keys(namespaces)
+    .sort()
+    .forEach((prefix) => {
+      // Skip special JSON-LD keywords
+      if (!prefix.startsWith("@")) {
+        selectElement.append(
+          $("<option>")
+            .val(prefix)
+            .text(prefix + ":")
+        );
+      }
+    });
+
+  selectElement.append(
+    $("<option>").val("__ADD_NEW__").text("+ Add new namespace...")
+  );
+
+  // Restore selection if provided and still valid
+  if (currentValue && namespaces[currentValue]) {
+    selectElement.val(currentValue);
+  }
+}
+
+/**
  * Update namespace selectors in all unified add components
  * Call this after namespaces are added/removed
  */
 export function updateNamespaceSelectors() {
-  const namespaces = extractNamespaces();
-
   $(".namespace-selector").each(function () {
     const current = $(this).val();
-    $(this).empty();
-
-    $(this).append($("<option>").val("").text("(no prefix)"));
-
-    Object.keys(namespaces)
-      .sort()
-      .forEach((prefix) => {
-        if (!prefix.startsWith("@")) {
-          $(this).append(
-            $("<option>")
-              .val(prefix)
-              .text(prefix + ":")
-          );
-        }
-      });
-
-    $(this).append(
-      $("<option>").val("__ADD_NEW__").text("+ Add new namespace...")
-    );
-
-    // Restore selection if still valid
-    if (current && namespaces[current]) {
-      $(this).val(current);
-    }
+    populateNamespaceSelector($(this), current);
   });
 }

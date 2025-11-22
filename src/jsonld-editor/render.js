@@ -193,82 +193,6 @@ export function renderNodeTree(node, index, depth) {
   return card;
 }
 
-export function renderNode(node, index) {
-  const isEditMode = getIsEditMode();
-  const shaclShapesStore = getShaclShapesStore();
-
-  const id = node["@id"] || `_:blank${index}`;
-  const types = Array.isArray(node["@type"]) ? node["@type"] : [node["@type"]];
-
-  const card = $("<div>").addClass("node-card").attr("data-node-id", id);
-
-  // Header with collapse functionality
-  const header = $("<div>").addClass("node-header");
-  const leftSide = $("<div>")
-    .css("display", "flex")
-    .css("align-items", "center");
-  leftSide.append(
-    $("<span>")
-      .addClass("glyphicon glyphicon-chevron-down collapse-icon")
-      .css("margin-right", "10px")
-  );
-  leftSide.append($("<span>").addClass("node-id").text(id));
-  types.forEach((type) => {
-    if (type) {
-      leftSide.append($("<span>").addClass("node-type").text(type));
-    }
-  });
-  header.append(leftSide);
-
-  // Add click handler to collapse/expand
-  header.click(function () {
-    card.toggleClass("collapsed");
-  });
-
-  card.append(header);
-
-  // Body with properties
-  const body = $("<div>")
-    .addClass("node-body")
-    .attr("data-testid", `node-body-${id.replace(/[^a-zA-Z0-9]/g, "_")}`);
-  if (!isEditMode) {
-    body.addClass("view-mode");
-  }
-
-  // Render all properties except @id and @type
-  Object.keys(node).forEach((key) => {
-    if (key !== "@id" && key !== "@type" && key !== "@context") {
-      const propertyRow = renderProperty(key, node[key], id, types);
-      body.append(propertyRow);
-    }
-  });
-
-  card.append(body);
-
-  // Add property suggestions in edit mode
-  if (isEditMode && shaclShapesStore) {
-    const suggestions = getPropertySuggestions(node, types);
-
-    if (suggestions.length > 0) {
-      const suggestionsSection = createPropertySuggestionsSection(
-        suggestions,
-        id,
-        body
-      );
-      card.append(suggestionsSection);
-    } else {
-      // Even with no SHACL suggestions, allow adding custom properties using unified UI
-      const suggestionsSection = createPropertySuggestionsSection(
-        [], // No SHACL suggestions
-        id
-      );
-      card.append(suggestionsSection);
-    }
-  }
-
-  return card;
-}
-
 export function renderPropertyTree(key, value, nodeId, nodeTypes, depth) {
   const jsonData = getJsonData();
   const container = $("<div>");
@@ -739,7 +663,7 @@ export function createValueInput(
   classification
 ) {
   // Check if value is a reference to another node (has @id)
-  if (typeof value === "object" && value !== null && value["@id"]) {
+  if (value?.["@id"]) {
     const refId = value["@id"];
     const refContainer = $("<div>").addClass("reference-container");
 
@@ -801,6 +725,7 @@ export function createValueInput(
   // Simple value (string, number, etc.) or complex object without @id
   const valueStr =
     typeof value === "object" ? JSON.stringify(value) : String(value);
+  const isEditMode = getIsEditMode();
 
   if (isEditMode) {
     // Check if this property has enumeration values (controlled vocabulary)

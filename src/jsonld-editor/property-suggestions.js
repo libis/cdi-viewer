@@ -11,7 +11,10 @@ import {
 } from "./state.js";
 import { expandCompactIri } from "./cdi-json-ld-helpers.js";
 import { renderData, humanizeKey } from "./render.js";
-import { addPropertyToNode } from "./cdi-graph-helpers.js";
+import {
+  addPropertyToNode,
+  createAndReferenceNewNode,
+} from "./cdi-graph-helpers.js";
 import { createUnifiedAddComponent } from "./unified-add-component.js";
 
 export function getPropertySuggestions(node, types) {
@@ -313,66 +316,25 @@ export function createPropertySuggestionsSection(suggestions, nodeId) {
 }
 
 export function addComplexPropertyToNode(nodeId, suggestion) {
-  const jsonData = getJsonData();
-
-  console.log("Adding complex property:", {
-    nodeId,
-    path: suggestion.path,
-    nodeClass: suggestion.nodeClass,
-  });
-
-  // Create a new node in the @graph
-  const newNodeId = `_:${suggestion.path}_${Date.now()}`;
-
   // Extract class name from full URI or use the short name
   let className = suggestion.nodeClass || "Object";
-
-  // If it's a full URI, extract just the class name
   if (className.includes("/") || className.includes("#")) {
     className = className.split("/").pop().split("#").pop();
   }
 
-  const newNode = {
-    "@id": newNodeId,
-    "@type": className,
-  };
+  // Use the shared function to create and reference the new node
+  const asArray = suggestion.maxCount !== 1;
+  const newNodeId = createAndReferenceNewNode(
+    nodeId,
+    suggestion.path,
+    className,
+    asArray
+  );
 
-  console.log("Creating new node:", newNode);
-
-  // Add to graph
-  if (!jsonData["@graph"]) {
-    jsonData["@graph"] = [];
-  }
-  jsonData["@graph"].push(newNode);
-
-  // Add reference to parent node
-  const parentNode = jsonData["@graph"].find((n) => n["@id"] === nodeId);
-  if (parentNode) {
-    console.log("Found parent node:", parentNode["@id"]);
-    if (suggestion.maxCount === 1) {
-      parentNode[suggestion.path] = { "@id": newNodeId };
-    } else {
-      if (!parentNode[suggestion.path]) {
-        parentNode[suggestion.path] = [];
-      }
-      if (Array.isArray(parentNode[suggestion.path])) {
-        parentNode[suggestion.path].push({ "@id": newNodeId });
-      } else {
-        parentNode[suggestion.path] = [
-          parentNode[suggestion.path],
-          { "@id": newNodeId },
-        ];
-      }
-    }
-    console.log("Updated parent node:", parentNode);
-  } else {
-    console.error("Parent node not found:", nodeId);
-  }
-
-  // Re-render everything
+  // Re-render to show the new node
   renderData();
 
-  // Scroll to new node
+  // Scroll to new node and highlight
   setTimeout(() => {
     const newCard = $(`.node-card[data-node-id="${newNodeId}"]`);
     if (newCard.length) {

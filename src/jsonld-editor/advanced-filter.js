@@ -185,18 +185,17 @@ export function applyFilters() {
   let changed = true;
   while (changed) {
     changed = false;
-    $(".node-card.hidden-by-filter").each(function () {
+    const hiddenNodes = $(".node-card.hidden-by-filter");
+
+    hiddenNodes.each(function () {
       const node = $(this);
 
-      // Check if this node has any visible properties
-      const hasVisibleProps =
-        node.find(".property-row:not(.hidden-by-filter)").length > 0;
-
-      // Check if this node contains any visible child nodes
-      const hasVisibleChildren =
-        node.find(".node-card:not(.hidden-by-filter)").length > 0;
-
-      if (hasVisibleProps || hasVisibleChildren) {
+      // Check if this node has any visible content (properties or child nodes)
+      if (
+        node.find(
+          ".property-row:not(.hidden-by-filter), .node-card:not(.hidden-by-filter)"
+        ).length > 0
+      ) {
         node.removeClass("hidden-by-filter");
         changed = true;
       }

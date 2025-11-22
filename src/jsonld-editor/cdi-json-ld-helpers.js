@@ -34,20 +34,13 @@ export function resolvePrefix(context, prefix) {
 
   // Handle string context (URL) - we can't resolve from it directly
   if (typeof context === "string") {
-    // Try cached local context as fallback
-    if (cachedLocalContext && cachedLocalContext[prefix]) {
-      return cachedLocalContext[prefix];
-    }
-    return null;
+    return cachedLocalContext?.[prefix] || null;
   }
 
   // Handle object context (simple case)
   if (typeof context === "object" && !Array.isArray(context)) {
     const namespace = context[prefix];
-    if (namespace && typeof namespace === "string") {
-      return namespace;
-    }
-    return null;
+    return typeof namespace === "string" ? namespace : null;
   }
 
   // Handle array context (most complex case)
@@ -56,13 +49,8 @@ export function resolvePrefix(context, prefix) {
     for (let i = context.length - 1; i >= 0; i--) {
       const entry = context[i];
 
-      // Skip string URLs
-      if (typeof entry === "string") {
-        continue;
-      }
-
-      // Check object entries
-      if (entry && typeof entry === "object" && entry[prefix]) {
+      // Check object entries (skip string URLs)
+      if (typeof entry === "object" && entry?.[prefix]) {
         const namespace = entry[prefix];
         if (typeof namespace === "string") {
           return namespace;
@@ -71,9 +59,7 @@ export function resolvePrefix(context, prefix) {
     }
 
     // Fallback to cached local context
-    if (cachedLocalContext && cachedLocalContext[prefix]) {
-      return cachedLocalContext[prefix];
-    }
+    return cachedLocalContext?.[prefix] || null;
   }
 
   return null;

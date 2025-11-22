@@ -29,39 +29,33 @@ const PROTECTED_NAMESPACES = new Set([
  */
 export function extractNamespaces() {
   const jsonData = getJsonData();
-  if (!jsonData || !jsonData["@context"]) {
+  if (!jsonData?.["@context"]) {
     return {};
   }
 
   const context = jsonData["@context"];
   const namespaces = {};
 
+  // Helper to extract namespace from context entry
+  const extractFromObject = (ctx) => {
+    if (typeof ctx === "object" && ctx !== null) {
+      Object.entries(ctx).forEach(([key, value]) => {
+        if (typeof value === "string") {
+          namespaces[key] = value;
+        } else if (value?.["@id"]) {
+          namespaces[key] = value["@id"];
+        }
+      });
+    }
+  };
+
   // Handle array of contexts
   if (Array.isArray(context)) {
-    context.forEach((ctx) => {
-      if (typeof ctx === "object" && ctx !== null) {
-        Object.entries(ctx).forEach(([key, value]) => {
-          if (typeof value === "string") {
-            namespaces[key] = value;
-          } else if (value && typeof value === "object" && value["@id"]) {
-            namespaces[key] = value["@id"];
-          }
-        });
-      }
-    });
+    context.forEach(extractFromObject);
+  } else {
+    extractFromObject(context);
   }
-  // Handle single object context
-  else if (typeof context === "object" && context !== null) {
-    Object.entries(context).forEach(([key, value]) => {
-      if (typeof value === "string") {
-        namespaces[key] = value;
-      } else if (value && typeof value === "object" && value["@id"]) {
-        namespaces[key] = value["@id"];
-      }
-    });
-  }
-  // Single string context (URL) - can't extract individual prefixes
-  // This would need to be fetched and parsed
+  // Single string context (URL) - can't extract individual prefixes without fetching
 
   return namespaces;
 }
@@ -81,14 +75,11 @@ export function addNamespace(prefix, uri) {
     jsonData["@context"] = {};
   }
 
-  // Handle different @context formats
   let context = jsonData["@context"];
 
   // If context is a string URL, convert to object
   if (typeof context === "string") {
-    context = jsonData["@context"] = {
-      "@vocab": context,
-    };
+    context = jsonData["@context"] = { "@vocab": context };
   }
 
   // If context is an array, add to the first object or create one
@@ -101,9 +92,8 @@ export function addNamespace(prefix, uri) {
       context.push(objectContext);
     }
     objectContext[prefix] = uri;
-  }
-  // If context is an object, add directly
-  else if (typeof context === "object") {
+  } else if (typeof context === "object") {
+    // Context is an object, add directly
     context[prefix] = uri;
   }
 
@@ -117,7 +107,7 @@ export function addNamespace(prefix, uri) {
  */
 export function removeNamespace(prefix) {
   const jsonData = getJsonData();
-  if (!jsonData || !jsonData["@context"]) {
+  if (!jsonData?.["@context"]) {
     return false;
   }
 
@@ -132,16 +122,13 @@ export function removeNamespace(prefix) {
   // Handle array of contexts
   if (Array.isArray(context)) {
     context.forEach((ctx) => {
-      if (typeof ctx === "object" && ctx !== null && ctx[prefix]) {
+      if (ctx?.[prefix]) {
         delete ctx[prefix];
       }
     });
-  }
-  // Handle single object context
-  else if (typeof context === "object" && context !== null) {
-    if (context[prefix]) {
-      delete context[prefix];
-    }
+  } else if (context?.[prefix]) {
+    // Handle single object context
+    delete context[prefix];
   }
 
   setJsonData(jsonData);

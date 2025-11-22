@@ -313,48 +313,41 @@ export function createAndAddRootNode(nodeType) {
 
 export function addPropertyToNode(nodeId, propertyKey, initialValue) {
   const jsonData = getJsonData();
+  const node = jsonData["@graph"].find((n) => n["@id"] === nodeId);
 
-  // Add the property to the data
-  jsonData["@graph"].forEach((node) => {
-    if (node["@id"] === nodeId) {
-      node[propertyKey] = initialValue;
-    }
-  });
-
-  // Return true to signal success - caller will handle re-render
-  return true;
+  if (node) {
+    node[propertyKey] = initialValue;
+    return true;
+  }
+  return false;
 }
 
 export function convertPropertyToArray(nodeId, propertyKey) {
   const jsonData = getJsonData();
+  const node = jsonData["@graph"].find((n) => n["@id"] === nodeId);
 
-  jsonData["@graph"].forEach((node) => {
-    if (node["@id"] === nodeId) {
-      const currentValue = node[propertyKey];
-      // Convert single value to array with that value
-      if (!Array.isArray(currentValue)) {
-        node[propertyKey] = currentValue ? [currentValue] : [];
-      }
+  if (node) {
+    const currentValue = node[propertyKey];
+    if (!Array.isArray(currentValue)) {
+      node[propertyKey] = currentValue ? [currentValue] : [];
     }
-  });
-
-  return true;
+    return true;
+  }
+  return false;
 }
 
 export function convertPropertyToSingle(nodeId, propertyKey) {
   const jsonData = getJsonData();
+  const node = jsonData["@graph"].find((n) => n["@id"] === nodeId);
 
-  jsonData["@graph"].forEach((node) => {
-    if (node["@id"] === nodeId) {
-      const currentValue = node[propertyKey];
-      // Convert array to single value (take first element)
-      if (Array.isArray(currentValue)) {
-        node[propertyKey] = currentValue.length > 0 ? currentValue[0] : "";
-      }
+  if (node) {
+    const currentValue = node[propertyKey];
+    if (Array.isArray(currentValue)) {
+      node[propertyKey] = currentValue.length > 0 ? currentValue[0] : "";
     }
-  });
-
-  return true;
+    return true;
+  }
+  return false;
 }
 
 export function getAllNodesForReference() {
@@ -374,29 +367,26 @@ export function getAllNodesForReference() {
 
 export function addReferenceToProperty(nodeId, propertyKey, referenceId) {
   const jsonData = getJsonData();
+  const node = jsonData["@graph"].find((n) => n["@id"] === nodeId);
 
-  jsonData["@graph"].forEach((node) => {
-    if (node["@id"] === nodeId) {
-      const currentValue = node[propertyKey];
-      const reference = { "@id": referenceId };
+  if (node) {
+    const reference = { "@id": referenceId };
+    const currentValue = node[propertyKey];
 
-      if (Array.isArray(currentValue)) {
-        // Add to array
-        currentValue.push(reference);
-      } else if (currentValue) {
-        // Convert to array
-        node[propertyKey] = [currentValue, reference];
-      } else {
-        // Set as single value
-        node[propertyKey] = reference;
-      }
+    if (Array.isArray(currentValue)) {
+      currentValue.push(reference);
+    } else if (currentValue) {
+      node[propertyKey] = [currentValue, reference];
+    } else {
+      node[propertyKey] = reference;
     }
-  });
 
-  // Update state with modified data
-  setJsonData(jsonData);
+    // Update state with modified data
+    setJsonData(jsonData);
+    return true;
+  }
 
-  return true;
+  return false;
 }
 
 export function createAndReferenceNewNode(
@@ -420,28 +410,26 @@ export function createAndReferenceNewNode(
   }
   jsonData["@graph"].push(newNode);
 
-  // Add reference to parent
-  const reference = { "@id": newNodeId };
+  // Add reference to parent node
+  const parentNode = jsonData["@graph"].find((n) => n["@id"] === nodeId);
+  if (parentNode) {
+    const reference = { "@id": newNodeId };
+    const currentValue = parentNode[propertyKey];
 
-  jsonData["@graph"].forEach((node) => {
-    if (node["@id"] === nodeId) {
-      const currentValue = node[propertyKey];
-
-      if (asArray || Array.isArray(currentValue)) {
-        // Add to array or create array
-        if (Array.isArray(currentValue)) {
-          currentValue.push(reference);
-        } else if (currentValue) {
-          node[propertyKey] = [currentValue, reference];
-        } else {
-          node[propertyKey] = [reference];
-        }
+    if (asArray) {
+      // Always create/append to array
+      if (Array.isArray(currentValue)) {
+        currentValue.push(reference);
+      } else if (currentValue) {
+        parentNode[propertyKey] = [currentValue, reference];
       } else {
-        // Set as single reference
-        node[propertyKey] = reference;
+        parentNode[propertyKey] = [reference];
       }
+    } else {
+      // Set as single reference
+      parentNode[propertyKey] = reference;
     }
-  });
+  }
 
   // Update state with modified data
   setJsonData(jsonData);

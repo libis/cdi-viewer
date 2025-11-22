@@ -43,8 +43,8 @@ export function parseDataverseUrl(url) {
     return {
       valid: true,
       type: "replace",
-      serverUrl: serverUrl,
-      fileId: fileId,
+      serverUrl,
+      fileId,
       apiUrl: `${serverUrl}/api/files/${fileId}/replace`,
     };
   }
@@ -58,27 +58,26 @@ export function parseDataverseUrl(url) {
     return {
       valid: true,
       type: "replace",
-      serverUrl: serverUrl,
-      fileId: fileId,
+      serverUrl,
+      fileId,
       apiUrl: `${serverUrl}/api/files/${fileId}/replace`,
     };
   }
 
   // Case 3: Direct API files URL - /api/files/123
-  if (pathname.match(/\/api\/files\/(\d+)/)) {
-    const match = pathname.match(/\/api\/files\/(\d+)/);
-    const fileId = match[1];
+  const fileMatch = pathname.match(/\/api\/files\/(\d+)/);
+  if (fileMatch) {
+    const fileId = fileMatch[1];
     return {
       valid: true,
       type: "replace",
-      serverUrl: serverUrl,
-      fileId: fileId,
+      serverUrl,
+      fileId,
       apiUrl: `${serverUrl}/api/files/${fileId}/replace`,
     };
   }
 
   // Case 4: URLs with persistentId parameter (JSF, SPA, or API)
-  // This works for dataset.xhtml, spa/datasets, /api/datasets/:persistentId
   if (searchParams.has("persistentId")) {
     const persistentId = decodeURIComponent(searchParams.get("persistentId"));
     if (!persistentId) {
@@ -86,7 +85,6 @@ export function parseDataverseUrl(url) {
     }
 
     // Validate DOI format (most common case)
-    // DOIs typically start with "doi:" or are just the DOI itself
     if (!persistentId.match(/^(doi:)?10\.\d+/)) {
       return {
         valid: false,
@@ -97,21 +95,21 @@ export function parseDataverseUrl(url) {
     return {
       valid: true,
       type: "add",
-      serverUrl: serverUrl,
-      persistentId: persistentId,
+      serverUrl,
+      persistentId,
       apiUrl: `${serverUrl}/api/datasets/:persistentId/add?persistentId=${encodeURIComponent(persistentId)}`,
     };
   }
 
   // Case 5: Direct API dataset URL by ID - /api/datasets/123
-  if (pathname.match(/\/api\/datasets\/(\d+)/)) {
-    const match = pathname.match(/\/api\/datasets\/(\d+)/);
-    const datasetId = match[1];
+  const datasetMatch = pathname.match(/\/api\/datasets\/(\d+)/);
+  if (datasetMatch) {
+    const datasetId = datasetMatch[1];
     return {
       valid: true,
       type: "add",
-      serverUrl: serverUrl,
-      datasetId: datasetId,
+      serverUrl,
+      datasetId,
       apiUrl: `${serverUrl}/api/datasets/${datasetId}/add`,
     };
   }

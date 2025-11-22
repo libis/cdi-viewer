@@ -359,166 +359,157 @@ export function classifyProperty(nodeTypes, propertyKey, nodeId = null) {
             pathsToCheck = [pathObject.value];
           }
 
-          // Check each path option
-          pathsToCheck.forEach((path) => {
+          // Check each path option - use some() for early exit when match found
+          const matchingPath = pathsToCheck.find((path) => {
             const pathName = path.split("/").pop().split("#").pop();
 
-            // SHACL paths are like: cdi:WideDataSet-name or cdi:DataSet_isStructuredBy_DataStructure
-            // Extract the property part after the class name and hyphen/underscore
+            // Extract property name from SHACL paths (cdi:WideDataSet-name or cdi:DataSet_isStructuredBy_DataStructure)
             let shaclPropertyName = pathName;
-
-            // Remove class prefix if present (e.g., "WideDataSet-name" -> "name")
             if (pathName.includes("-")) {
               const parts = pathName.split("-");
-              if (parts.length > 1) {
-                shaclPropertyName = parts.slice(1).join("-");
-              }
-            }
-
-            // Also check for underscore patterns (e.g., "DataSet_isStructuredBy_DataStructure")
-            if (pathName.includes("_")) {
+              shaclPropertyName =
+                parts.length > 1 ? parts.slice(1).join("-") : pathName;
+            } else if (pathName.includes("_")) {
               const parts = pathName.split("_");
-              // The middle part is usually the property name
-              if (parts.length >= 2) {
-                shaclPropertyName = parts[1];
-              }
+              shaclPropertyName = parts.length >= 2 ? parts[1] : pathName;
             }
 
             // Check if this matches our property using multiple strategies
-            const matches =
-              pathName === propertyKey || // Exact match with full path name
-              path === propertyKey || // Exact match with full URI
-              path === expandedPropertyKey || // Match with expanded property key (e.g., schema:name → http://schema.org/name)
-              shaclPropertyName === propertyKey || // Match extracted property name
-              (expandedUri && path === expandedUri) || // Match with expanded URI if available
-              pathName.endsWith(propertyKey) || // Ends with property key
-              pathName.toLowerCase().includes(propertyKey.toLowerCase()); // Contains property key (case insensitive)
+            return (
+              pathName === propertyKey ||
+              path === propertyKey ||
+              path === expandedPropertyKey ||
+              shaclPropertyName === propertyKey ||
+              (expandedUri && path === expandedUri) ||
+              pathName.endsWith(propertyKey) ||
+              pathName.toLowerCase().includes(propertyKey.toLowerCase())
+            );
+          });
 
-            if (matches) {
-              result.isInShape = true;
+          if (matchingPath) {
+            result.isInShape = true;
 
-              // Check sh:minCount for required
-              const minCountQuads = shaclShapesStore.getQuads(
-                propertyShapeRef,
-                "http://www.w3.org/ns/shacl#minCount",
-                null,
-                null
-              );
-              if (minCountQuads.length > 0) {
-                result.minCount = parseInt(minCountQuads[0].object.value);
-                result.isRequired = result.minCount > 0;
-              }
+            // Check sh:minCount for required
+            const minCountQuads = shaclShapesStore.getQuads(
+              propertyShapeRef,
+              "http://www.w3.org/ns/shacl#minCount",
+              null,
+              null
+            );
+            if (minCountQuads.length > 0) {
+              result.minCount = parseInt(minCountQuads[0].object.value);
+              result.isRequired = result.minCount > 0;
+            }
 
-              // Check sh:maxCount for cardinality
-              const maxCountQuads = shaclShapesStore.getQuads(
-                propertyShapeRef,
-                "http://www.w3.org/ns/shacl#maxCount",
-                null,
-                null
-              );
-              if (maxCountQuads.length > 0) {
-                result.maxCount = parseInt(maxCountQuads[0].object.value);
-              }
+            // Check sh:maxCount for cardinality
+            const maxCountQuads = shaclShapesStore.getQuads(
+              propertyShapeRef,
+              "http://www.w3.org/ns/shacl#maxCount",
+              null,
+              null
+            );
+            if (maxCountQuads.length > 0) {
+              result.maxCount = parseInt(maxCountQuads[0].object.value);
+            }
 
-              // Check sh:node for complex objects
-              const nodeQuads = shaclShapesStore.getQuads(
-                propertyShapeRef,
-                "http://www.w3.org/ns/shacl#node",
-                null,
-                null
-              );
-              if (nodeQuads.length > 0) {
-                result.nodeShape = nodeQuads[0].object.value;
-              }
+            // Check sh:node for complex objects
+            const nodeQuads = shaclShapesStore.getQuads(
+              propertyShapeRef,
+              "http://www.w3.org/ns/shacl#node",
+              null,
+              null
+            );
+            if (nodeQuads.length > 0) {
+              result.nodeShape = nodeQuads[0].object.value;
+            }
 
-              // Check sh:class for object type
-              const classQuads = shaclShapesStore.getQuads(
-                propertyShapeRef,
-                "http://www.w3.org/ns/shacl#class",
-                null,
-                null
-              );
-              if (classQuads.length > 0) {
-                result.nodeClass = classQuads[0].object.value;
-              }
+            // Check sh:class for object type
+            const classQuads = shaclShapesStore.getQuads(
+              propertyShapeRef,
+              "http://www.w3.org/ns/shacl#class",
+              null,
+              null
+            );
+            if (classQuads.length > 0) {
+              result.nodeClass = classQuads[0].object.value;
+            }
 
-              // Get sh:datatype
-              const datatypeQuads = shaclShapesStore.getQuads(
-                propertyShapeRef,
-                "http://www.w3.org/ns/shacl#datatype",
-                null,
-                null
-              );
-              if (datatypeQuads.length > 0) {
-                result.datatype = datatypeQuads[0].object.value;
+            // Get sh:datatype
+            const datatypeQuads = shaclShapesStore.getQuads(
+              propertyShapeRef,
+              "http://www.w3.org/ns/shacl#datatype",
+              null,
+              null
+            );
+            if (datatypeQuads.length > 0) {
+              result.datatype = datatypeQuads[0].object.value;
 
-                // Determine input type based on datatype
-                const dt = result.datatype.toLowerCase();
-                if (
-                  dt.includes("integer") ||
-                  dt.includes("int") ||
-                  dt.includes("decimal") ||
-                  dt.includes("double") ||
-                  dt.includes("float")
-                ) {
-                  result.inputType = "number";
-                } else if (dt.includes("date") && !dt.includes("datetime")) {
-                  result.inputType = "date";
-                } else if (dt.includes("datetime")) {
-                  result.inputType = "datetime-local";
-                } else if (dt.includes("anyuri")) {
-                  result.inputType = "url";
-                }
-              }
-
-              // Get sh:description
-              const descQuads = shaclShapesStore.getQuads(
-                propertyShapeRef,
-                "http://www.w3.org/ns/shacl#description",
-                null,
-                null
-              );
-              if (descQuads.length > 0) {
-                result.description = descQuads[0].object.value;
-              }
-
-              // Get sh:in (allowed values) - direct enumeration on property
-              const inQuads = shaclShapesStore.getQuads(
-                propertyShapeRef,
-                "http://www.w3.org/ns/shacl#in",
-                null,
-                null
-              );
-              if (inQuads.length > 0) {
-                // Parse RDF list to get enumeration values
-                result.allowedValues = parseRdfList(inQuads[0].object);
-              }
-
-              // Check if sh:node references an enumeration shape
-              if (result.nodeShape && !result.allowedValues) {
-                const nodeShapeUri =
-                  result.nodeShape.startsWith("http") ||
-                  result.nodeShape.startsWith("#")
-                    ? result.nodeShape
-                    : "#" + result.nodeShape;
-                const enumValues = getEnumerationValues(nodeShapeUri);
-                if (enumValues && enumValues.length > 0) {
-                  result.allowedValues = enumValues;
-                }
-              }
-
-              // Get sh:pattern
-              const patternQuads = shaclShapesStore.getQuads(
-                propertyShapeRef,
-                "http://www.w3.org/ns/shacl#pattern",
-                null,
-                null
-              );
-              if (patternQuads.length > 0) {
-                result.pattern = patternQuads[0].object.value;
+              // Determine input type based on datatype
+              const dt = result.datatype.toLowerCase();
+              if (
+                dt.includes("integer") ||
+                dt.includes("int") ||
+                dt.includes("decimal") ||
+                dt.includes("double") ||
+                dt.includes("float")
+              ) {
+                result.inputType = "number";
+              } else if (dt.includes("date") && !dt.includes("datetime")) {
+                result.inputType = "date";
+              } else if (dt.includes("datetime")) {
+                result.inputType = "datetime-local";
+              } else if (dt.includes("anyuri")) {
+                result.inputType = "url";
               }
             }
-          }); // end pathsToCheck.forEach
+
+            // Get sh:description
+            const descQuads = shaclShapesStore.getQuads(
+              propertyShapeRef,
+              "http://www.w3.org/ns/shacl#description",
+              null,
+              null
+            );
+            if (descQuads.length > 0) {
+              result.description = descQuads[0].object.value;
+            }
+
+            // Get sh:in (allowed values) - direct enumeration on property
+            const inQuads = shaclShapesStore.getQuads(
+              propertyShapeRef,
+              "http://www.w3.org/ns/shacl#in",
+              null,
+              null
+            );
+            if (inQuads.length > 0) {
+              // Parse RDF list to get enumeration values
+              result.allowedValues = parseRdfList(inQuads[0].object);
+            }
+
+            // Check if sh:node references an enumeration shape
+            if (result.nodeShape && !result.allowedValues) {
+              const nodeShapeUri =
+                result.nodeShape.startsWith("http") ||
+                result.nodeShape.startsWith("#")
+                  ? result.nodeShape
+                  : "#" + result.nodeShape;
+              const enumValues = getEnumerationValues(nodeShapeUri);
+              if (enumValues && enumValues.length > 0) {
+                result.allowedValues = enumValues;
+              }
+            }
+
+            // Get sh:pattern
+            const patternQuads = shaclShapesStore.getQuads(
+              propertyShapeRef,
+              "http://www.w3.org/ns/shacl#pattern",
+              null,
+              null
+            );
+            if (patternQuads.length > 0) {
+              result.pattern = patternQuads[0].object.value;
+            }
+          } // end if (matchingPath)
         }); // end pathQuads.forEach
       }); // end propertyQuads.forEach
     }); // end applicableShapes.forEach
