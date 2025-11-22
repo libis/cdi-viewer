@@ -56,8 +56,12 @@ export function createUnifiedAddComponent(options) {
     return a.label.localeCompare(b.label);
   });
 
+  const hasShacLSuggestions = sortedSuggestions.length > 0;
+
   // ===== SHACL-defined items dropdown =====
-  const dropdownRow = $("<div>").addClass("add-item-row");
+  const dropdownRow = $("<div>")
+    .addClass("add-item-row")
+    .css({ display: hasShacLSuggestions ? "flex" : "none" });
 
   const dropdownWrapper = $("<div>").addClass("item-dropdown-wrapper");
   const dropdown = $("<select>").addClass("item-dropdown");
@@ -120,10 +124,11 @@ export function createUnifiedAddComponent(options) {
   section.append(dropdownRow);
 
   // ===== Custom item input section =====
+  // Always show custom input, with separator if SHACL suggestions exist
   const customSection = $("<div>").addClass("custom-item-section").css({
-    "margin-top": "15px",
-    "padding-top": "15px",
-    "border-top": "1px solid #ddd",
+    "margin-top": hasShacLSuggestions ? "15px" : "0",
+    "padding-top": hasShacLSuggestions ? "15px" : "0",
+    "border-top": hasShacLSuggestions ? "1px solid #ddd" : "none",
   });
 
   const customLabel$ = $("<label>").text(`${customLabel}:`).css({
