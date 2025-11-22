@@ -217,14 +217,40 @@ export async function validateData() {
       );
 
       // Show violations list (initially hidden)
-      let detailsHtml =
-        '<div class="validation-violations" style="display: none;"><h4>Validation Violations:</h4><ul>';
+      const $violationsContainer = $(
+        '<div class="validation-violations" style="display: none;"><h4>Validation Violations:</h4><ul></ul></div>'
+      );
+      const $list = $violationsContainer.find("ul");
+
       violations.forEach((v) => {
         const nodeId = v.focusNode.split("/").pop();
-        detailsHtml += `<li><strong>${nodeId}</strong> - ${v.path}: ${v.message}</li>`;
+        const $listItem = $("<li>");
+
+        // Create clickable node ID button (matching reference button style)
+        const $nodeBtn = $("<button>")
+          .addClass("btn btn-sm btn-info reference-btn")
+          .css({ marginRight: "8px" })
+          .html(`<span class="glyphicon glyphicon-arrow-right"></span> ${nodeId}`)
+          .attr("title", "Click to jump to this node")
+          .click(function (e) {
+            e.preventDefault();
+            const targetCard = $(`.node-card[data-node-id="${nodeId}"]`);
+            if (targetCard.length) {
+              // Expand any collapsed parent cards
+              targetCard.parents(".node-card").removeClass("collapsed");
+              targetCard.removeClass("collapsed");
+              targetCard[0].scrollIntoView({ behavior: "smooth", block: "center" });
+              targetCard.addClass("highlight");
+              setTimeout(() => targetCard.removeClass("highlight"), 2000);
+            }
+          });
+
+        $listItem.append($nodeBtn);
+        $listItem.append(`<span> - ${v.path}: ${v.message}</span>`);
+        $list.append($listItem);
       });
-      detailsHtml += "</ul></div>";
-      $("#validation-details").html(detailsHtml);
+
+      $("#validation-details").html($violationsContainer);
 
       // Add toggle handler
       $("#toggle-violations-btn").click(function () {
