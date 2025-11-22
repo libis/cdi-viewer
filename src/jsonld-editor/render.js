@@ -218,37 +218,8 @@ export function renderPropertyTree(key, value, nodeId, nodeTypes, depth) {
 
           const childCard = renderNodeTree(refNode, 0, depth + 1);
           container.append(childCard);
-        } else {
-          // Node already rendered elsewhere - show a reference link
-          const refLink = $("<div>").addClass("node-reference-link").css({
-            "margin-left": "8px",
-            padding: "3px",
-            "margin-bottom": "2px",
-          });
-
-          const jumpBtn = $("<button>")
-            .addClass("btn btn-sm btn-default")
-            .html(
-              `<span class="glyphicon glyphicon-arrow-right"></span> → ${refId}`
-            )
-            .attr("title", "Click to jump to this node")
-            .click(function (e) {
-              e.preventDefault();
-              const targetCard = $(`.node-card[data-node-id="${refId}"]`);
-              if (targetCard.length) {
-                targetCard.removeClass("collapsed");
-                targetCard[0].scrollIntoView({
-                  behavior: "smooth",
-                  block: "center",
-                });
-                targetCard.addClass("highlight");
-                setTimeout(() => targetCard.removeClass("highlight"), 2000);
-              }
-            });
-
-          refLink.append(jumpBtn);
-          container.append(refLink);
         }
+        // else: Node already rendered elsewhere - the inline box already provides navigation
       }
     });
   }
