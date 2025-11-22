@@ -1,49 +1,55 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
+  <head>
     <title>Test Ancestor Calculation</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-</head>
-<body>
+  </head>
+  <body>
     <h1>Testing Ancestor Calculation</h1>
     <pre id="output"></pre>
-    
+
     <script type="module">
-        // Simulate the SimpleSample.jsonld structure
-        const jsonData = {
-            "@graph": [
-                { "@id": "#Sample_ID_Component", "isDefinedBy": "#Sample_ID" },
-                { "@id": "#Sample_ID", "takesSubstantiveValuesFrom": "#Sample_ID_Substantive_Value_Domain" },
-                { "@id": "#Sample_ID_Substantive_Value_Domain" },
-                { "@id": "#Mass_Component", "isDefinedBy": "#Mass" },
-                { "@id": "#Mass", "takesSubstantiveValuesFrom": "#Mass_Substantive_Value_Domain" },
-                { "@id": "#Mass_Substantive_Value_Domain" }
-            ]
-        };
-        
-        // Simulate parent map building (as it would happen during rendering)
-        const parentMap = new Map();
-        
-        // When Sample_ID_Component references Sample_ID via isDefinedBy,
-        // Sample_ID becomes the parent? Or Sample_ID_Component is the parent?
-        // Let's check the actual code logic...
-        
-        const output = [];
-        output.push("Expected relationships:");
-        output.push("- Sample_ID_Substantive_Value_Domain -> parent: Sample_ID");
-        output.push("- Sample_ID -> parent: Sample_ID_Component");
-        output.push("");
-        output.push("- Mass_Substantive_Value_Domain -> parent: Mass");
-        output.push("- Mass -> parent: Mass_Component");
-        output.push("");
-        output.push("So when searching for Sample_ID_Substantive_Value_Domain:");
-        output.push("Ancestors should be: [Sample_ID, Sample_ID_Component]");
-        output.push("");
-        output.push("Mass_Substantive_Value_Domain should NOT be in ancestors");
-        output.push("Mass should NOT be in ancestors");
-        output.push("Mass_Component should NOT be in ancestors");
-        
-        document.getElementById('output').textContent = output.join('\n');
+      // Simulate the SimpleSample.jsonld structure
+      const jsonData = {
+        "@graph": [
+          { "@id": "#Sample_ID_Component", isDefinedBy: "#Sample_ID" },
+          {
+            "@id": "#Sample_ID",
+            takesSubstantiveValuesFrom: "#Sample_ID_Substantive_Value_Domain",
+          },
+          { "@id": "#Sample_ID_Substantive_Value_Domain" },
+          { "@id": "#Mass_Component", isDefinedBy: "#Mass" },
+          {
+            "@id": "#Mass",
+            takesSubstantiveValuesFrom: "#Mass_Substantive_Value_Domain",
+          },
+          { "@id": "#Mass_Substantive_Value_Domain" },
+        ],
+      };
+
+      // Simulate parent map building (as it would happen during rendering)
+      const parentMap = new Map();
+
+      // When Sample_ID_Component references Sample_ID via isDefinedBy,
+      // Sample_ID becomes the parent? Or Sample_ID_Component is the parent?
+      // Let's check the actual code logic...
+
+      const output = [];
+      output.push("Expected relationships:");
+      output.push("- Sample_ID_Substantive_Value_Domain -> parent: Sample_ID");
+      output.push("- Sample_ID -> parent: Sample_ID_Component");
+      output.push("");
+      output.push("- Mass_Substantive_Value_Domain -> parent: Mass");
+      output.push("- Mass -> parent: Mass_Component");
+      output.push("");
+      output.push("So when searching for Sample_ID_Substantive_Value_Domain:");
+      output.push("Ancestors should be: [Sample_ID, Sample_ID_Component]");
+      output.push("");
+      output.push("Mass_Substantive_Value_Domain should NOT be in ancestors");
+      output.push("Mass should NOT be in ancestors");
+      output.push("Mass_Component should NOT be in ancestors");
+
+      document.getElementById("output").textContent = output.join("\n");
     </script>
-</body>
+  </body>
 </html>

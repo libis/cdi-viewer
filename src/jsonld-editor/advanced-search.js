@@ -122,7 +122,9 @@ export function performSearch() {
       // Check text elements (labels, paths, display values) that belong to THIS node
       // Use > .node-body > .property-row to only get direct properties
       card
-        .find("> .node-body > .property-row .property-label, > .node-body > .property-row .property-path, > .node-body > .property-row .value-display")
+        .find(
+          "> .node-body > .property-row .property-label, > .node-body > .property-row .property-path, > .node-body > .property-row .value-display"
+        )
         .each(function () {
           const isLabel =
             $(this).hasClass("property-label") ||
@@ -140,14 +142,18 @@ export function performSearch() {
 
       // Also check input/textarea values (in edit mode) - only THIS node's inputs
       if (!found && searchInValues) {
-        card.find("> .node-body > .property-row input, > .node-body > .property-row textarea").each(function () {
-          const value = $(this).val();
-          if (matchesSearch(value, searchTerm)) {
-            console.log(`  ✓ Node ${nodeId} matches in input: "${value}"`);
-            found = true;
-            return false; // Break loop
-          }
-        });
+        card
+          .find(
+            "> .node-body > .property-row input, > .node-body > .property-row textarea"
+          )
+          .each(function () {
+            const value = $(this).val();
+            if (matchesSearch(value, searchTerm)) {
+              console.log(`  ✓ Node ${nodeId} matches in input: "${value}"`);
+              found = true;
+              return false; // Break loop
+            }
+          });
       }
 
       if (found) {
