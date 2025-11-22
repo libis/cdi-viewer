@@ -17,7 +17,7 @@ import {
   addReferenceToProperty,
   createAndReferenceNewNode,
 } from "./cdi-graph-helpers.js";
-import { showAlert, showConfirm, showPrompt } from "./modal-dialogs.js";
+import { showAlert, showConfirm } from "./modal-dialogs.js";
 
 // Track which nodes have been rendered to avoid duplicates
 const renderedNodes = new Set();
