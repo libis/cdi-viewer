@@ -471,7 +471,12 @@ function renderProperty(key, value, nodeId, nodeTypes) {
           .attr("data-testid", `delete-array-value-btn-${idx}`)
           .html('<span class="glyphicon glyphicon-trash"></span>')
           .click(async function () {
-            if (await showConfirm("Delete this value?", { title: 'Delete Value', confirmText: 'Delete' })) {
+            if (
+              await showConfirm("Delete this value?", {
+                title: "Delete Value",
+                confirmText: "Delete",
+              })
+            ) {
               valDiv.remove();
               row.addClass("changed");
               updateSaveButton();
@@ -485,7 +490,10 @@ function renderProperty(key, value, nodeId, nodeTypes) {
     if (isEditMode) {
       const addBtn = $("<button>")
         .addClass("btn btn-sm btn-default add-value-btn")
-        .attr("data-testid", `add-value-btn-${key.replace(/[^a-zA-Z0-9]/g, "_")}`)
+        .attr(
+          "data-testid",
+          `add-value-btn-${key.replace(/[^a-zA-Z0-9]/g, "_")}`
+        )
         .html('<span class="glyphicon glyphicon-plus"></span> Add Value')
         .click(function () {
           const newValDiv = $("<div>").addClass("array-value");
@@ -514,7 +522,10 @@ function renderProperty(key, value, nodeId, nodeTypes) {
       // Add Reference/Object button for arrays
       const addRefBtn = $("<button>")
         .addClass("btn btn-sm btn-info add-reference-btn")
-        .attr("data-testid", `add-reference-btn-${key.replace(/[^a-zA-Z0-9]/g, "_")}`)
+        .attr(
+          "data-testid",
+          `add-reference-btn-${key.replace(/[^a-zA-Z0-9]/g, "_")}`
+        )
         .html(
           '<span class="glyphicon glyphicon-link"></span> Add Reference/Object'
         )
@@ -529,7 +540,10 @@ function renderProperty(key, value, nodeId, nodeTypes) {
     if (isEditMode) {
       const convertBtn = $("<button>")
         .addClass("btn btn-xs btn-default convert-btn")
-        .attr("data-testid", `convert-to-single-btn-${key.replace(/[^a-zA-Z0-9]/g, "_")}`)
+        .attr(
+          "data-testid",
+          `convert-to-single-btn-${key.replace(/[^a-zA-Z0-9]/g, "_")}`
+        )
         .html(
           '<span class="glyphicon glyphicon-resize-small"></span> Convert to Single'
         )
@@ -538,7 +552,7 @@ function renderProperty(key, value, nodeId, nodeTypes) {
           if (
             await showConfirm(
               "Convert this array to a single value? Only the first value will be kept.",
-              { title: 'Convert to Single', confirmText: 'Convert' }
+              { title: "Convert to Single", confirmText: "Convert" }
             )
           ) {
             convertPropertyToSingle(nodeId, key);
@@ -568,10 +582,18 @@ function renderProperty(key, value, nodeId, nodeTypes) {
       if (!classification.isRequired) {
         const deleteBtn = $("<button>")
           .addClass("btn btn-xs btn-danger")
-          .attr("data-testid", `delete-property-btn-${key.replace(/[^a-zA-Z0-9]/g, "_")}`)
+          .attr(
+            "data-testid",
+            `delete-property-btn-${key.replace(/[^a-zA-Z0-9]/g, "_")}`
+          )
           .html('<span class="glyphicon glyphicon-trash"></span> Delete')
           .click(async function () {
-            if (await showConfirm("Delete this property?", { title: 'Delete Property', confirmText: 'Delete' })) {
+            if (
+              await showConfirm("Delete this property?", {
+                title: "Delete Property",
+                confirmText: "Delete",
+              })
+            ) {
               row.addClass("deleted").fadeOut(300, function () {
                 $(this).remove();
               });
@@ -584,7 +606,10 @@ function renderProperty(key, value, nodeId, nodeTypes) {
       // Convert to Array button
       const convertToArrayBtn = $("<button>")
         .addClass("btn btn-xs btn-default")
-        .attr("data-testid", `convert-to-array-btn-${key.replace(/[^a-zA-Z0-9]/g, "_")}`)
+        .attr(
+          "data-testid",
+          `convert-to-array-btn-${key.replace(/[^a-zA-Z0-9]/g, "_")}`
+        )
         .html(
           '<span class="glyphicon glyphicon-resize-full"></span> Convert to Array'
         )
@@ -687,14 +712,21 @@ function showAddReferenceModal(nodeId, propertyKey, forArray) {
         addReferenceToProperty(nodeId, propertyKey, existingNodeId);
         $("#addReferenceModal").modal("hide");
         renderData();
-      } else if (newNodeType || await showConfirm("Create new Object without type?", { title: 'Create Object' })) {
+      } else if (
+        newNodeType ||
+        (await showConfirm("Create new Object without type?", {
+          title: "Create Object",
+        }))
+      ) {
         // Create new node
         const type = newNodeType || "Object";
         createAndReferenceNewNode(nodeId, propertyKey, type, forArray);
         $("#addReferenceModal").modal("hide");
         renderData();
       } else {
-        await showAlert("Please select an existing node or enter a type for a new node");
+        await showAlert(
+          "Please select an existing node or enter a type for a new node"
+        );
       }
     });
 }
@@ -714,7 +746,10 @@ export function createValueInput(
     // Create a clickable button to jump to the referenced node
     const jumpBtn = $("<button>")
       .addClass("btn btn-sm btn-info reference-btn")
-      .attr("data-testid", `jump-to-node-btn-${refId.replace(/[^a-zA-Z0-9]/g, "_")}`)
+      .attr(
+        "data-testid",
+        `jump-to-node-btn-${refId.replace(/[^a-zA-Z0-9]/g, "_")}`
+      )
       .html(`<span class="glyphicon glyphicon-arrow-right"></span> ${refId}`)
       .attr("title", "Click to jump to this node")
       .click(function (e) {
@@ -740,7 +775,10 @@ export function createValueInput(
 
     const jumpBtn = $("<button>")
       .addClass("btn btn-sm btn-info reference-btn")
-      .attr("data-testid", `jump-to-node-btn-${value.replace(/[^a-zA-Z0-9]/g, "_")}`)
+      .attr(
+        "data-testid",
+        `jump-to-node-btn-${value.replace(/[^a-zA-Z0-9]/g, "_")}`
+      )
       .html(`<span class="glyphicon glyphicon-arrow-right"></span> ${value}`)
       .attr("title", "Click to jump to this node")
       .click(function (e) {

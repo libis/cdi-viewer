@@ -125,11 +125,13 @@ export function createUnifiedAddComponent(options) {
 
   // ===== Custom item input section =====
   // Always show custom input, with separator if SHACL suggestions exist
-  const customSection = $("<div>").addClass("custom-item-section").css({
-    "margin-top": hasShacLSuggestions ? "15px" : "0",
-    "padding-top": hasShacLSuggestions ? "15px" : "0",
-    "border-top": hasShacLSuggestions ? "1px solid #ddd" : "none",
-  });
+  const customSection = $("<div>")
+    .addClass("custom-item-section")
+    .css({
+      "margin-top": hasShacLSuggestions ? "15px" : "0",
+      "padding-top": hasShacLSuggestions ? "15px" : "0",
+      "border-top": hasShacLSuggestions ? "1px solid #ddd" : "none",
+    });
 
   const customLabel$ = $("<label>").text(`${customLabel}:`).css({
     display: "block",

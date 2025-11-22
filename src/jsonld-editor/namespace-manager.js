@@ -185,11 +185,13 @@ export function renderNamespaceTable() {
 
   entries.forEach(([prefix, uri]) => {
     const isProtected = isProtectedNamespace(prefix);
-    const row = $('<tr>')
-      .attr('data-testid', `namespace-row-${prefix.replace(/[^a-zA-Z0-9]/g, '_')}`);
+    const row = $("<tr>").attr(
+      "data-testid",
+      `namespace-row-${prefix.replace(/[^a-zA-Z0-9]/g, "_")}`
+    );
 
     // Prefix column
-    const prefixCell = $('<td>').text(prefix);
+    const prefixCell = $("<td>").text(prefix);
     if (isProtected) {
       prefixCell.append(' <span class="label label-default">built-in</span>');
     }
@@ -204,13 +206,21 @@ export function renderNamespaceTable() {
     // Actions column
     const actionsCell = $("<td>").css("text-align", "center");
     if (!isProtected) {
-      const deleteBtn = $('<button>')
-        .addClass('btn btn-xs btn-danger')
-        .attr('data-testid', `delete-namespace-btn-${prefix.replace(/[^a-zA-Z0-9]/g, '_')}`)
+      const deleteBtn = $("<button>")
+        .addClass("btn btn-xs btn-danger")
+        .attr(
+          "data-testid",
+          `delete-namespace-btn-${prefix.replace(/[^a-zA-Z0-9]/g, "_")}`
+        )
         .html('<span class="glyphicon glyphicon-trash"></span>')
-        .attr('title', 'Delete namespace')
+        .attr("title", "Delete namespace")
         .click(async function () {
-          if (await showConfirm(`Remove namespace prefix "${prefix}"?`, { title: 'Delete Namespace', confirmText: 'Delete' })) {
+          if (
+            await showConfirm(`Remove namespace prefix "${prefix}"?`, {
+              title: "Delete Namespace",
+              confirmText: "Delete",
+            })
+          ) {
             removeNamespace(prefix);
             renderNamespaceTable();
             renderData(); // Re-render to apply changes
@@ -316,7 +326,9 @@ export function setupNamespaceHandlers() {
 
     // Validate URI format
     if (!uri.match(/^https?:\/\/.+/)) {
-      await showAlert("Invalid URI format. Must start with http:// or https://");
+      await showAlert(
+        "Invalid URI format. Must start with http:// or https://"
+      );
       return;
     }
 
@@ -326,7 +338,7 @@ export function setupNamespaceHandlers() {
       // Create minimal empty document
       const emptyDoc = {
         "@context": {},
-        "@graph": []
+        "@graph": [],
       };
       setJsonData(emptyDoc);
     }
@@ -334,7 +346,11 @@ export function setupNamespaceHandlers() {
     // Check if prefix already exists
     const namespaces = extractNamespaces();
     if (namespaces[prefix]) {
-      if (!await showConfirm(`Prefix "${prefix}" already exists. Overwrite?`, { title: 'Overwrite Prefix' })) {
+      if (
+        !(await showConfirm(`Prefix "${prefix}" already exists. Overwrite?`, {
+          title: "Overwrite Prefix",
+        }))
+      ) {
         return;
       }
     }

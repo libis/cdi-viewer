@@ -348,14 +348,17 @@ function updatePropertyValidation(violations) {
           violation.messages.length > 0
             ? violation.messages.join("; ")
             : "Validation failed";
-        const icon = $('<span>')
+        const icon = $("<span>")
           .addClass(
-            'glyphicon glyphicon-exclamation-sign validation-error-icon'
+            "glyphicon glyphicon-exclamation-sign validation-error-icon"
           )
-          .attr('data-testid', `validation-error-${path.replace(/[^a-zA-Z0-9]/g, '_')}`)
-          .attr('title', message)
-          .attr('data-toggle', 'tooltip')
-          .attr('data-placement', 'top');
+          .attr(
+            "data-testid",
+            `validation-error-${path.replace(/[^a-zA-Z0-9]/g, "_")}`
+          )
+          .attr("title", message)
+          .attr("data-toggle", "tooltip")
+          .attr("data-placement", "top");
 
         const labelArea = propertyRow
           .find(".property-label, .property-path")
@@ -384,7 +387,10 @@ function updatePropertyValidation(violations) {
             : "Node validation failed";
         const icon = $("<span>")
           .addClass("glyphicon glyphicon-exclamation-sign node-validation-icon")
-          .attr("data-testid", `node-validation-error-${nodeId.replace(/[^a-zA-Z0-9]/g, "_")}`)
+          .attr(
+            "data-testid",
+            `node-validation-error-${nodeId.replace(/[^a-zA-Z0-9]/g, "_")}`
+          )
           .attr("title", message)
           .attr("data-toggle", "tooltip")
           .attr("data-placement", "right")

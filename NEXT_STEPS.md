@@ -154,6 +154,7 @@ All planned features for v1.0 release have been implemented. Focus now on:
 **Failing Tests by Priority:**
 
 **Critical (Affects Core Functionality - 4 tests):**
+
 1. Advanced filtering broken (10 tests in search-filter.spec.ts)
    - Filter by validation status (valid/invalid)
    - Filter by property status (SHACL/extra)
@@ -169,12 +170,13 @@ All planned features for v1.0 release have been implemented. Focus now on:
 3. Validation status becomes hidden after shape switch (1 test in validation.spec.ts)
    - Switching between different SHACL shape sources
 
-**High Priority (User Experience Issues - 17 tests):**
-4. Array operations not working correctly (4 tests in array-operations.spec.ts)
-   - Display array values correctly
-   - Add values to array
-   - Remove values from array
-   - Validate array operations preserve data integrity
+**High Priority (User Experience Issues - 17 tests):** 4. Array operations not working correctly (4 tests in array-operations.spec.ts)
+
+- Display array values correctly
+- Add values to array
+- Remove values from array
+- Validate array operations preserve data integrity
+
 5. Export doesn't preserve user changes (3 tests in export.spec.ts)
    - Export modified data with all changes
    - Export with new namespaces
@@ -195,17 +197,18 @@ All planned features for v1.0 release have been implemented. Focus now on:
    - Clear input after successful add
    - Show error for invalid property names
 
-**Medium Priority (Test Infrastructure & Edge Cases - 40 tests):**
-9. Custom namespace property addition tests (7 tests in custom-namespace-properties.spec.ts)
-   - **NOTE**: Feature works correctly (manually verified) - tests use wrong CSS selectors
-   - **FIX NEEDED**: Update tests to use `[data-testid="property-path"]` instead of `.property-name`
-   - Add custom property to custom namespace node using inline UI
-   - Add custom property without prefix to custom namespace node
-   - Add multiple custom properties to same custom node
-   - Edit custom property value in custom namespace node
-   - Delete custom property from custom namespace node
-   - Add complex property (node reference) to custom namespace node
-   - Handle Enter key in custom property input
+**Medium Priority (Test Infrastructure & Edge Cases - 40 tests):** 9. Custom namespace property addition tests (7 tests in custom-namespace-properties.spec.ts)
+
+- **NOTE**: Feature works correctly (manually verified) - tests use wrong CSS selectors
+- **FIX NEEDED**: Update tests to use `[data-testid="property-path"]` instead of `.property-name`
+- Add custom property to custom namespace node using inline UI
+- Add custom property without prefix to custom namespace node
+- Add multiple custom properties to same custom node
+- Edit custom property value in custom namespace node
+- Delete custom property from custom namespace node
+- Add complex property (node reference) to custom namespace node
+- Handle Enter key in custom property input
+
 10. Document creation tests need selector refinement (8 tests in document-creation.spec.ts)
     - Feature exists but automated tests have timing/selector issues
     - Add Root Node dropdown, buttons not being found
@@ -236,6 +239,7 @@ All planned features for v1.0 release have been implemented. Focus now on:
 **Note: After recent fixes, 78 tests passing (57% pass rate) - 59 failing**
 
 **Action Plan:**
+
 - Address Critical tests first (4 tests) - core functionality blockers
 - Then High Priority tests (17 tests) - user experience issues
 - Medium Priority tests last (40 tests) - mostly test infrastructure refinement

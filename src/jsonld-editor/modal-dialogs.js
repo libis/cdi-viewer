@@ -3,7 +3,7 @@
  * These are more testable and provide better UX than native browser dialogs
  */
 
-import $ from 'jquery';
+import $ from "jquery";
 
 /**
  * Show an alert modal (replacement for window.alert)
@@ -28,14 +28,14 @@ export function showAlert(message) {
       </div>
     `);
 
-    modal.find('[data-testid="alert-ok-btn"]').on('click', () => {
+    modal.find('[data-testid="alert-ok-btn"]').on("click", () => {
       modal.remove();
       resolve();
     });
 
     // Close on overlay click
-    modal.on('click', (e) => {
-      if ($(e.target).hasClass('custom-modal-overlay')) {
+    modal.on("click", (e) => {
+      if ($(e.target).hasClass("custom-modal-overlay")) {
         modal.remove();
         resolve();
       }
@@ -43,15 +43,15 @@ export function showAlert(message) {
 
     // Close on Escape key
     const handleEscape = (e) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         modal.remove();
-        $(document).off('keydown', handleEscape);
+        $(document).off("keydown", handleEscape);
         resolve();
       }
     };
-    $(document).on('keydown', handleEscape);
+    $(document).on("keydown", handleEscape);
 
-    $('body').append(modal);
+    $("body").append(modal);
     modal.find('[data-testid="alert-ok-btn"]').focus();
   });
 }
@@ -67,9 +67,9 @@ export function showAlert(message) {
  */
 export function showConfirm(message, options = {}) {
   const {
-    title = 'Confirm',
-    confirmText = 'OK',
-    cancelText = 'Cancel'
+    title = "Confirm",
+    confirmText = "OK",
+    cancelText = "Cancel",
   } = options;
 
   return new Promise((resolve) => {
@@ -90,19 +90,19 @@ export function showConfirm(message, options = {}) {
       </div>
     `);
 
-    modal.find('[data-testid="confirm-ok-btn"]').on('click', () => {
+    modal.find('[data-testid="confirm-ok-btn"]').on("click", () => {
       modal.remove();
       resolve(true);
     });
 
-    modal.find('[data-testid="confirm-cancel-btn"]').on('click', () => {
+    modal.find('[data-testid="confirm-cancel-btn"]').on("click", () => {
       modal.remove();
       resolve(false);
     });
 
     // Close on overlay click (counts as cancel)
-    modal.on('click', (e) => {
-      if ($(e.target).hasClass('custom-modal-overlay')) {
+    modal.on("click", (e) => {
+      if ($(e.target).hasClass("custom-modal-overlay")) {
         modal.remove();
         resolve(false);
       }
@@ -110,15 +110,15 @@ export function showConfirm(message, options = {}) {
 
     // Close on Escape key (counts as cancel)
     const handleEscape = (e) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         modal.remove();
-        $(document).off('keydown', handleEscape);
+        $(document).off("keydown", handleEscape);
         resolve(false);
       }
     };
-    $(document).on('keydown', handleEscape);
+    $(document).on("keydown", handleEscape);
 
-    $('body').append(modal);
+    $("body").append(modal);
     modal.find('[data-testid="confirm-ok-btn"]').focus();
   });
 }
@@ -132,11 +132,8 @@ export function showConfirm(message, options = {}) {
  * @param {string} options.placeholder - Input placeholder
  * @returns {Promise<string|null>} - The entered value, or null if cancelled
  */
-export function showPrompt(message, defaultValue = '', options = {}) {
-  const {
-    title = 'Input Required',
-    placeholder = ''
-  } = options;
+export function showPrompt(message, defaultValue = "", options = {}) {
+  const { title = "Input Required", placeholder = "" } = options;
 
   return new Promise((resolve) => {
     const modal = $(`
@@ -165,20 +162,20 @@ export function showPrompt(message, defaultValue = '', options = {}) {
 
     const input = modal.find('[data-testid="prompt-input"]');
 
-    modal.find('[data-testid="prompt-ok-btn"]').on('click', () => {
+    modal.find('[data-testid="prompt-ok-btn"]').on("click", () => {
       const value = input.val().trim();
       modal.remove();
       resolve(value || null);
     });
 
-    modal.find('[data-testid="prompt-cancel-btn"]').on('click', () => {
+    modal.find('[data-testid="prompt-cancel-btn"]').on("click", () => {
       modal.remove();
       resolve(null);
     });
 
     // Submit on Enter key
-    input.on('keydown', (e) => {
-      if (e.key === 'Enter') {
+    input.on("keydown", (e) => {
+      if (e.key === "Enter") {
         const value = input.val().trim();
         modal.remove();
         resolve(value || null);
@@ -186,8 +183,8 @@ export function showPrompt(message, defaultValue = '', options = {}) {
     });
 
     // Close on overlay click (counts as cancel)
-    modal.on('click', (e) => {
-      if ($(e.target).hasClass('custom-modal-overlay')) {
+    modal.on("click", (e) => {
+      if ($(e.target).hasClass("custom-modal-overlay")) {
         modal.remove();
         resolve(null);
       }
@@ -195,15 +192,15 @@ export function showPrompt(message, defaultValue = '', options = {}) {
 
     // Close on Escape key (counts as cancel)
     const handleEscape = (e) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         modal.remove();
-        $(document).off('keydown', handleEscape);
+        $(document).off("keydown", handleEscape);
         resolve(null);
       }
     };
-    $(document).on('keydown', handleEscape);
+    $(document).on("keydown", handleEscape);
 
-    $('body').append(modal);
+    $("body").append(modal);
     input.focus();
     input.select();
   });
@@ -215,7 +212,7 @@ export function showPrompt(message, defaultValue = '', options = {}) {
  * @returns {string} - Escaped string
  */
 function escapeHtml(str) {
-  const div = document.createElement('div');
+  const div = document.createElement("div");
   div.textContent = str;
   return div.innerHTML;
 }
