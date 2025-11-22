@@ -39,7 +39,10 @@ import {
   setupNamespaceHandlers,
   updateNamespaceSectionVisibility,
 } from "./namespace-manager.js";
-import { setupAdvancedSearchHandlers, performSearch } from "./advanced-search.js";
+import {
+  setupAdvancedSearchHandlers,
+  performSearch,
+} from "./advanced-search.js";
 import {
   setupAdvancedFilterHandlers,
   initializeFilters,

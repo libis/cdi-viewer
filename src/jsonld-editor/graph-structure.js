@@ -2,38 +2,38 @@
 
 /**
  * Graph Structure Module
- * 
+ *
  * Maintains logical parent-child relationships in the JSON-LD graph.
  * This is separate from DOM structure - it represents the actual data relationships.
- * 
+ *
  * This module provides:
  * - Parent-child relationship tracking
  * - Ancestor chain traversal
  * - Descendant discovery
  * - Root node identification
- * 
+ *
  * ## Architecture
- * 
+ *
  * The graph structure is built during rendering when nodes reference other nodes
  * through properties. For example:
- * 
+ *
  * ```json
  * {
  *   "@id": "#Sample_ID_Component",
  *   "isDefinedBy": "#Sample_ID"
  * }
  * ```
- * 
+ *
  * This creates a parent-child relationship where #Sample_ID_Component is the parent
  * of #Sample_ID. The relationship is tracked in `nodeParentMap`.
- * 
+ *
  * ## Usage in Filtering
- * 
+ *
  * The filter module uses `getAncestors()` to find all ancestor nodes of a matching node,
  * ensuring only the match and its ancestors are shown (not siblings or children).
- * 
+ *
  * ## Future Enhancements
- * 
+ *
  * This module could be extended to support:
  * - Circular reference detection
  * - Graph cycle detection
@@ -70,14 +70,14 @@ export function resetGraphStructure() {
  */
 export function buildGraphStructure() {
   resetGraphStructure();
-  
+
   const jsonData = getJsonData();
   if (!jsonData || !jsonData["@graph"]) {
     return;
   }
 
   console.log("🔗 Building graph structure...");
-  
+
   // First pass: identify all referenced nodes
   jsonData["@graph"].forEach((node) => {
     Object.keys(node).forEach((key) => {
@@ -172,7 +172,7 @@ export function getParent(nodeId) {
 export function getAncestors(nodeId) {
   const ancestors = new Set();
   let currentId = nodeId;
-  
+
   // Walk up the parent chain
   while (nodeParentMap.has(currentId)) {
     const parentId = nodeParentMap.get(currentId);
@@ -183,7 +183,7 @@ export function getAncestors(nodeId) {
       break; // Prevent infinite loops
     }
   }
-  
+
   return ancestors;
 }
 
@@ -194,17 +194,17 @@ export function getAncestors(nodeId) {
  */
 export function getDescendants(nodeId) {
   const descendants = new Set();
-  
+
   // Find all nodes where this node is the parent
   for (const [childId, parentId] of nodeParentMap.entries()) {
     if (parentId === nodeId) {
       descendants.add(childId);
       // Recursively get descendants of this child
       const childDescendants = getDescendants(childId);
-      childDescendants.forEach(id => descendants.add(id));
+      childDescendants.forEach((id) => descendants.add(id));
     }
   }
-  
+
   return descendants;
 }
 
@@ -217,12 +217,14 @@ export function getRootNodeIds() {
   if (!jsonData || !jsonData["@graph"]) {
     return [];
   }
-  
+
   // Root nodes are those not referenced by any other node
   // Blank nodes (_:xxx) should never be root nodes
   return jsonData["@graph"]
-    .filter(n => !referencedNodeIds.has(n["@id"]) && !n["@id"].startsWith("_:"))
-    .map(n => n["@id"]);
+    .filter(
+      (n) => !referencedNodeIds.has(n["@id"]) && !n["@id"].startsWith("_:")
+    )
+    .map((n) => n["@id"]);
 }
 
 /**
@@ -310,7 +312,7 @@ export function getNodeTypes(nodeId) {
  * @returns {Array<object>} Array of nodes with that type
  */
 export function getNodesByType(type) {
-  return getAllNodes().filter(node => {
+  return getAllNodes().filter((node) => {
     const types = node["@type"];
     if (Array.isArray(types)) {
       return types.includes(type);
@@ -327,20 +329,20 @@ export function getNodesByType(type) {
  */
 export function getNodesReferencingNode(targetNodeId) {
   const referencingNodes = [];
-  
-  getAllNodes().forEach(node => {
-    Object.keys(node).forEach(key => {
+
+  getAllNodes().forEach((node) => {
+    Object.keys(node).forEach((key) => {
       if (key === "@id" || key === "@type" || key === "@context") {
         return;
       }
-      
+
       const value = node[key];
       let references = false;
-      
+
       if (typeof value === "string" && value === targetNodeId) {
         references = true;
       } else if (Array.isArray(value)) {
-        references = value.some(item => {
+        references = value.some((item) => {
           if (typeof item === "string") {
             return item === targetNodeId;
           }
@@ -352,13 +354,12 @@ export function getNodesReferencingNode(targetNodeId) {
       } else if (typeof value === "object" && value !== null) {
         references = value["@id"] === targetNodeId;
       }
-      
+
       if (references && !referencingNodes.includes(node)) {
         referencingNodes.push(node);
       }
     });
   });
-  
+
   return referencingNodes;
 }
-

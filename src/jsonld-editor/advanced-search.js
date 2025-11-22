@@ -63,7 +63,9 @@ export function performSearch() {
 
   // Clear previous highlights
   $(".search-highlight").contents().unwrap();
-  $("input.search-highlight, textarea.search-highlight").removeClass("search-highlight");
+  $("input.search-highlight, textarea.search-highlight").removeClass(
+    "search-highlight"
+  );
   $(".current-search-match").removeClass("current-search-match");
 
   if (searchTerm === "") {
@@ -90,7 +92,7 @@ export function performSearch() {
   // Create search predicate function
   const predicate = (card) => {
     const nodeId = card.attr("data-node-id");
-    
+
     // Check node ID
     if (searchInIds) {
       const nodeIdText = card.find(".node-id").text();
@@ -112,7 +114,7 @@ export function performSearch() {
     // Check properties
     if (searchInNames || searchInValues) {
       let found = false;
-      
+
       // Check text elements (labels, paths, display values)
       card
         .find(".property-label, .property-path, .value-display")
@@ -130,7 +132,7 @@ export function performSearch() {
             }
           }
         });
-      
+
       // Also check input/textarea values (in edit mode)
       if (!found && searchInValues) {
         card.find("input, textarea").each(function () {
@@ -142,7 +144,7 @@ export function performSearch() {
           }
         });
       }
-      
+
       if (found) {
         return true;
       }
@@ -205,7 +207,10 @@ function updateSearchCounter() {
       .css("color", "#28a745")
       .show();
   } else {
-    counter.text(`${searchMatches.length} found`).css("color", "#28a745").show();
+    counter
+      .text(`${searchMatches.length} found`)
+      .css("color", "#28a745")
+      .show();
   }
 }
 

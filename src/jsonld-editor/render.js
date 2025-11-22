@@ -45,7 +45,7 @@ export function renderData() {
 
   const content = $("#content");
   content.empty();
-  
+
   // Reset graph structure tracking
   resetGraphStructure();
   buildGraphStructure();
@@ -58,8 +58,8 @@ export function renderData() {
   // Get root nodes from graph structure
   const rootNodeIds = getRootNodeIds();
   const rootNodes = rootNodeIds
-    .map(id => getNodeById(id))
-    .filter(n => n !== null);
+    .map((id) => getNodeById(id))
+    .filter((n) => n !== null);
 
   // Render root nodes (they will recursively render their children)
   rootNodes.forEach((node, index) => {
@@ -199,7 +199,7 @@ export function renderNodeTree(node, index, depth) {
 }
 
 export function renderPropertyTree(key, value, nodeId, nodeTypes, depth) {
-  const container = $('<div>');
+  const container = $("<div>");
 
   // First render the property itself
   const row = renderProperty(key, value, nodeId, nodeTypes);
@@ -215,7 +215,7 @@ export function renderPropertyTree(key, value, nodeId, nodeTypes, depth) {
         if (!isNodeRendered(refId)) {
           // Track parent-child relationship: refId is a child of nodeId
           setParentRelationship(refId, nodeId);
-          
+
           const childCard = renderNodeTree(refNode, 0, depth + 1);
           container.append(childCard);
         } else {
@@ -870,10 +870,12 @@ export function humanizeKey(key) {
 
 export function highlightText(element, searchTerm, options = {}) {
   const { caseSensitive = false, useRegex = false } = options;
-  
+
   // Remove previous highlights
   element.find(".search-highlight").contents().unwrap();
-  element.find("input.search-highlight, textarea.search-highlight").removeClass("search-highlight");
+  element
+    .find("input.search-highlight, textarea.search-highlight")
+    .removeClass("search-highlight");
 
   // Highlight matching text in regular elements
   element
@@ -888,16 +890,19 @@ export function highlightText(element, searchTerm, options = {}) {
           let lastIndex = 0;
           let html = "";
           let match;
-          
+
           // Use a new regex for each match to reset lastIndex
           const searchRegex = new RegExp(searchTerm, flags);
           while ((match = searchRegex.exec(text)) !== null) {
             // Add text before match
-            html += document.createTextNode(text.substring(lastIndex, match.index)).textContent;
+            html += document.createTextNode(
+              text.substring(lastIndex, match.index)
+            ).textContent;
             // Add highlighted match
-            html += '<span class="search-highlight">' + 
-                    document.createTextNode(match[0]).textContent + 
-                    "</span>";
+            html +=
+              '<span class="search-highlight">' +
+              document.createTextNode(match[0]).textContent +
+              "</span>";
             lastIndex = match.index + match[0].length;
             // Prevent infinite loop on zero-length matches
             if (match.index === searchRegex.lastIndex) {
@@ -905,8 +910,10 @@ export function highlightText(element, searchTerm, options = {}) {
             }
           }
           // Add remaining text
-          html += document.createTextNode(text.substring(lastIndex)).textContent;
-          
+          html += document.createTextNode(
+            text.substring(lastIndex)
+          ).textContent;
+
           if (lastIndex > 0) {
             $this.html(html);
           }
@@ -916,24 +923,33 @@ export function highlightText(element, searchTerm, options = {}) {
       } else {
         // Simple string search
         const compareText = caseSensitive ? text : text.toLowerCase();
-        const compareTerm = caseSensitive ? searchTerm : searchTerm.toLowerCase();
+        const compareTerm = caseSensitive
+          ? searchTerm
+          : searchTerm.toLowerCase();
         let index = compareText.indexOf(compareTerm);
 
         if (index >= 0) {
           let html = "";
           let lastIndex = 0;
-          
+
           // Find all occurrences
           while (index >= 0) {
-            html += document.createTextNode(text.substring(lastIndex, index)).textContent;
-            html += '<span class="search-highlight">' +
-                    document.createTextNode(text.substring(index, index + compareTerm.length)).textContent +
-                    "</span>";
+            html += document.createTextNode(
+              text.substring(lastIndex, index)
+            ).textContent;
+            html +=
+              '<span class="search-highlight">' +
+              document.createTextNode(
+                text.substring(index, index + compareTerm.length)
+              ).textContent +
+              "</span>";
             lastIndex = index + compareTerm.length;
             index = compareText.indexOf(compareTerm, lastIndex);
           }
-          html += document.createTextNode(text.substring(lastIndex)).textContent;
-          
+          html += document.createTextNode(
+            text.substring(lastIndex)
+          ).textContent;
+
           $this.html(html);
         }
       }

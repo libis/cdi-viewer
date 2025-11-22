@@ -100,7 +100,7 @@ export function clearAllFilters() {
  */
 export function applyFilters() {
   console.log("🔍 APPLY FILTERS START");
-  
+
   // Step 1: Hide everything
   $(".node-card, .property-row").addClass("hidden-by-filter");
 
@@ -182,16 +182,16 @@ export function applyFilters() {
     // When predicates are active, use the logical parent map to find ancestors
     // 1. Find nodes that match predicates
     // 2. Show only matched nodes + their ancestors (not siblings, not children)
-    
+
     const matchedNodeIds = new Set();
     const ancestorNodeIds = new Set();
-    
+
     // Step 3a: Find all nodes that match predicates
     $(".node-card").each(function () {
       const node = $(this);
       const nodeId = node.attr("data-node-id");
       const shouldShow = nodePredicates.every((predicate) => predicate(node));
-      
+
       if (shouldShow) {
         matchedNodeIds.add(nodeId);
         console.log(`    ✅ ${nodeId} matches all predicates`);
@@ -199,25 +199,25 @@ export function applyFilters() {
         console.log(`    ❌ ${nodeId} does not match`);
       }
     });
-    
+
     console.log(`  ✅ Nodes matching all predicates: ${matchedNodeIds.size}`);
-    
+
     // Step 3b: For each matched node, get ancestors from the graph structure
     matchedNodeIds.forEach((matchedId) => {
       const ancestors = getAncestors(matchedId);
-      ancestors.forEach(ancestorId => {
+      ancestors.forEach((ancestorId) => {
         ancestorNodeIds.add(ancestorId);
         console.log(`    🔼 ${ancestorId} is ancestor of ${matchedId}`);
       });
     });
-    
+
     console.log(`  👪 Total ancestors: ${ancestorNodeIds.size}`);
-    
+
     // Step 3c: Show only matched nodes and their ancestors
     $(".node-card").each(function () {
       const node = $(this);
       const nodeId = node.attr("data-node-id");
-      
+
       if (matchedNodeIds.has(nodeId) || ancestorNodeIds.has(nodeId)) {
         node.removeClass("hidden-by-filter");
       }
@@ -270,8 +270,6 @@ function updateValidationFilterCounts() {
     `Missing Required Fields (${counts.missingRequired})`
   );
 }
-
-
 
 /**
  * Show filter panel (will show when data is loaded)
