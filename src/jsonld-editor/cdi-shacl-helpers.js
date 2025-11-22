@@ -16,6 +16,7 @@ import {
 } from "./state.js";
 import { getExpandedPropertyUri } from "./uri-utils.js";
 import { expandCompactIri } from "./cdi-json-ld-helpers.js";
+import { extractLabelFromUri } from "./uri-utils.js";
 
 // Parse RDF list from sh:in to extract enumeration values
 export function parseRdfList(listNodeOrUri) {
