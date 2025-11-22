@@ -230,7 +230,9 @@ export async function validateData() {
         const $nodeBtn = $("<button>")
           .addClass("btn btn-sm btn-info reference-btn")
           .css({ marginRight: "8px" })
-          .html(`<span class="glyphicon glyphicon-arrow-right"></span> ${nodeId}`)
+          .html(
+            `<span class="glyphicon glyphicon-arrow-right"></span> ${nodeId}`
+          )
           .attr("title", "Click to jump to this node")
           .click(function (e) {
             e.preventDefault();
@@ -239,7 +241,10 @@ export async function validateData() {
               // Expand any collapsed parent cards
               targetCard.parents(".node-card").removeClass("collapsed");
               targetCard.removeClass("collapsed");
-              targetCard[0].scrollIntoView({ behavior: "smooth", block: "center" });
+              targetCard[0].scrollIntoView({
+                behavior: "smooth",
+                block: "center",
+              });
               targetCard.addClass("highlight");
               setTimeout(() => targetCard.removeClass("highlight"), 2000);
             }

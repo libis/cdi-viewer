@@ -266,7 +266,11 @@ export function deleteNode(nodeId) {
         if (node[key].length === 0) {
           delete node[key];
         }
-      } else if (typeof value === "object" && value !== null && value["@id"] === nodeId) {
+      } else if (
+        typeof value === "object" &&
+        value !== null &&
+        value["@id"] === nodeId
+      ) {
         // Remove property with single object reference
         delete node[key];
         wasModified = true;
@@ -292,11 +296,11 @@ export function addPropertyToNode(nodeId, propertyKey, initialValue) {
 
   if (node) {
     node[propertyKey] = initialValue;
-    
+
     // Track this as a change with persistent Set
     const compositeId = `${nodeId}.${propertyKey}`;
     addChangedElement(compositeId);
-    
+
     return true;
   }
   return false;

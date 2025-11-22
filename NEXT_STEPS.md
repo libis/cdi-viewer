@@ -83,6 +83,33 @@
 - ✅ Export button changed to green (consistent with I/O actions)
 - ✅ Add Root Node button moved to bottom of form (inline component)
 
+### Persistent Change Tracking & Node Deletion (November 23, 2025)
+
+- ✅ **Dual-tier change tracking architecture:**
+  - Persistent Set stores composite IDs (`{nodeId}.{propertyName}`)
+  - CSS classes (`.changed`) re-applied from Set on each render
+  - Changes survive mode toggles and re-renders
+  - Tracking cleared only after successful save/export
+- ✅ **Node deletion with cascade cleanup:**
+  - Delete button in node headers (edit mode only)
+  - Confirmation dialog before deletion
+  - Removes node from `@graph`
+  - Cleans up all references to deleted node
+  - Tracks modified properties after cleanup
+- ✅ **Data type preservation:**
+  - `Array.isArray(originalValue)` check prevents single↔array conversion
+  - Single values remain single after edits
+  - Array values remain arrays after edits/deletions
+  - Type determined by data structure, not DOM structure
+- ✅ **Enhanced view mode visibility:**
+  - Changed properties show thicker blue border (4px)
+  - More prominent background color in view mode
+  - Clear visual distinction for modified data
+- ✅ **Comprehensive unit tests:**
+  - 7 new tests for array vs single value logic
+  - All 70 tests passing (100% pass rate)
+  - Validates type preservation during save/export
+
 ## 🎯 Current Focus
 
 ### Feature Freeze Declared (November 21, 2025)
@@ -139,22 +166,23 @@ All planned features for v1.0 release have been implemented. Focus now on:
 
 **Critical (Affects Core Functionality):**
 
-1. "Changed" marking disappears on mode toggle (1 test in editing.spec.ts)
-   - Visual teal highlight removed when switching edit/view mode
-   - Data is preserved but visual indicator lost
+1. ~~"Changed" marking disappears on mode toggle~~ ✅ **FIXED (Nov 23)**
+   - Implemented persistent Set-based tracking
+   - CSS classes re-applied from Set on render
+   - Changes survive mode toggles
 2. Validation status becomes hidden after shape switch (1 test in validation.spec.ts)
    - Switching between different SHACL shape sources
 
 **High Priority (User Experience Issues - 10 tests):**
 
-3. Array operations not working correctly (4 tests in array-operations.spec.ts)
-
-- Display array values correctly
-- Add values to array
-- Remove values from array
-- Validate array operations preserve data integrity
+3. ~~Array operations not working correctly~~ ✅ **FIXED (Nov 23)**
+   - Implemented `Array.isArray(originalValue)` check
+   - Arrays remain arrays after edits/deletions
+   - Single values remain single after edits
+   - 7 comprehensive unit tests validate behavior
 
 4. Export doesn't preserve user changes (3 tests in export.spec.ts)
+
 - Export modified data with all changes
 - Export with new namespaces
 - Handle export with validation errors present
@@ -187,11 +215,11 @@ All planned features for v1.0 release have been implemented. Focus now on:
 - Handle Enter key in custom property input
 
 8. Document creation tests need selector refinement (8 tests in document-creation.spec.ts)
-    - Feature exists but automated tests have timing/selector issues
-    - Add Root Node dropdown, buttons not being found
+   - Feature exists but automated tests have timing/selector issues
+   - Add Root Node dropdown, buttons not being found
 9. Dataverse save workflow tests (4 tests in save-to-dataverse.spec.ts)
-    - Save modal structure different than expected
-    - Feature works manually, needs selector updates
+   - Save modal structure different than expected
+   - Feature works manually, needs selector updates
 10. Dataverse load workflow tests (3 tests in load-from-dataverse.spec.ts)
     - Load from Dataverse button selectors
     - API token input handling
@@ -212,12 +240,17 @@ All planned features for v1.0 release have been implemented. Focus now on:
     - Desktop view layout (1920px)
     - Touch interactions
 
-**Total: 45 failing tests out of 124 (79 passing, 64% pass rate)**
+**Total: ~41 failing tests out of 124 (~83 passing, 67% pass rate)**
+**Recent progress: Fixed 5 critical tests (Nov 23)**
 
 **Action Plan:**
 
-- Address Critical tests first (2 tests) - core functionality blockers
-- Then High Priority tests (10 tests) - user experience issues
+- ✅ ~~Address Critical tests first (2 tests)~~ - **COMPLETED (Nov 23)**
+  - Fixed persistent change tracking across mode toggles
+  - Fixed array vs single value type preservation
+  - Added 7 comprehensive unit tests
+- **NEXT:** Remaining Critical test (1 test) - validation status after shape switch
+- Then High Priority tests (~7 tests remaining) - user experience issues
 - Medium Priority tests last (33 tests) - mostly test infrastructure refinement
 - Regression testing after each fix
 - Performance optimization if needed

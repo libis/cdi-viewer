@@ -341,7 +341,7 @@ export function addComplexPropertyToNode(nodeId, suggestion) {
     if (newCard.length) {
       newCard[0].scrollIntoView({ behavior: "smooth", block: "center" });
       newCard.addClass("changed");
-      
+
       // Track all new properties as changed
       newCard.find(".property-row").each(function () {
         const propertyKey = $(this).attr("data-property");

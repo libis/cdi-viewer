@@ -76,10 +76,16 @@ export function performSearch() {
   searchMatches = [];
 
   // Get search scope from checkboxes
-  const searchInNames = $(".search-scope-checkbox[value='names']").is(":checked");
-  const searchInValues = $(".search-scope-checkbox[value='values']").is(":checked");
+  const searchInNames = $(".search-scope-checkbox[value='names']").is(
+    ":checked"
+  );
+  const searchInValues = $(".search-scope-checkbox[value='values']").is(
+    ":checked"
+  );
   const searchInIds = $(".search-scope-checkbox[value='ids']").is(":checked");
-  const searchInTypes = $(".search-scope-checkbox[value='types']").is(":checked");
+  const searchInTypes = $(".search-scope-checkbox[value='types']").is(
+    ":checked"
+  );
 
   // Create search predicate function
   const predicate = (card) => {
@@ -109,20 +115,20 @@ export function performSearch() {
       const propertyElements = card.find(
         ".node-body .property-row .property-label, .node-body .property-row .property-path, .node-body .property-row .value-display"
       );
-      
-      propertyElements.each(function () {
-          const isLabel =
-            $(this).hasClass("property-label") ||
-            $(this).hasClass("property-path");
 
-          if ((searchInNames && isLabel) || (searchInValues && !isLabel)) {
-            const text = $(this).text();
-            if (matchesSearch(text, searchTerm)) {
-              found = true;
-              return false; // Break loop
-            }
+      propertyElements.each(function () {
+        const isLabel =
+          $(this).hasClass("property-label") ||
+          $(this).hasClass("property-path");
+
+        if ((searchInNames && isLabel) || (searchInValues && !isLabel)) {
+          const text = $(this).text();
+          if (matchesSearch(text, searchTerm)) {
+            found = true;
+            return false; // Break loop
           }
-        });
+        }
+      });
 
       // Also check input/textarea values (in edit mode) - only THIS node's inputs
       if (!found && searchInValues) {

@@ -158,19 +158,19 @@ export function renderNodeTree(node, index, depth) {
   if (isEditMode) {
     const deleteBtn = $("<button>")
       .addClass("btn btn-xs btn-danger delete-node-btn")
-      .attr("data-testid", `delete-node-btn-${id.replace(/[^a-zA-Z0-9]/g, "_")}`)
+      .attr(
+        "data-testid",
+        `delete-node-btn-${id.replace(/[^a-zA-Z0-9]/g, "_")}`
+      )
       .html('<span class="glyphicon glyphicon-trash"></span>')
       .css("margin-left", "10px")
       .click(async function (e) {
         e.stopPropagation(); // Prevent header collapse toggle
         if (
-          await showConfirm(
-            `Delete node ${id} and all references to it?`,
-            {
-              title: "Delete Node",
-              confirmText: "Delete",
-            }
-          )
+          await showConfirm(`Delete node ${id} and all references to it?`, {
+            title: "Delete Node",
+            confirmText: "Delete",
+          })
         ) {
           if (deleteNode(id)) {
             // Re-render to show updated graph
@@ -369,9 +369,9 @@ function renderProperty(key, value, nodeId, nodeTypes) {
 
     inlineCard.append(header);
 
-    const body = $('<div>').addClass('node-body');
+    const body = $("<div>").addClass("node-body");
     if (!getIsEditMode()) {
-      body.addClass('view-mode');
+      body.addClass("view-mode");
     }
 
     Object.keys(val).forEach((k) => {
@@ -406,8 +406,8 @@ function renderProperty(key, value, nodeId, nodeTypes) {
 
       // Add delete button in edit mode
       if (getIsEditMode()) {
-        const deleteBtn = $('<button>')
-          .addClass('btn btn-xs delete-btn')
+        const deleteBtn = $("<button>")
+          .addClass("btn btn-xs delete-btn")
           .attr("data-testid", `delete-array-value-btn-${idx}`)
           .html('<span class="glyphicon glyphicon-trash"></span>')
           .click(async function () {
@@ -431,8 +431,8 @@ function renderProperty(key, value, nodeId, nodeTypes) {
       valueContainer.append(valDiv);
     });
     if (getIsEditMode()) {
-      const addBtn = $('<button>')
-        .addClass('btn btn-sm btn-default add-value-btn')
+      const addBtn = $("<button>")
+        .addClass("btn btn-sm btn-default add-value-btn")
         .attr(
           "data-testid",
           `add-value-btn-${key.replace(/[^a-zA-Z0-9]/g, "_")}`
@@ -515,8 +515,8 @@ function renderProperty(key, value, nodeId, nodeTypes) {
 
     // Action buttons row for single values in edit mode
     if (getIsEditMode()) {
-      const actionsRow = $('<div>')
-        .addClass('property-actions')
+      const actionsRow = $("<div>")
+        .addClass("property-actions")
         .css({ "margin-top": "5px" });
 
       // Delete button (for non-required fields only)
@@ -786,7 +786,11 @@ export function createValueInput(
         row.addClass("changed");
         // Track this change persistently with composite ID
         const propertyKey = row.attr("data-property");
-        const cardNodeId = row.closest(".node-card").find(".node-id").first().text();
+        const cardNodeId = row
+          .closest(".node-card")
+          .find(".node-id")
+          .first()
+          .text();
         const compositeId = `${cardNodeId}.${propertyKey}`;
         addChangedElement(compositeId);
       });
@@ -811,7 +815,11 @@ export function createValueInput(
       row.addClass("changed");
       // Track this change persistently with composite ID
       const propertyKey = row.attr("data-property");
-      const cardNodeId = row.closest(".node-card").find(".node-id").first().text();
+      const cardNodeId = row
+        .closest(".node-card")
+        .find(".node-id")
+        .first()
+        .text();
       const compositeId = `${cardNodeId}.${propertyKey}`;
       addChangedElement(compositeId);
 
