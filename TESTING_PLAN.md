@@ -397,7 +397,6 @@ await expect(property).toHaveClass(/deleted/);
 
 // Filter Panel
 "#toggle-filter-panel"; // Toggle filter panel visibility
-"#filter-panel"; // Filter panel container
 "#validation-filter"; // Dropdown: all/valid/invalid/modified/missing-required
 'input[name="property-status"]'; // Radio: all/shacl-only/extra-only
 "#clear-all-filters-btn"; // Clear all filters

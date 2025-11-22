@@ -191,9 +191,6 @@ test.describe('Advanced Filtering', () => {
   });
 
   test('should filter by validation status (valid only)', async ({ page }) => {
-    // Open filter panel
-    await page.click('#toggle-filter-panel');
-    await expect(page.locator('#filter-panel')).toBeVisible();
     
     // Get initial node count
     const allNodes = await page.locator('.node-card:visible').count();

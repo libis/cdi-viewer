@@ -25,6 +25,20 @@ export default {
     }
   },
   external: ['jquery', 'bootstrap'],
+  context: 'window',
+  onwarn(warning, warn) {
+    // Ignore circular dependency warnings from third-party packages
+    // These are intentional in those libraries' designs
+    if (warning.code === 'CIRCULAR_DEPENDENCY' && 
+        warning.ids?.some(id => 
+          id.includes('node_modules/readable-stream') ||
+          id.includes('node_modules/@comunica')
+        )) {
+      return;
+    }
+    // Use default for everything else
+    warn(warning);
+  },
   plugins: [
     resolve({
       browser: true,

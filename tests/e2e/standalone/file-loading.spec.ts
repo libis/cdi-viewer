@@ -61,12 +61,9 @@ test.describe('File Loading - Critical Path', () => {
     const validationStatus = page.locator('#validation-status');
     await expect(validationStatus).toBeVisible({ timeout: 5000 });
     
-    // Validation should complete (either valid or invalid badge)
+    // 5. Validation should complete (either valid or invalid badge)
     await expect(validationStatus).toHaveText(/Valid|violation\(s\)/, { timeout: 5000 });
-    
-    // 5. Verify filter panel remains collapsed
-    await expect(page.locator('#filter-panel')).toBeHidden();
-    
+
     // 6. Verify properties are rendered
     const propertyRows = page.locator('[data-testid^="property-"]');
     await expect(propertyRows.first()).toBeVisible();

@@ -43,10 +43,6 @@ import {
   setupAdvancedSearchHandlers,
   performSearch,
 } from "./advanced-search.js";
-import {
-  setupAdvancedFilterHandlers,
-  initializeFilters,
-} from "./advanced-filter.js";
 
 export function setupEventHandlers() {
   // Load local file button
@@ -119,13 +115,9 @@ export function setupEventHandlers() {
         // Update namespace section visibility
         updateNamespaceSectionVisibility();
 
-        // Initialize filters when data is loaded (but don't auto-show panel)
-        initializeFilters();
-
         // Trigger validation if shapes are loaded
         if (getShaclShapesStore()) {
           await validateDataImmediate();
-          initializeFilters();
         }
 
         // In standalone mode, ensure save button is visible
@@ -356,8 +348,6 @@ export function setupEventHandlers() {
 
       // Auto-validate when entering edit mode
       await validateDataImmediate();
-      // Update filter counts after validation completes
-      initializeFilters();
     } else {
       $(this)
         .html('<span class="glyphicon glyphicon-edit"></span> Enable Editing')
@@ -383,9 +373,6 @@ export function setupEventHandlers() {
   $("#save-btn").click(async function () {
     // Validate before saving
     await validateDataImmediate();
-    // Update filter counts after validation completes
-    initializeFilters();
-
     // Check if validation passed
     setTimeout(() => {
       const validationReport = getValidationReport();
@@ -548,8 +535,6 @@ export function setupEventHandlers() {
         // Re-validate if in edit mode
         if (getIsEditMode()) {
           await validateDataImmediate();
-          // Update filter counts after validation completes
-          initializeFilters();
         } else {
           // Use the centralized status function with auto-clear
           setValidationStatus(
@@ -597,8 +582,6 @@ export function setupEventHandlers() {
         // Re-validate if in edit mode
         if (getIsEditMode()) {
           await validateDataImmediate();
-          // Update filter counts after validation completes
-          initializeFilters();
         } else {
           // Use the centralized status function with auto-clear
           setValidationStatus(
@@ -620,7 +603,4 @@ export function setupEventHandlers() {
 
   // Setup namespace management handlers
   setupNamespaceHandlers();
-
-  // Setup advanced filter handlers
-  setupAdvancedFilterHandlers();
 }

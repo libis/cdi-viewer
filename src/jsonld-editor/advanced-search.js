@@ -13,9 +13,6 @@
 import { highlightText } from "./render.js";
 import {
   getFilterState,
-  setSearchPredicate,
-  clearSearchPredicate,
-  applyFilters,
 } from "./advanced-filter.js";
 
 // Search state
@@ -70,12 +67,10 @@ export function performSearch() {
 
   if (searchTerm === "") {
     // Clear search predicate
-    clearSearchPredicate();
     searchMatches = [];
     currentMatchIndex = -1;
     updateSearchCounter();
     updateNavigationButtons();
-    applyFilters(); // Re-apply other filters
     return;
   }
 
@@ -155,9 +150,6 @@ export function performSearch() {
     return false;
   };
 
-  // Set the search predicate in filter system
-  setSearchPredicate(predicate);
-
   // Build list of matching nodes (for highlighting)
   searchMatches = [];
   $(".node-card").each(function () {
@@ -167,9 +159,6 @@ export function performSearch() {
       highlightText(card, searchTerm, { caseSensitive, useRegex });
     }
   });
-
-  // Apply all filters (including search predicate)
-  applyFilters();
 
   // Build searchMatches from all visible highlight spans
   $(".search-highlight").each(function () {
