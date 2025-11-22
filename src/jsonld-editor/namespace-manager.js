@@ -320,6 +320,17 @@ export function setupNamespaceHandlers() {
       return;
     }
 
+    // Initialize document if no data exists yet
+    const jsonData = getJsonData();
+    if (!jsonData) {
+      // Create minimal empty document
+      const emptyDoc = {
+        "@context": {},
+        "@graph": []
+      };
+      setJsonData(emptyDoc);
+    }
+
     // Check if prefix already exists
     const namespaces = extractNamespaces();
     if (namespaces[prefix]) {
@@ -332,6 +343,7 @@ export function setupNamespaceHandlers() {
     if (addNamespace(prefix, uri)) {
       $("#namespaceModal").modal("hide");
       renderNamespaceTable();
+      updateNamespaceSectionVisibility(); // Make sure namespace section is visible
       renderData(); // Re-render to apply changes
       updateNamespaceSelectors(); // Update all namespace selectors in unified components
 

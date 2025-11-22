@@ -19,6 +19,7 @@ import {
   setOriginalFileName,
 } from "./state.js";
 import { expandCompactIri } from "./cdi-json-ld-helpers.js";
+import { humanizeKey } from "./render.js";
 import { renderData } from "./render.js";
 import { updateSaveButton } from "./data-extraction.js";
 import { updateNamespaceSectionVisibility } from "./namespace-manager.js";
@@ -110,7 +111,10 @@ export function getExpandedPropertyUri(nodeId, propertyKey) {
 export function getAvailableNodeTypes() {
   const shaclShapesStore = getShaclShapesStore();
 
+  console.log("[getAvailableNodeTypes] shaclShapesStore:", shaclShapesStore);
+
   if (!shaclShapesStore) {
+    console.log("[getAvailableNodeTypes] No SHACL shapes store - returning empty array");
     return [];
   }
 
@@ -118,12 +122,25 @@ export function getAvailableNodeTypes() {
 
   try {
     // Find all NodeShapes with sh:targetClass
-    const targetClassQuads = shaclShapesStore.getQuads(
+    // Try both default graph (null) and all graphs (undefined)
+    let targetClassQuads = shaclShapesStore.getQuads(
       null,
       "http://www.w3.org/ns/shacl#targetClass",
       null,
       null
     );
+
+    console.log("[getAvailableNodeTypes] Found", targetClassQuads.length, "targetClass quads in default graph");
+
+    // If nothing in default graph, try all graphs
+    if (targetClassQuads.length === 0) {
+      targetClassQuads = shaclShapesStore.getQuads(
+        null,
+        "http://www.w3.org/ns/shacl#targetClass",
+        null
+      );
+      console.log("[getAvailableNodeTypes] Found", targetClassQuads.length, "targetClass quads in all graphs");
+    }
 
     targetClassQuads.forEach((quad) => {
       const classUri = quad.object.value;
@@ -140,7 +157,9 @@ export function getAvailableNodeTypes() {
   }
 
   // Convert Set to Array and sort by label
-  return Array.from(nodeTypes).sort((a, b) => a.label.localeCompare(b.label));
+  const result = Array.from(nodeTypes).sort((a, b) => a.label.localeCompare(b.label));
+  console.log("[getAvailableNodeTypes] Returning", result.length, "node types");
+  return result;
 }
 
 // Initialize a new empty JSON-LD document based on the selected SHACL shape
@@ -382,6 +401,9 @@ export function addReferenceToProperty(nodeId, propertyKey, referenceId) {
     }
   });
 
+  // Update state with modified data
+  setJsonData(jsonData);
+
   return true;
 }
 
@@ -428,6 +450,9 @@ export function createAndReferenceNewNode(
       }
     }
   });
+
+  // Update state with modified data
+  setJsonData(jsonData);
 
   return newNodeId;
 }

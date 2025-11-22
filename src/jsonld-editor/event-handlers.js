@@ -497,6 +497,11 @@ export function setupEventHandlers() {
       setDefaultTypeNamespace(null);
       log(LOG_LEVEL.INFO, "SHACL shapes cleared - generic JSON-LD mode");
 
+      // Re-render Add Root Node component (will show empty dropdown)
+      if (getIsEditMode()) {
+        renderAddRootNodeComponent();
+      }
+
       // Re-render to remove shape classifications if data is loaded
       if (getJsonData()) {
         renderData();
@@ -519,6 +524,11 @@ export function setupEventHandlers() {
           '<span class="label label-info">Loading shapes...</span>'
         );
         await loadShapes(selectedSource);
+
+        // Re-render Add Root Node component with new node types
+        if (getIsEditMode()) {
+          renderAddRootNodeComponent();
+        }
 
         // Re-render to apply new shape classifications if data is loaded
         if (getJsonData()) {
@@ -563,6 +573,11 @@ export function setupEventHandlers() {
           '<span class="label label-info">Loading custom shapes...</span>'
         );
         await loadShapes("custom", customUrl);
+
+        // Re-render Add Root Node component with new node types
+        if (getIsEditMode()) {
+          renderAddRootNodeComponent();
+        }
 
         // Re-render to apply new shape classifications if data is loaded
         if (getJsonData()) {

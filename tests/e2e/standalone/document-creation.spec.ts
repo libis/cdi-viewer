@@ -11,6 +11,68 @@ test.describe('Document Creation', () => {
     await page.waitForLoadState('networkidle');
   });
 
+  test('Add Root Node dropdown shows available node types', async ({ page }) => {
+    // Enable edit mode to show Add Root Node section
+    await page.click('#toggle-edit-btn');
+    await page.waitForTimeout(1000);
+
+    // Add Root Node container should be visible
+    await expect(page.locator('#add-root-node-container')).toBeVisible();
+
+    // Find the dropdown in the Add Root Node section
+    const dropdown = page.locator('#add-root-node-container select.item-dropdown');
+    await expect(dropdown).toBeVisible();
+
+    // Count options (should have more than just the placeholder)
+    const optionCount = await dropdown.locator('option').count();
+    expect(optionCount).toBeGreaterThan(1); // More than just "-- Select a node type to add --"
+
+    // Check that first option is placeholder
+    const firstOption = dropdown.locator('option').first();
+    await expect(firstOption).toHaveText(/Select a node type/i);
+
+    // Check that we have real node type options
+    const secondOption = dropdown.locator('option').nth(1);
+    const secondOptionText = await secondOption.textContent();
+    expect(secondOptionText).toBeTruthy();
+    expect(secondOptionText).not.toMatch(/Select a node type/i);
+  });
+
+  test('Add Root Node dropdown updates when shape changes', async ({ page }) => {
+    // Enable edit mode
+    await page.click('#toggle-edit-btn');
+    await page.waitForTimeout(1000);
+
+    // Get initial dropdown options from DDI-CDI
+    const dropdown = page.locator('#add-root-node-container select.item-dropdown');
+    const initialOptionCount = await dropdown.locator('option').count();
+    expect(initialOptionCount).toBeGreaterThan(1);
+
+    // Change to CDIF Discovery Core shape
+    await page.selectOption('#shape-selector', 'cdif-core');
+    await page.waitForTimeout(2000); // Wait for shapes to load
+
+    // Dropdown should still have options (may be different ones)
+    const newOptionCount = await dropdown.locator('option').count();
+    expect(newOptionCount).toBeGreaterThan(1);
+
+    // Change to generic mode (no shapes)
+    await page.selectOption('#shape-selector', '');
+    await page.waitForTimeout(1000);
+
+    // Dropdown should now only have placeholder (no SHACL shapes loaded)
+    const genericOptionCount = await dropdown.locator('option').count();
+    expect(genericOptionCount).toBe(1); // Only placeholder
+
+    // Change back to DDI-CDI
+    await page.selectOption('#shape-selector', 'ddi-cdi-official');
+    await page.waitForTimeout(2000);
+
+    // Dropdown should have options again
+    const finalOptionCount = await dropdown.locator('option').count();
+    expect(finalOptionCount).toBeGreaterThan(1);
+  });
+
   test('Create new DDI-CDI document', async ({ page }) => {
     // Enable edit mode first (this creates empty JSON-LD document)
     await page.click('#toggle-edit-btn');
