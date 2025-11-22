@@ -14,11 +14,6 @@ import { parseDataverseUrl } from "./dataverse-url-parser.js";
 import { showAlert } from "./modal-dialogs.js";
 import { getNodeById } from "./graph-structure.js";
 
-export function updateSaveButton() {
-  const hasChanges = $(".property-row.changed").length > 0;
-  $("#save-btn").prop("disabled", !hasChanges);
-}
-
 export function collectChangesFromDOM() {
   // Check if there are any actual changes
   const hasChanges = $(".property-row.changed").length > 0;
@@ -78,9 +73,6 @@ export function collectChangesFromDOM() {
 
   // Clear the 'changed' class from all rows after collecting changes
   $(".property-row.changed").removeClass("changed");
-
-  // Update the save button state
-  updateSaveButton();
 }
 
 export function saveChanges() {
@@ -281,7 +273,6 @@ export async function saveToDataverse() {
         `File ${operationType === "replace" ? "replaced" : "added"} successfully!`
       );
       $(".property-row").removeClass("changed");
-      updateSaveButton();
     } else {
       throw new Error("Unexpected response: " + JSON.stringify(result));
     }

@@ -5,7 +5,6 @@
 import { getJsonData, getIsEditMode, getShaclShapesStore } from "./state.js";
 import { classifyProperty } from "./cdi-shacl-helpers.js";
 import { scheduleValidation } from "./validation.js";
-import { updateSaveButton } from "./data-extraction.js";
 import { humanizeKey } from "./text-utils.js";
 import {
   getPropertySuggestions,
@@ -41,8 +40,6 @@ export function getNodeParentMap() {
 
 export function renderData() {
   const jsonData = getJsonData();
-
-  console.log("🎨 RENDER START");
 
   const content = $("#content");
   content.empty();
@@ -382,7 +379,6 @@ function renderProperty(key, value, nodeId, nodeTypes) {
             ) {
               valDiv.remove();
               row.addClass("changed");
-              updateSaveButton();
             }
           });
         valDiv.append(deleteBtn);
@@ -413,12 +409,10 @@ function renderProperty(key, value, nodeId, nodeTypes) {
               newValDiv.addClass("deleted").fadeOut(300, function () {
                 $(this).remove();
               });
-              updateSaveButton();
             });
           newValDiv.append(deleteBtn);
 
           $(this).before(newValDiv);
-          updateSaveButton();
         });
       valueContainer.append(addBtn);
 
@@ -500,7 +494,6 @@ function renderProperty(key, value, nodeId, nodeTypes) {
               row.addClass("deleted").fadeOut(300, function () {
                 $(this).remove();
               });
-              updateSaveButton();
             }
           });
         actionsRow.append(deleteBtn);
@@ -746,7 +739,6 @@ export function createValueInput(
       // Mark as changed when selection changes
       select.on("change", function () {
         $(this).closest(".property-row").addClass("changed");
-        updateSaveButton();
       });
 
       return select;
@@ -766,7 +758,6 @@ export function createValueInput(
     input.on("input", function () {
       // Mark as changed
       $(this).closest(".property-row").addClass("changed");
-      updateSaveButton();
 
       // Schedule auto-validation
       scheduleValidation();

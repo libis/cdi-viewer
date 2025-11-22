@@ -18,7 +18,6 @@ import {
   setOriginalFileName,
 } from "./state.js";
 import { humanizeKey } from "./text-utils.js";
-import { updateSaveButton } from "./data-extraction.js";
 import { updateNamespaceSectionVisibility } from "./namespace-manager.js";
 import { createUnifiedAddComponent } from "./unified-add-component.js";
 import { getNodeById, getAllNodes } from "./graph-structure.js";
@@ -210,9 +209,6 @@ export function createAndAddRootNode(nodeType) {
 
   // Re-render (use dynamic import to avoid circular dependency)
   import("./render.js").then((module) => module.renderData());
-
-  // Mark as changed
-  updateSaveButton();
 
   // Scroll to new node and highlight it
   setTimeout(() => {
