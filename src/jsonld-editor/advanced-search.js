@@ -93,31 +93,32 @@ export function performSearch() {
   const predicate = (card) => {
     const nodeId = card.attr("data-node-id");
 
-    // Check node ID
+    // Check node ID - only check THIS node's ID, not inline children
     if (searchInIds) {
-      const nodeIdText = card.find(".node-id").text();
+      const nodeIdText = card.find("> .node-header .node-id").first().text();
       if (matchesSearch(nodeIdText, searchTerm)) {
         console.log(`  ✓ Node ${nodeId} matches in ID: "${nodeIdText}"`);
         return true;
       }
     }
 
-    // Check node type
+    // Check node type - only check THIS node's type, not inline children
     if (searchInTypes) {
-      const nodeType = card.find(".node-type").text();
+      const nodeType = card.find("> .node-header .node-type").text();
       if (matchesSearch(nodeType, searchTerm)) {
         console.log(`  ✓ Node ${nodeId} matches in type: "${nodeType}"`);
         return true;
       }
     }
 
-    // Check properties
+    // Check properties - only check THIS node's properties, not inline children
     if (searchInNames || searchInValues) {
       let found = false;
 
-      // Check text elements (labels, paths, display values)
+      // Check text elements (labels, paths, display values) that belong to THIS node
+      // Use > .node-body > .property-row to only get direct properties
       card
-        .find(".property-label, .property-path, .value-display")
+        .find("> .node-body > .property-row .property-label, > .node-body > .property-row .property-path, > .node-body > .property-row .value-display")
         .each(function () {
           const isLabel =
             $(this).hasClass("property-label") ||
@@ -133,9 +134,9 @@ export function performSearch() {
           }
         });
 
-      // Also check input/textarea values (in edit mode)
+      // Also check input/textarea values (in edit mode) - only THIS node's inputs
       if (!found && searchInValues) {
-        card.find("input, textarea").each(function () {
+        card.find("> .node-body > .property-row input, > .node-body > .property-row textarea").each(function () {
           const value = $(this).val();
           if (matchesSearch(value, searchTerm)) {
             console.log(`  ✓ Node ${nodeId} matches in input: "${value}"`);
