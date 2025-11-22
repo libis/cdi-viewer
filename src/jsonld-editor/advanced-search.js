@@ -74,11 +74,11 @@ export function performSearch() {
   // Build search results (for highlighting and navigation)
   searchMatches = [];
 
-  // Search all scopes by default
-  const searchInNames = true;
-  const searchInValues = true;
-  const searchInIds = true;
-  const searchInTypes = true;
+  // Get search scope from checkboxes
+  const searchInNames = $(".search-scope-checkbox[value='names']").is(":checked");
+  const searchInValues = $(".search-scope-checkbox[value='values']").is(":checked");
+  const searchInIds = $(".search-scope-checkbox[value='ids']").is(":checked");
+  const searchInTypes = $(".search-scope-checkbox[value='types']").is(":checked");
 
   // Create search predicate function
   const predicate = (card) => {
@@ -327,6 +327,14 @@ export function setupAdvancedSearchHandlers() {
 
   $("#next-match-btn").click(function () {
     navigateToMatch("next");
+  });
+
+  // Search scope checkboxes
+  $(".search-scope-checkbox").on("change", function () {
+    // Re-run search if there's a search term
+    if ($("#search-input").val()) {
+      performSearch();
+    }
   });
 
   // Keyboard shortcuts
