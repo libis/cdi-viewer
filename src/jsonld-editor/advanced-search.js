@@ -89,10 +89,13 @@ export function performSearch() {
 
   // Create search predicate function
   const predicate = (card) => {
+    const nodeId = card.attr("data-node-id");
+    
     // Check node ID
     if (searchInIds) {
-      const nodeId = card.find(".node-id").text();
-      if (matchesSearch(nodeId, searchTerm)) {
+      const nodeIdText = card.find(".node-id").text();
+      if (matchesSearch(nodeIdText, searchTerm)) {
+        console.log(`  ✓ Node ${nodeId} matches in ID: "${nodeIdText}"`);
         return true;
       }
     }
@@ -101,6 +104,7 @@ export function performSearch() {
     if (searchInTypes) {
       const nodeType = card.find(".node-type").text();
       if (matchesSearch(nodeType, searchTerm)) {
+        console.log(`  ✓ Node ${nodeId} matches in type: "${nodeType}"`);
         return true;
       }
     }
@@ -108,6 +112,8 @@ export function performSearch() {
     // Check properties
     if (searchInNames || searchInValues) {
       let found = false;
+      
+      // Check text elements (labels, paths, display values)
       card
         .find(".property-label, .property-path, .value-display")
         .each(function () {
@@ -118,16 +124,31 @@ export function performSearch() {
           if ((searchInNames && isLabel) || (searchInValues && !isLabel)) {
             const text = $(this).text();
             if (matchesSearch(text, searchTerm)) {
+              console.log(`  ✓ Node ${nodeId} matches in text: "${text}"`);
               found = true;
               return false; // Break loop
             }
           }
         });
+      
+      // Also check input/textarea values (in edit mode)
+      if (!found && searchInValues) {
+        card.find("input, textarea").each(function () {
+          const value = $(this).val();
+          if (matchesSearch(value, searchTerm)) {
+            console.log(`  ✓ Node ${nodeId} matches in input: "${value}"`);
+            found = true;
+            return false; // Break loop
+          }
+        });
+      }
+      
       if (found) {
         return true;
       }
     }
 
+    console.log(`  ✗ Node ${nodeId} does not match`);
     return false;
   };
 

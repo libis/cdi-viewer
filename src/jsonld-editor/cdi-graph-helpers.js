@@ -24,6 +24,7 @@ import { renderData } from "./render.js";
 import { updateSaveButton } from "./data-extraction.js";
 import { updateNamespaceSectionVisibility } from "./namespace-manager.js";
 import { createUnifiedAddComponent } from "./unified-add-component.js";
+import { getNodeById, getAllNodes } from "./graph-structure.js";
 
 // Expand a compact node ID (e.g., "xas:fe_c3d.001") to full URI (e.g., "http://www.cdi4exas.org/fe_c3d.001")
 export function getExpandedNodeId(compactNodeId) {
@@ -44,7 +45,7 @@ export function getExpandedNodeId(compactNodeId) {
   const expandedJsonLd = getExpandedJsonLd();
 
   if (jsonData && jsonData["@graph"]) {
-    const node = jsonData["@graph"].find((n) => n["@id"] === compactNodeId);
+    const node = getNodeById(compactNodeId);
     if (node && node["@id"]) {
       // Check if we have expanded JSON-LD
       if (expandedJsonLd && Array.isArray(expandedJsonLd)) {
@@ -312,8 +313,7 @@ export function createAndAddRootNode(nodeType) {
 }
 
 export function addPropertyToNode(nodeId, propertyKey, initialValue) {
-  const jsonData = getJsonData();
-  const node = jsonData["@graph"].find((n) => n["@id"] === nodeId);
+  const node = getNodeById(nodeId);
 
   if (node) {
     node[propertyKey] = initialValue;
@@ -323,8 +323,7 @@ export function addPropertyToNode(nodeId, propertyKey, initialValue) {
 }
 
 export function convertPropertyToArray(nodeId, propertyKey) {
-  const jsonData = getJsonData();
-  const node = jsonData["@graph"].find((n) => n["@id"] === nodeId);
+  const node = getNodeById(nodeId);
 
   if (node) {
     const currentValue = node[propertyKey];
@@ -337,8 +336,7 @@ export function convertPropertyToArray(nodeId, propertyKey) {
 }
 
 export function convertPropertyToSingle(nodeId, propertyKey) {
-  const jsonData = getJsonData();
-  const node = jsonData["@graph"].find((n) => n["@id"] === nodeId);
+  const node = getNodeById(nodeId);
 
   if (node) {
     const currentValue = node[propertyKey];
@@ -351,14 +349,13 @@ export function convertPropertyToSingle(nodeId, propertyKey) {
 }
 
 export function getAllNodesForReference() {
-  const jsonData = getJsonData();
-
-  if (!jsonData || !jsonData["@graph"]) {
+  const nodes = getAllNodes();
+  if (nodes.length === 0) {
     return [];
   }
 
   // Return all nodes with their ID and type for selection
-  return jsonData["@graph"].map((node) => ({
+  return nodes.map((node) => ({
     id: node["@id"],
     type: Array.isArray(node["@type"]) ? node["@type"][0] : node["@type"],
     types: Array.isArray(node["@type"]) ? node["@type"] : [node["@type"]],
@@ -367,7 +364,7 @@ export function getAllNodesForReference() {
 
 export function addReferenceToProperty(nodeId, propertyKey, referenceId) {
   const jsonData = getJsonData();
-  const node = jsonData["@graph"].find((n) => n["@id"] === nodeId);
+  const node = getNodeById(nodeId);
 
   if (node) {
     const reference = { "@id": referenceId };
@@ -411,7 +408,7 @@ export function createAndReferenceNewNode(
   jsonData["@graph"].push(newNode);
 
   // Add reference to parent node
-  const parentNode = jsonData["@graph"].find((n) => n["@id"] === nodeId);
+  const parentNode = getNodeById(nodeId);
   if (parentNode) {
     const reference = { "@id": newNodeId };
     const currentValue = parentNode[propertyKey];

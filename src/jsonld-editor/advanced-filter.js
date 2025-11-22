@@ -12,6 +12,7 @@
  */
 
 import { clearSearch } from "./advanced-search.js";
+import { getAncestors } from "./graph-structure.js";
 
 // Filter state
 const filterState = {
@@ -98,6 +99,8 @@ export function clearAllFilters() {
  * New strategy: Start with everything hidden, show matches and their ancestors
  */
 export function applyFilters() {
+  console.log("🔍 APPLY FILTERS START");
+  
   // Step 1: Hide everything
   $(".node-card, .property-row").addClass("hidden-by-filter");
 
@@ -106,6 +109,7 @@ export function applyFilters() {
 
   // Property status filter
   if (filterState.propertyStatus !== "all") {
+    console.log(`  📌 Property filter active: ${filterState.propertyStatus}`);
     propertyPredicates.push((element) => {
       if (filterState.propertyStatus === "shacl-only") {
         return !element.hasClass("extra-field");
@@ -132,6 +136,7 @@ export function applyFilters() {
 
   // Validation filter
   if (filterState.validation !== "all") {
+    console.log(`  📌 Validation filter active: ${filterState.validation}`);
     nodePredicates.push((element) => {
       const nodeId = element.attr("data-node-id");
       const hasInvalidClass = element.hasClass("invalid");
@@ -166,44 +171,69 @@ export function applyFilters() {
 
   // Search filter
   if (searchPredicate) {
+    console.log("  📌 Search filter active");
     nodePredicates.push(searchPredicate);
   }
 
-  // Show nodes that match all predicates
-  $(".node-card").each(function () {
-    const node = $(this);
-    const shouldShow =
-      nodePredicates.length === 0 ||
-      nodePredicates.every((predicate) => predicate(node));
-    if (shouldShow) {
-      node.removeClass("hidden-by-filter");
-    }
-  });
+  console.log(`  🎯 Total node predicates: ${nodePredicates.length}`);
 
-  // Step 4: Show parent nodes if they contain visible nodes or properties
-  // Keep iterating until no more changes (propagate visibility up the tree)
-  let changed = true;
-  while (changed) {
-    changed = false;
-    const hiddenNodes = $(".node-card.hidden-by-filter");
-
-    hiddenNodes.each(function () {
+  // Apply node filtering based on predicates
+  if (nodePredicates.length > 0) {
+    // When predicates are active, use the logical parent map to find ancestors
+    // 1. Find nodes that match predicates
+    // 2. Show only matched nodes + their ancestors (not siblings, not children)
+    
+    const matchedNodeIds = new Set();
+    const ancestorNodeIds = new Set();
+    
+    // Step 3a: Find all nodes that match predicates
+    $(".node-card").each(function () {
       const node = $(this);
-
-      // Check if this node has any visible content (properties or child nodes)
-      if (
-        node.find(
-          ".property-row:not(.hidden-by-filter), .node-card:not(.hidden-by-filter)"
-        ).length > 0
-      ) {
-        node.removeClass("hidden-by-filter");
-        changed = true;
+      const nodeId = node.attr("data-node-id");
+      const shouldShow = nodePredicates.every((predicate) => predicate(node));
+      
+      if (shouldShow) {
+        matchedNodeIds.add(nodeId);
+        console.log(`    ✅ ${nodeId} matches all predicates`);
+      } else {
+        console.log(`    ❌ ${nodeId} does not match`);
       }
     });
+    
+    console.log(`  ✅ Nodes matching all predicates: ${matchedNodeIds.size}`);
+    
+    // Step 3b: For each matched node, get ancestors from the graph structure
+    matchedNodeIds.forEach((matchedId) => {
+      const ancestors = getAncestors(matchedId);
+      ancestors.forEach(ancestorId => {
+        ancestorNodeIds.add(ancestorId);
+        console.log(`    🔼 ${ancestorId} is ancestor of ${matchedId}`);
+      });
+    });
+    
+    console.log(`  👪 Total ancestors: ${ancestorNodeIds.size}`);
+    
+    // Step 3c: Show only matched nodes and their ancestors
+    $(".node-card").each(function () {
+      const node = $(this);
+      const nodeId = node.attr("data-node-id");
+      
+      if (matchedNodeIds.has(nodeId) || ancestorNodeIds.has(nodeId)) {
+        node.removeClass("hidden-by-filter");
+      }
+      // Everything else stays hidden (siblings, children of matches, etc.)
+    });
+  } else {
+    // No predicates active - show all nodes
+    $(".node-card").removeClass("hidden-by-filter");
   }
 
+  const totalVisible = $(".node-card:not(.hidden-by-filter)").length;
+  const totalHidden = $(".node-card.hidden-by-filter").length;
+  console.log(`  👁️  Final visible: ${totalVisible}, hidden: ${totalHidden}`);
+  console.log("🔍 APPLY FILTERS END\n");
+
   updateActiveFilterBadge();
-  saveFilterState();
 }
 
 /**
@@ -241,42 +271,7 @@ function updateValidationFilterCounts() {
   );
 }
 
-/**
- * Save filter state to localStorage
- */
-function saveFilterState() {
-  try {
-    localStorage.setItem("cdi-viewer-filters", JSON.stringify(filterState));
-  } catch (e) {
-    console.error("Failed to save filter state:", e);
-  }
-}
 
-/**
- * Load filter state from localStorage
- */
-function loadFilterState() {
-  try {
-    const saved = localStorage.getItem("cdi-viewer-filters");
-    if (saved) {
-      Object.assign(filterState, JSON.parse(saved));
-      
-      // Update UI controls to match loaded state
-      $("#validation-filter").val(filterState.validation);
-      $(`input[name='property-status'][value='${filterState.propertyStatus}']`).prop("checked", true);
-      
-      // Update search scope checkboxes
-      $(".search-scope-checkbox").prop("checked", false);
-      filterState.searchScope.forEach((scope) => {
-        $(`#search-scope-${scope}`).prop("checked", true);
-      });
-      
-      updateActiveFilterBadge();
-    }
-  } catch (e) {
-    console.error("Failed to load filter state:", e);
-  }
-}
 
 /**
  * Show filter panel (will show when data is loaded)
@@ -296,9 +291,6 @@ export function hideFilterPanel() {
  * Setup advanced filter event handlers
  */
 export function setupAdvancedFilterHandlers() {
-  // Load saved filter state
-  loadFilterState();
-
   // Advanced Filters button toggle
   $("#toggle-filter-panel").click(function () {
     const panel = $("#filter-panel");
@@ -344,7 +336,6 @@ export function setupAdvancedFilterHandlers() {
       alert("At least one search scope must be selected.");
     }
 
-    saveFilterState();
     updateActiveFilterBadge();
 
     // Re-run search if there's a search term
@@ -362,7 +353,7 @@ export function initializeFilters() {
   // Update validation counts
   updateValidationFilterCounts();
 
-  // Apply current filters (including any loaded from localStorage)
+  // Apply current filters
   applyFilters();
 }
 

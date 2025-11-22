@@ -18,9 +18,25 @@ import {
   createAndReferenceNewNode,
 } from "./cdi-graph-helpers.js";
 import { showAlert, showConfirm } from "./modal-dialogs.js";
+import {
+  resetGraphStructure,
+  buildGraphStructure,
+  setParentRelationship,
+  markNodeRendered,
+  isNodeRendered,
+  getRootNodeIds,
+  getParentMap,
+  getNodeById,
+  nodeExists,
+} from "./graph-structure.js";
 
-// Track which nodes have been rendered to avoid duplicates
-const renderedNodes = new Set();
+/**
+ * Get the parent map for filter algorithms
+ * @deprecated Use getParentMap() from graph-structure.js instead
+ */
+export function getNodeParentMap() {
+  return getParentMap();
+}
 
 export function renderData() {
   const jsonData = getJsonData();
@@ -29,31 +45,21 @@ export function renderData() {
 
   const content = $("#content");
   content.empty();
-  renderedNodes.clear(); // Reset for each render
+  
+  // Reset graph structure tracking
+  resetGraphStructure();
+  buildGraphStructure();
 
   if (!jsonData || !jsonData["@graph"]) {
     content.html('<div class="alert alert-warning">No data to display</div>');
     return;
   }
 
-  // Build tree structure: find which nodes are referenced by others
-  const referencedIds = new Set();
-
-  jsonData["@graph"].forEach((node) => {
-    Object.keys(node).forEach((key) => {
-      if (key !== "@id" && key !== "@type" && key !== "@context") {
-        const value = node[key];
-        const refs = extractNodeReferences(value);
-        refs.forEach((ref) => referencedIds.add(ref));
-      }
-    });
-  });
-
-  // Root nodes are those not referenced by any other node
-  // IMPORTANT: Blank nodes (_:xxx) should never be root nodes - they must always be referenced
-  const rootNodes = jsonData["@graph"].filter(
-    (n) => !referencedIds.has(n["@id"]) && !n["@id"].startsWith("_:")
-  );
+  // Get root nodes from graph structure
+  const rootNodeIds = getRootNodeIds();
+  const rootNodes = rootNodeIds
+    .map(id => getNodeById(id))
+    .filter(n => n !== null);
 
   // Render root nodes (they will recursively render their children)
   rootNodes.forEach((node, index) => {
@@ -83,14 +89,13 @@ export function extractNodeReferences(value) {
 
 // Check if a string value looks like a node reference
 export function isNodeReference(str) {
-  const jsonData = getJsonData();
   if (typeof str !== "string") {
     return false;
   }
   // Check if it starts with # or _: (common node ID patterns)
   if (str.startsWith("#") || str.startsWith("_:")) {
     // Verify this ID actually exists in the graph
-    return jsonData["@graph"].some((n) => n["@id"] === str);
+    return nodeExists(str);
   }
   return false;
 }
@@ -102,8 +107,8 @@ export function renderNodeTree(node, index, depth) {
   const id = node["@id"] || `_:blank${index}`;
   const types = Array.isArray(node["@type"]) ? node["@type"] : [node["@type"]];
 
-  // Mark this node as rendered
-  renderedNodes.add(id);
+  // Mark this node as rendered using graph structure
+  markNodeRendered(id);
 
   // Only indent depth > 0 with a constant 8px (not cumulative since nodes are nested)
   const card = $("<div>")
@@ -194,8 +199,7 @@ export function renderNodeTree(node, index, depth) {
 }
 
 export function renderPropertyTree(key, value, nodeId, nodeTypes, depth) {
-  const jsonData = getJsonData();
-  const container = $("<div>");
+  const container = $('<div>');
 
   // First render the property itself
   const row = renderProperty(key, value, nodeId, nodeTypes);
@@ -205,10 +209,13 @@ export function renderPropertyTree(key, value, nodeId, nodeTypes, depth) {
   const refs = extractNodeReferences(value);
   if (refs.length > 0) {
     refs.forEach((refId) => {
-      const refNode = jsonData["@graph"].find((n) => n["@id"] === refId);
+      const refNode = getNodeById(refId);
       if (refNode) {
         // Only render inline if this node hasn't been rendered yet
-        if (!renderedNodes.has(refId)) {
+        if (!isNodeRendered(refId)) {
+          // Track parent-child relationship: refId is a child of nodeId
+          setParentRelationship(refId, nodeId);
+          
           const childCard = renderNodeTree(refNode, 0, depth + 1);
           container.append(childCard);
         } else {

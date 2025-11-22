@@ -12,6 +12,7 @@ import {
 } from "./state.js";
 import { parseDataverseUrl } from "./dataverse-url-parser.js";
 import { showAlert } from "./modal-dialogs.js";
+import { getNodeById } from "./graph-structure.js";
 
 export function updateSaveButton() {
   const hasChanges = $(".property-row.changed").length > 0;
@@ -19,8 +20,6 @@ export function updateSaveButton() {
 }
 
 export function collectChangesFromDOM() {
-  const jsonData = getJsonData();
-
   // Check if there are any actual changes
   const hasChanges = $(".property-row.changed").length > 0;
   if (!hasChanges) {
@@ -32,8 +31,8 @@ export function collectChangesFromDOM() {
     const $card = $(this);
     const nodeId = $card.find(".node-id").first().text();
 
-    // Find the node in jsonData
-    const node = jsonData["@graph"].find((n) => n["@id"] === nodeId);
+    // Find the node in jsonData using graph utilities
+    const node = getNodeById(nodeId);
     if (!node) {
       return; // Skip if not found
     }
