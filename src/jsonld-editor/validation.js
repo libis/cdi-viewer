@@ -218,9 +218,9 @@ export async function validateData() {
 
       // Show violations list (initially hidden)
       const $violationsContainer = $(
-        '<div class="validation-violations" style="display: none;"><h4>Validation Violations:</h4><ul></ul></div>'
+        '<div class="validation-violations" style="display: none;"><h4>Validation Violations:</h4><ol></ol></div>'
       );
-      const $list = $violationsContainer.find("ul");
+      const $list = $violationsContainer.find("ol");
 
       violations.forEach((v) => {
         const nodeId = v.focusNode.split("/").pop();
