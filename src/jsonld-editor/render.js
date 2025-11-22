@@ -6,6 +6,7 @@ import { getJsonData, getIsEditMode, getShaclShapesStore } from "./state.js";
 import { classifyProperty } from "./cdi-shacl-helpers.js";
 import { scheduleValidation } from "./validation.js";
 import { updateSaveButton } from "./data-extraction.js";
+import { humanizeKey } from "./text-utils.js";
 import {
   getPropertySuggestions,
   createPropertySuggestionsSection,
@@ -331,9 +332,9 @@ function renderProperty(key, value, nodeId, nodeTypes) {
 
     inlineCard.append(header);
 
-    const body = $("<div>").addClass("node-body");
-    if (!isEditMode) {
-      body.addClass("view-mode");
+    const body = $('<div>').addClass('node-body');
+    if (!getIsEditMode()) {
+      body.addClass('view-mode');
     }
 
     Object.keys(val).forEach((k) => {
@@ -367,9 +368,9 @@ function renderProperty(key, value, nodeId, nodeTypes) {
       }
 
       // Add delete button in edit mode
-      if (isEditMode) {
-        const deleteBtn = $("<button>")
-          .addClass("btn btn-xs delete-btn")
+      if (getIsEditMode()) {
+        const deleteBtn = $('<button>')
+          .addClass('btn btn-xs delete-btn')
           .attr("data-testid", `delete-array-value-btn-${idx}`)
           .html('<span class="glyphicon glyphicon-trash"></span>')
           .click(async function () {
@@ -389,9 +390,9 @@ function renderProperty(key, value, nodeId, nodeTypes) {
 
       valueContainer.append(valDiv);
     });
-    if (isEditMode) {
-      const addBtn = $("<button>")
-        .addClass("btn btn-sm btn-default add-value-btn")
+    if (getIsEditMode()) {
+      const addBtn = $('<button>')
+        .addClass('btn btn-sm btn-default add-value-btn')
         .attr(
           "data-testid",
           `add-value-btn-${key.replace(/[^a-zA-Z0-9]/g, "_")}`
@@ -439,7 +440,7 @@ function renderProperty(key, value, nodeId, nodeTypes) {
     }
 
     // Add "Convert to Single Value" button for arrays in edit mode
-    if (isEditMode) {
+    if (getIsEditMode()) {
       const convertBtn = $("<button>")
         .addClass("btn btn-xs btn-default convert-btn")
         .attr(
@@ -475,9 +476,9 @@ function renderProperty(key, value, nodeId, nodeTypes) {
     }
 
     // Action buttons row for single values in edit mode
-    if (isEditMode) {
-      const actionsRow = $("<div>")
-        .addClass("property-actions")
+    if (getIsEditMode()) {
+      const actionsRow = $('<div>')
+        .addClass('property-actions')
         .css({ "margin-top": "5px" });
 
       // Delete button (for non-required fields only)
@@ -539,7 +540,7 @@ function renderProperty(key, value, nodeId, nodeTypes) {
   }
 
   // Add description as info text if available
-  if (classification.description && isEditMode) {
+  if (classification.description && getIsEditMode()) {
     const infoText = $("<div>")
       .addClass("property-info")
       .text(classification.description);

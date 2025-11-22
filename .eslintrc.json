@@ -17,7 +17,6 @@
     "SHACLValidator": "readonly",
     "jsonData": "writable",
     "shaclShapesStore": "writable",
-    "isEditMode": "writable",
     "cachedLocalContext": "writable",
     "validationViolations": "writable",
     "currentSearchTerm": "writable",
