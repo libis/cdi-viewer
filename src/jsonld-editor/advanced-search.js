@@ -41,7 +41,8 @@ function matchesSearch(text, searchTerm) {
   } else {
     const compareText = caseSensitive ? text : text.toLowerCase();
     const compareTerm = caseSensitive ? searchTerm : searchTerm.toLowerCase();
-    return compareText.includes(compareTerm);
+    const result = compareText.includes(compareTerm);
+    return result;
   }
 }
 
@@ -88,7 +89,6 @@ export function performSearch() {
     if (searchInIds) {
       const nodeIdText = card.find("> .node-header .node-id").first().text();
       if (matchesSearch(nodeIdText, searchTerm)) {
-        console.log(`  ✓ Node ${nodeId} matches in ID: "${nodeIdText}"`);
         return true;
       }
     }
@@ -97,7 +97,6 @@ export function performSearch() {
     if (searchInTypes) {
       const nodeType = card.find("> .node-header .node-type").text();
       if (matchesSearch(nodeType, searchTerm)) {
-        console.log(`  ✓ Node ${nodeId} matches in type: "${nodeType}"`);
         return true;
       }
     }
@@ -107,12 +106,13 @@ export function performSearch() {
       let found = false;
 
       // Check text elements (labels, paths, display values) that belong to THIS node
-      // Use > .node-body > .property-row to only get direct properties
-      card
-        .find(
-          "> .node-body > .property-row .property-label, > .node-body > .property-row .property-path, > .node-body > .property-row .value-display"
-        )
-        .each(function () {
+      // Note: Using .node-body .property-row to match the actual DOM structure
+      // (the > direct child selector was too restrictive and didn't match)
+      const propertyElements = card.find(
+        ".node-body .property-row .property-label, .node-body .property-row .property-path, .node-body .property-row .value-display"
+      );
+      
+      propertyElements.each(function () {
           const isLabel =
             $(this).hasClass("property-label") ||
             $(this).hasClass("property-path");
@@ -120,7 +120,6 @@ export function performSearch() {
           if ((searchInNames && isLabel) || (searchInValues && !isLabel)) {
             const text = $(this).text();
             if (matchesSearch(text, searchTerm)) {
-              console.log(`  ✓ Node ${nodeId} matches in text: "${text}"`);
               found = true;
               return false; // Break loop
             }
@@ -131,12 +130,11 @@ export function performSearch() {
       if (!found && searchInValues) {
         card
           .find(
-            "> .node-body > .property-row input, > .node-body > .property-row textarea"
+            ".node-body .property-row input, .node-body .property-row textarea"
           )
           .each(function () {
             const value = $(this).val();
             if (matchesSearch(value, searchTerm)) {
-              console.log(`  ✓ Node ${nodeId} matches in input: "${value}"`);
               found = true;
               return false; // Break loop
             }
@@ -147,8 +145,6 @@ export function performSearch() {
         return true;
       }
     }
-
-    console.log(`  ✗ Node ${nodeId} does not match`);
     return false;
   };
 
