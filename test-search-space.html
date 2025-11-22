@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Search with Space</title>
+</head>
+<body>
+  <h1>Test: Does "Sample " match in "Sample Dataset"?</h1>
+  
+  <script>
+    const text = "Sample Dataset";
+    const searchTerm = "Sample ";
+    
+    console.log("Text:", text);
+    console.log("Search term:", searchTerm);
+    console.log("Search term length:", searchTerm.length);
+    
+    const index = text.toLowerCase().indexOf(searchTerm.toLowerCase());
+    console.log("Index found:", index);
+    
+    if (index >= 0) {
+      console.log("✓ MATCH FOUND at position", index);
+      console.log("Matched substring:", text.substring(index, index + searchTerm.length));
+    } else {
+      console.log("✗ NO MATCH");
+    }
+    
+    // Test the actual comparison
+    const compareText = text.toLowerCase(); // "sample dataset"
+    const compareTerm = searchTerm.toLowerCase(); // "sample "
+    console.log("compareText:", JSON.stringify(compareText));
+    console.log("compareTerm:", JSON.stringify(compareTerm));
+    console.log("Result:", compareText.indexOf(compareTerm));
+  </script>
+</body>
+</html>
