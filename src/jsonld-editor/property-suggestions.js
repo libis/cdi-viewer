@@ -10,7 +10,7 @@ import {
   getDefaultTypeNamespace,
 } from "./state.js";
 import { expandCompactIri } from "./cdi-json-ld-helpers.js";
-import { renderData, humanizeKey } from "./render.js";
+import { humanizeKey } from "./text-utils.js";
 import {
   addPropertyToNode,
   createAndReferenceNewNode,
@@ -305,12 +305,12 @@ export function createPropertySuggestionsSection(suggestions, nodeId) {
       } else {
         // Add the property to the data and re-render
         addPropertyToNode(nodeId, suggestion.path, "");
-        renderData();
+        import("./render.js").then((module) => module.renderData());
       }
     },
     onAddCustom: (fullName) => {
       addPropertyToNode(nodeId, fullName, "");
-      renderData();
+      import("./render.js").then((module) => module.renderData());
     },
   });
 }
@@ -331,8 +331,8 @@ export function addComplexPropertyToNode(nodeId, suggestion) {
     asArray
   );
 
-  // Re-render to show the new node
-  renderData();
+  // Re-render to show the new node (use dynamic import to avoid circular dependency)
+  import("./render.js").then((module) => module.renderData());
 
   // Scroll to new node and highlight
   setTimeout(() => {

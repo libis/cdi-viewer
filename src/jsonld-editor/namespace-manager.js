@@ -11,8 +11,6 @@
  */
 
 import { getJsonData, setJsonData } from "./state.js";
-import { renderData } from "./render.js";
-import { updateNamespaceSelectors } from "./unified-add-component.js";
 import { showAlert, showConfirm } from "./modal-dialogs.js";
 
 // Built-in namespaces that should not be deletable
@@ -210,8 +208,10 @@ export function renderNamespaceTable() {
           ) {
             removeNamespace(prefix);
             renderNamespaceTable();
-            renderData(); // Re-render to apply changes
-            updateNamespaceSelectors(); // Update all namespace selectors
+            // Use dynamic import to avoid circular dependency
+            import("./render.js").then((module) => module.renderData());
+            // Dispatch custom event for namespace selectors to update
+            window.dispatchEvent(new CustomEvent("namespacesChanged"));
           }
         });
       actionsCell.append(deleteBtn);
@@ -347,8 +347,10 @@ export function setupNamespaceHandlers() {
       $("#namespaceModal").modal("hide");
       renderNamespaceTable();
       updateNamespaceSectionVisibility(); // Make sure namespace section is visible
-      renderData(); // Re-render to apply changes
-      updateNamespaceSelectors(); // Update all namespace selectors in unified components
+      // Use dynamic import to avoid circular dependency
+      import("./render.js").then((module) => module.renderData());
+      // Dispatch custom event for namespace selectors to update
+      window.dispatchEvent(new CustomEvent("namespacesChanged"));
 
       // Show success message
       const message = $(`

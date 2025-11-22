@@ -11,9 +11,18 @@
  */
 
 import { highlightText } from "./render.js";
-import {
-  getFilterState,
-} from "./advanced-filter.js";
+
+// Filter state
+const filterState = {
+  searchScope: ["names", "values", "ids", "types"], // What to search in
+};
+
+/**
+ * Get current filter state
+ */
+export function getFilterState() {
+  return { ...filterState };
+}
 
 // Search state
 let searchMatches = [];

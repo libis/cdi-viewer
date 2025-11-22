@@ -36,11 +36,6 @@ beforeAll(async () => {
 });
 
 describe('Property Classification', () => {
-    beforeEach(() => {
-        // Set up global variables that classifyProperty expects
-        window.shaclShapesStore = shaclShapesStore;
-        window.LOG_LEVEL = 'error'; // Minimize console output during tests
-    });
 
     test('shaclShapesStore should be loaded', () => {
         expect(shaclShapesStore.size).toBeGreaterThan(0);

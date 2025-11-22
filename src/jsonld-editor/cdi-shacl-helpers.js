@@ -14,7 +14,7 @@ import {
   getCurrentLogLevel,
   getDefaultTypeNamespace,
 } from "./state.js";
-import { getExpandedPropertyUri } from "./cdi-graph-helpers.js";
+import { getExpandedPropertyUri } from "./uri-utils.js";
 import { expandCompactIri } from "./cdi-json-ld-helpers.js";
 
 // Parse RDF list from sh:in to extract enumeration values
@@ -79,16 +79,8 @@ export function parseRdfList(listNodeOrUri) {
   return values;
 }
 
-// Extract a readable label from a URI
-export function extractLabelFromUri(uri) {
-  // Extract the local part after last / or #
-  const parts = uri.split("/").pop().split("#").pop();
-  // Convert camelCase to Title Case with spaces
-  return parts
-    .replace(/([A-Z])/g, " $1")
-    .replace(/^./, (str) => str.toUpperCase())
-    .trim();
-}
+// Re-export from uri-utils
+export { extractLabelFromUri } from "./uri-utils.js";
 
 // Get enumeration values from a NodeShape that has sh:in
 export function getEnumerationValues(nodeShapeUri) {

@@ -12,101 +12,16 @@
 
 import {
   getJsonData,
-  getExpandedJsonLd,
   getShaclShapesStore,
   setJsonData,
   setOriginalData,
   setOriginalFileName,
 } from "./state.js";
-import { expandCompactIri } from "./cdi-json-ld-helpers.js";
-import { humanizeKey } from "./render.js";
-import { renderData } from "./render.js";
+import { humanizeKey } from "./text-utils.js";
 import { updateSaveButton } from "./data-extraction.js";
 import { updateNamespaceSectionVisibility } from "./namespace-manager.js";
 import { createUnifiedAddComponent } from "./unified-add-component.js";
 import { getNodeById, getAllNodes } from "./graph-structure.js";
-
-// Expand a compact node ID (e.g., "xas:fe_c3d.001") to full URI (e.g., "http://www.cdi4exas.org/fe_c3d.001")
-export function getExpandedNodeId(compactNodeId) {
-  if (!compactNodeId) {
-    return null;
-  }
-
-  // If it's already a full URI, return as-is
-  if (
-    compactNodeId.startsWith("http://") ||
-    compactNodeId.startsWith("https://")
-  ) {
-    return compactNodeId;
-  }
-
-  // Try to find the node in the @graph
-  const jsonData = getJsonData();
-  const expandedJsonLd = getExpandedJsonLd();
-
-  if (jsonData && jsonData["@graph"]) {
-    const node = getNodeById(compactNodeId);
-    if (node && node["@id"]) {
-      // Check if we have expanded JSON-LD
-      if (expandedJsonLd && Array.isArray(expandedJsonLd)) {
-        const expanded = expandedJsonLd.find((n) => {
-          // The expanded @id should be the full URI
-          return (
-            n["@id"] &&
-            (n["@id"] === compactNodeId ||
-              n["@id"].endsWith("/" + compactNodeId.split(":").pop()) ||
-              n["@id"].endsWith("#" + compactNodeId.split(":").pop()))
-          );
-        });
-        if (expanded && expanded["@id"]) {
-          return expanded["@id"];
-        }
-      }
-    }
-  }
-
-  // Fallback: try to resolve using context
-  if (jsonData && jsonData["@context"]) {
-    const expanded = expandCompactIri(jsonData["@context"], compactNodeId);
-    if (expanded) {
-      return expanded;
-    }
-  }
-
-  return compactNodeId; // Return as-is if we can't expand
-}
-
-// Get the expanded URI for a property from the expanded JSON-LD
-export function getExpandedPropertyUri(nodeId, propertyKey) {
-  const expandedJsonLd = getExpandedJsonLd();
-
-  if (!expandedJsonLd || !Array.isArray(expandedJsonLd)) {
-    return null;
-  }
-
-  // Find the node in expanded JSON-LD
-  const expandedNode = expandedJsonLd.find((n) => n["@id"] === nodeId);
-  if (!expandedNode) {
-    return null;
-  }
-
-  // Look through all properties to find one that might match
-  for (const key in expandedNode) {
-    if (key === "@id" || key === "@type") {
-      continue;
-    }
-
-    // The expanded key is the full URI, extract the local part
-    const localPart = key.split("/").pop().split("#").pop();
-
-    // Check if this matches our property key
-    if (localPart === propertyKey || key === propertyKey) {
-      return key; // Return the full URI
-    }
-  }
-
-  return null;
-}
 
 // Get all available node types from SHACL shapes.
 export function getAvailableNodeTypes() {
@@ -293,8 +208,8 @@ export function createAndAddRootNode(nodeType) {
   }
   jsonData["@graph"].push(newNode);
 
-  // Re-render
-  renderData();
+  // Re-render (use dynamic import to avoid circular dependency)
+  import("./render.js").then((module) => module.renderData());
 
   // Mark as changed
   updateSaveButton();

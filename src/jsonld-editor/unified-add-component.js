@@ -212,6 +212,11 @@ export function createUnifiedAddComponent(options) {
 
   section.append(customSection);
 
+  // Listen for namespace changes
+  window.addEventListener("namespacesChanged", () => {
+    updateNamespaceSelectors();
+  });
+
   return section;
 }
 

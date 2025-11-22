@@ -52,7 +52,6 @@ import "./jsonld-editor/data-extraction.js";
 
 // Advanced search and filter
 import "./jsonld-editor/advanced-search.js";
-import "./jsonld-editor/advanced-filter.js";
 
 // Event handlers
 import "./jsonld-editor/event-handlers.js";
