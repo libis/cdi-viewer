@@ -118,9 +118,7 @@ export async function validateData() {
       $("#validation-status").html(
         '<span class="label label-warning">No SHACL shapes loaded - cannot validate</span>'
       );
-      $("#validation-details").html(
-        '<div class="alert alert-info">Select SHACL shapes from the dropdown to enable validation.</div>'
-      );
+      $("#validation-details").empty();
       return;
     }
 

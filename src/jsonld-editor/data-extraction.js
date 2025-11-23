@@ -116,11 +116,6 @@ export function collectChangesFromDOM() {
   // NOTE: We do NOT clear the changed tracking here - that only happens after save/export
 }
 
-export function updateSaveButton() {
-  const hasChanges = getChangedElementsCount() > 0;
-  $("#save-btn").prop("disabled", !hasChanges);
-}
-
 export function saveChanges() {
   // First, collect any changes from the DOM
   collectChangesFromDOM();
@@ -321,7 +316,6 @@ export async function saveToDataverse() {
       // Clear changed tracking after successful save
       $(".property-row.changed").removeClass("changed");
       clearChangedElements();
-      updateSaveButton();
     } else {
       throw new Error("Unexpected response: " + JSON.stringify(result));
     }
@@ -351,7 +345,6 @@ export function exportData() {
   // Clear changed tracking after collecting (export means data is saved)
   $(".property-row.changed").removeClass("changed");
   clearChangedElements();
-  updateSaveButton();
 
   const dataStr = JSON.stringify(jsonData, null, 2);
   // Use the exact MIME type that matches the external tool registration
