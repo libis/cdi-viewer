@@ -293,7 +293,7 @@ npm run test:coverage # Generate coverage report
 npm run lint          # Check code quality (ESLint + Prettier)
 ```
 
-### Architecture
+### Architecture Overview
 
 - **Core SHACL + SPARQL** - Full SHACL validation with SPARQL constraints (~1.1MB)
 - **ES6 modules** - Modern code with proper imports (like shacl-engine examples)
@@ -302,6 +302,190 @@ npm run lint          # Check code quality (ESLint + Prettier)
 - **Production ready** - Configurable logging, clean code
 - **Dual deployment** - Standalone (GitHub Pages) + Dataverse integration
 - **Test coverage** - 26 tests preventing regressions
+
+### Data Flow & State Management
+
+The editor uses a **manual synchronization pattern** without automatic data binding frameworks. This design prioritizes simplicity, transparency, and control over edit operations.
+
+#### Core Data Structures
+
+**State Management (`state.js`):**
+
+```javascript
+{
+  jsonData: Object|null,      // Current working copy of JSON-LD document
+  originalData: Object|null,  // Immutable snapshot for reset functionality
+  changedElements: Set,       // Tracks modified properties (composite IDs)
+  // ... 12 other state properties
+}
+```
+
+- **`jsonData`** - The live working copy that gets modified as users edit
+- **`originalData`** - Immutable backup created when loading/creating documents (never modified)
+- **`changedElements`** - Persistent Set storing composite IDs like `"nodeId.propertyKey"`
+
+#### One-Way Data Flow
+
+The editor follows a **unidirectional data flow** pattern:
+
+```
+┌─────────────┐
+│  jsonData   │  (Source of truth in state.js)
+└──────┬──────┘
+       │
+       ▼  render.js: createTree()
+┌─────────────┐
+│  DOM Tree   │  (Visual representation)
+└──────┬──────┘
+       │
+       ▼  User edits inputs
+┌─────────────┐
+│  Modified   │  (Changed properties tracked in Set)
+│  DOM State  │
+└──────┬──────┘
+       │
+       ▼  data-extraction.js: collectChangesFromDOM()
+┌─────────────┐
+│  jsonData   │  (Synchronized back before save/export)
+└─────────────┘
+```
+
+**Key Points:**
+
+1. **No automatic binding** - Changes in DOM don't instantly update `jsonData`
+2. **Explicit sync** - Must call `collectChangesFromDOM()` to sync DOM → `jsonData`
+3. **Change tracking** - Modified properties are tracked in a persistent Set
+4. **Sync timing** - Synchronization happens before save, export, or mode toggle
+
+#### Change Tracking Implementation
+
+**When a property is edited:**
+
+```javascript
+// event-handlers.js: Property change handler
+$(document).on("change", ".property-input", function () {
+  const $propertyRow = $(this).closest(".property-row");
+  const nodeId = $propertyRow.attr("data-node-id");
+  const propertyKey = $propertyRow.attr("data-property");
+
+  // Mark as changed in UI
+  $propertyRow.addClass("changed");
+
+  // Track in persistent Set with composite ID
+  addChangedElement(`${nodeId}.${propertyKey}`);
+  updateChangedIndicator(); // Show "X unsaved changes"
+});
+```
+
+**Composite ID structure:** `"nodeId.propertyKey"`
+
+- Example: `"_:b0.name"`, `"http://example.org/dataset/1.description"`
+- Allows precise tracking of which properties on which nodes were modified
+- Prevents duplicate tracking (Set automatically handles uniqueness)
+
+#### Synchronization Process
+
+**When to sync** - `collectChangesFromDOM()` is called before:
+
+1. **Save to Dataverse** (`saveToDataverse()`)
+2. **Export JSON-LD** (`exportData()`)
+3. **Toggle Edit Mode** (from edit → view)
+
+**Sync implementation:**
+
+```javascript
+// data-extraction.js: collectChangesFromDOM()
+function collectChangesFromDOM() {
+  // 1. Check if any changes exist
+  if (getChangedElementsCount() === 0) return;
+
+  // 2. Parse composite IDs from Set
+  const changedIds = getAllChangedElements(); // Returns Set<string>
+  // ["_:b0.name", "http://example.org/1.description"]
+
+  // 3. Group changes by nodeId
+  const changesByNode = new Map();
+  // Map { "_:b0" => Set{"name", "age"}, ... }
+
+  // 4. For each changed property:
+  for (const [nodeId, propertyKeys] of changesByNode) {
+    const node = getNodeById(nodeId); // Find node in jsonData
+    const $card = $(`.node-card[data-node-id="${nodeId}"]`);
+
+    for (const key of propertyKeys) {
+      const $input = $card.find(`[data-property="${key}"] input`);
+      const value = $input.val(); // Read current DOM value
+
+      // 5. Mutate jsonData directly
+      node[key] = value; // In-place update
+    }
+  }
+
+  // jsonData is now synchronized with DOM edits
+  // Note: Changed tracking persists until save/export completes
+}
+```
+
+**After successful save/export:**
+
+```javascript
+// Clear visual indicators and tracking
+$(".property-row.changed").removeClass("changed");
+clearChangedElements(); // Empty the Set
+```
+
+#### Why Manual Sync?
+
+**Advantages:**
+
+- ✅ **Explicit control** - Clear when data flows between DOM and state
+- ✅ **Performance** - No overhead of automatic observers/dirty checking
+- ✅ **Transparency** - Easy to debug (single sync point)
+- ✅ **Simple architecture** - No framework complexity, minimal dependencies
+- ✅ **Batched updates** - Collect all changes at once before sync
+
+**Trade-offs:**
+
+- ⚠️ Must remember to call `collectChangesFromDOM()` before operations that need current data
+- ⚠️ DOM state can diverge from `jsonData` until explicit sync
+- ⚠️ Requires careful tracking to know when sync is needed
+
+This pattern is ideal for **document editing workflows** where users make multiple changes before saving, rather than real-time collaborative editing scenarios.
+
+#### Critical Architectural Rule
+
+**⚠️ DO NOT read property values directly from `jsonData` during editing** - the DOM is the source of truth for current values until `collectChangesFromDOM()` is called.
+
+**Correct patterns:**
+
+```javascript
+// ✅ Before save/export: sync first
+collectChangesFromDOM();
+const currentData = getJsonData(); // Now accurate
+
+// ✅ During rendering: read from jsonData (render creates DOM from data)
+function renderNode(node) {
+  // node comes from jsonData
+  createInputForValue(node.propertyKey); // Creates DOM from data
+}
+```
+
+**Incorrect patterns:**
+
+```javascript
+// ❌ WRONG: Reading jsonData during editing without sync
+function validateCurrentData() {
+  const data = getJsonData(); // Outdated! DOM has unsaved changes
+  validateData(data); // Will validate old values
+}
+
+// ✅ CORRECT: Sync first, then read
+function validateCurrentData() {
+  collectChangesFromDOM(); // Sync DOM → jsonData
+  const data = getJsonData(); // Now current
+  validateData(data);
+}
+```
 
 ## 📁 Project Structure
 
