@@ -97,7 +97,7 @@ async function parseShapes(shapesText) {
   const store = new N3.Store();
 
   return new Promise((resolve, reject) => {
-    parser.parse(shapesText, (error, quad, _prefixes) => {
+    parser.parse(shapesText, (error, quad) => {
       if (error) {
         reject(error);
       } else if (quad) {
@@ -247,7 +247,7 @@ export async function jsonLdToN3Store(jsonLdData) {
     const parser = new N3.Parser({ format: "N-Quads" });
 
     return new Promise((resolve, reject) => {
-      parser.parse(nquads, (error, quad, _prefixes) => {
+      parser.parse(nquads, (error, quad) => {
         if (error) {
           reject(error);
         } else if (quad) {
