@@ -169,7 +169,7 @@ All planned features for v1.0 release have been implemented. Focus now on:
 
 **Dataverse Integration Testing (To Do Tomorrow):**
 
-**Integrated Mode (fileId + siteUrl parameters):**
+**Embedded Mode (callback parameter present):**
 
 - Load viewer with fileId and siteUrl parameters
 - Verify URL field hidden in save modal

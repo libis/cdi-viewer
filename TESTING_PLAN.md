@@ -130,10 +130,10 @@
   - [ ] Handle save error - FAILING (error handling flow different)
   - **NOTE**: Feature works manually per user - tests need modal selector refinement
 
-- [x] **Integrated Mode** (4/6 tests - 67%) - `tests/e2e/dataverse/integrated-mode.spec.ts`
-  - [x] Detect integrated mode from URL parameters
-  - [x] Hide file loading buttons in integrated mode
-  - [x] Show save button in integrated mode
+- [x] **Embedded Mode** (4/6 tests - 67%) - `tests/e2e/dataverse/embedded-mode.spec.ts`
+  - [x] Detect embedded mode from URL parameters
+  - [x] Hide file loading buttons in embedded mode
+  - [x] Show save button in embedded mode
   - [ ] Pre-fill filename in save modal - FAILING (save modal doesn't exist or different structure)
   - [x] Maintain Dataverse context during edits
   - [ ] Handle missing fileId parameter - FAILING (error handling incomplete)

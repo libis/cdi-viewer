@@ -88,7 +88,10 @@ Provides real-time validation, property classification, complex object editing, 
 
 - **Load local files** for standalone editing
 - **Load from Dataverse** with URL parser (6 formats supported)
-- **Save to Dataverse** (replace file or add new)
+- **Save to Dataverse** with smart visibility:
+  - Standalone mode: Always visible (can save to Dataverse anytime)
+  - Embedded mode: Visible only when changes exist (already viewing from Dataverse)
+  - Reactive updates via change tracking
 - **Export JSON-LD** with all modifications
 - **Change tracking** with visual indicators
 

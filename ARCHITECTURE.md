@@ -156,6 +156,16 @@ window.currentLogLevel; // Logging level (ERROR/WARN/INFO/DEBUG)
 window.defaultTypeNamespace; // Default namespace for unprefixed types (configurable)
 ```
 
+**State Properties (state.js):**
+
+```javascript
+state.isEmbeddedMode; // Boolean: true when callback parameter present (embedded in Dataverse iframe)
+// Set in core.js when callback parameter detected:
+// if (callbackParam) {
+//   setIsEmbeddedMode(true);
+// }
+```
+
 **Configuration Variables:**
 
 ```javascript
@@ -427,6 +437,34 @@ attachEventHandlers();
 - Load Local File button
 - Property add/delete buttons
 - Value edit inputs
+
+**Save Button Visibility Management:**
+
+```javascript
+// Global function for reactive button visibility
+window.updateSaveButtonVisibility = function updateSaveButtonVisibility() {
+  const hasChanges = getChangedElementsCount() > 0;
+  const isEmbedded = getIsEmbeddedMode();
+  
+  // Logic:
+  // - Standalone (!isEmbedded): Always show (can save to Dataverse anytime)
+  // - Embedded (isEmbedded): Show only when changes exist
+  if (!isEmbedded || hasChanges) {
+    $("#save-btn").removeClass("hidden");
+  } else {
+    $("#save-btn").addClass("hidden");
+  }
+};
+```
+
+**Called from:**
+- `addChangedElement()` in state.js (after every change)
+- `clearChangedElements()` in state.js (after save/export)
+- Initial load in core.js (lines 242-244)
+- After loading local file (event-handlers.js lines 123-127)
+- After loading from Dataverse (event-handlers.js lines 313-317)
+
+**Purpose:** Reactive button visibility based on mode and change tracking.
 
 **Critical Pattern:**
 

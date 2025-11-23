@@ -78,6 +78,11 @@ A comprehensive viewer and editor for JSON-LD metadata with SHACL validation. Wo
 - **Export JSON-LD**: Download modified data as JSON-LD file
 - **Change Tracking**: Visual indicators for modified properties
 - **View/Edit Modes**: Toggle between viewing and editing
+- **Filename Handling**:
+  - Embedded mode: Extracted from `/api/files/{fileId}` metadata API
+  - Uses `metadata.data.dataFile.filename` field from response
+  - Falls back to "dataverse-file.jsonld" if API call fails
+  - Implementation: See `event-handlers.js` lines 240-265
 
 ## Technical Architecture
 

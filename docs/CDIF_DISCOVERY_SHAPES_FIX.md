@@ -4,6 +4,11 @@
 
 The cdi-viewer now supports **full SPARQL-based SHACL validation** via shacl-engine, including `sh:SPARQLTarget` and `sh:SPARQLConstraint` features. This means CDIF Discovery shapes can use SPARQL-based targeting for hierarchical node selection without conversion.
 
+**Historical Note:** The conversion patterns documented below are preserved for reference, showing how to adapt SPARQL-based shapes for Core SHACL-only validators. With shacl-engine's SPARQL support, these conversions are no longer necessary for this viewer. They remain useful for:
+- Understanding Core SHACL alternatives
+- Supporting environments without SPARQL engines
+- Educational purposes
+
 ## Usage
 
 1. Open the viewer at [https://libis.github.io/cdi-viewer/](https://libis.github.io/cdi-viewer/)
