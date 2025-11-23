@@ -211,11 +211,11 @@ export function createAndAddRootNode(nodeType) {
   // Re-render (use dynamic import to avoid circular dependency)
   import("./render.js").then((module) => module.renderData());
 
-  // Scroll to new node and highlight it
+  // Highlight new node without scrolling (user is at Add Node section)
   setTimeout(() => {
     const newCard = $(`.node-card[data-node-id="${newNodeId}"]`);
     if (newCard.length) {
-      newCard[0].scrollIntoView({ behavior: "smooth", block: "center" });
+      // Don't scroll - user is working in the Add Node section at bottom
       newCard.addClass("highlight");
       setTimeout(() => newCard.removeClass("highlight"), 2000);
     }

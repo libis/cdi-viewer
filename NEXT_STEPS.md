@@ -82,6 +82,11 @@
 
 - ✅ Export button changed to green (consistent with I/O actions)
 - ✅ Add Root Node button moved to bottom of form (inline component)
+- ✅ **Removed auto-scrolling after Add actions (Nov 23):**
+  - No scroll after adding namespace (stays at Add Namespace modal/dropdown area)
+  - No scroll after adding custom property (stays at Add Properties section)
+  - No scroll after adding root node (stays at Add Root Node section)
+  - Keeps user focused on their current work area
 
 ### Persistent Change Tracking & Node Deletion (November 23, 2025)
 

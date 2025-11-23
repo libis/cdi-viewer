@@ -335,11 +335,11 @@ export function addComplexPropertyToNode(nodeId, suggestion) {
   // Re-render to show the new node (use dynamic import to avoid circular dependency)
   import("./render.js").then((module) => module.renderData());
 
-  // Scroll to new node and highlight
+  // Highlight new node without scrolling (user is at Add Properties section)
   setTimeout(() => {
     const newCard = $(`.node-card[data-node-id="${newNodeId}"]`);
     if (newCard.length) {
-      newCard[0].scrollIntoView({ behavior: "smooth", block: "center" });
+      // Don't scroll - user is working in the Add Properties section
       newCard.addClass("changed");
 
       // Track all new properties as changed
