@@ -63,10 +63,25 @@
 
 ### Document Creation (November 2025)
 
+**Status: Working with Known Issue**
+
 - ✅ Create new empty documents from scratch
 - ✅ Shape-specific contexts and filenames
 - ✅ Support for DDI-CDI, CDIF, DCAT-AP, DataCube, SKOS, generic
 - ✅ Automatic initialization when adding root node to empty state
+
+**Tested Nov 23, 2025:**
+- ✅ **WITH SHACL shapes loaded**: Works perfectly - can create complete documents with nodes and properties
+- ✅ **Custom nodes as root (SHACL loaded)**: Works perfectly - Add Properties panel available
+- ❌ **WITHOUT SHACL shapes (generic mode)**: Bug found - root node created but Add Properties panel missing
+
+**Known Bug: Generic Mode (No SHACL)**
+- Symptom: When SHACL dropdown shows "-- Select SHACL shapes --", adding a root node works but the node lacks the Add Properties panel
+- Impact: Cannot create multi-level document structures in pure generic mode
+- Workaround: Load any SHACL shape first, then can create custom nodes with full functionality
+- Root Cause: Add Properties panel rendering logic requires SHACL context
+- Priority: Medium - Generic mode is edge case, workaround exists
+- Fix Required: Modify property panel rendering to work without SHACL context
 
 ### Unified Add Component (November 2025)
 
@@ -178,6 +193,16 @@ All planned features for v1.0 release have been implemented. Focus now on:
   - **Skipped**: 22 tests (13 Dataverse + 9 Document Creation) - testing separately
   - **Failing**: 13 tests - all test infrastructure issues, zero application bugs
 
+**Known Bugs (November 23, 2025):**
+
+1. ❌ **Generic Mode Document Creation** (MEDIUM PRIORITY)
+   - When no SHACL shape is selected ("-- Select SHACL shapes --" placeholder)
+   - Adding root node works, but node lacks Add Properties panel
+   - Cannot create multi-level structures in pure generic mode
+   - Workaround: Load any SHACL shape first, then custom nodes work fine
+   - Likely cause: Property panel rendering requires SHACL context
+   - See "Document Creation" section above for full details
+
 **Recent Fixes (Nov 23, 2025):**
 
 - ✅ **THREE CRITICAL BUG FIXES:**
@@ -203,7 +228,13 @@ All planned features for v1.0 release have been implemented. Focus now on:
 **CLEANED UP (Nov 23, 2025):**
 - ✅ **Removed**: Cross-browser/responsive (7 tests) - not needed
 - ✅ **Skipped**: Dataverse integration (13 tests) - testing separately with local instance
-- ✅ **Skipped**: Document creation (9 tests) - known issues, not critical
+- ✅ **Skipped**: Document creation (9 tests) - functionality works with known issue (see Document Creation section above)
+
+**Document Creation Test Note (Nov 23):**
+- Tests were skipped due to earlier observed issues
+- Manual testing revealed: Works well in normal use (with SHACL shapes)
+- Only bug is generic mode (no SHACL) missing Add Properties panel
+- Tests can be re-enabled and fixed to focus on generic mode bug specifically
 
 **TO FIX LATER (Low Priority - Test Infrastructure Only):**
 1. **Array Operations (3 tests)** - Test expectations wrong, functionality works ✅
