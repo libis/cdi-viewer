@@ -43,20 +43,50 @@ export function log(level, ...args) {
   }
 }
 
-// Application state
+/**
+ * Application state
+ * 
+ * Centralized state management for the JSON-LD editor application.
+ * All state modifications should go through the getter/setter functions below.
+ */
 export const state = {
+  /** @type {Object|null} The current JSON-LD document being edited (@context, @graph, etc.) */
   jsonData: null,
+  
+  /** @type {Object|null} Raw SHACL shapes data (Turtle format parsed) */
   shaclShapes: null,
+  
+  /** @type {Object|null} N3 Store containing SHACL shapes for validation and property suggestions */
   shaclShapesStore: null,
+  
+  /** @type {boolean} Whether edit mode is currently enabled (false = view mode) */
   isEditMode: false,
+  
+  /** @type {Object|null} Original JSON-LD data snapshot (for reset/comparison purposes) */
   originalData: null,
+  
+  /** @type {Object|null} Latest SHACL validation report (conforms, results, etc.) */
   validationReport: null,
+  
+  /** @type {string|null} Dataverse file ID (for integrated mode - when embedded in Dataverse) */
   fileId: null,
+  
+  /** @type {string|null} Dataverse site URL (for integrated mode - when embedded in Dataverse) */
   siteUrl: null,
+  
+  /** @type {string} Suggested filename for export/save operations */
   originalFileName: "cdi-metadata.jsonld",
+  
+  /** @type {Object|null} Expanded JSON-LD format (all contexts resolved, used for validation) */
   expandedJsonLd: null,
+  
+  /** @type {string|null} Currently selected SHACL shape source ID (e.g., "ddi-cdi-official", "cdif-core") */
   currentShapeSource: null,
+  
+  /** @type {boolean} Whether the loaded document originally had a @graph array (vs single object) */
   hadOriginalGraph: true,
+  
+  /** @type {string|null} Default namespace to use for custom types (e.g., "http://example.org/") */
   defaultTypeNamespace: null,
 };
 
