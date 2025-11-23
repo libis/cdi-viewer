@@ -21,8 +21,6 @@ import {
   getValidationReport,
   setFileId,
   setSiteUrl,
-  getFileId,
-  getSiteUrl,
   getChangedElementsCount,
   getIsEmbeddedMode,
 } from "./state.js";
@@ -123,10 +121,9 @@ export function setupEventHandlers() {
           await validateDataImmediate();
         }
 
-        // In standalone mode, ensure save button is visible
-        const isStandaloneMode = !(getFileId() && getSiteUrl());
-        if (isStandaloneMode) {
-          $("#save-btn").removeClass("hidden");
+        // Update save button visibility (for standalone mode)
+        if (typeof window.updateSaveButtonVisibility === "function") {
+          window.updateSaveButtonVisibility();
         }
 
         $("#content").prepend(`
