@@ -76,30 +76,52 @@ export function collectChangesFromDOM() {
         return;
       }
 
-      const inputs = $propertyRow.find("input, textarea, select");
-
       // Determine if the original value was an array by checking the current node structure
       const originalValue = node[key];
       const wasArray = Array.isArray(originalValue);
 
       if (wasArray) {
-        // Array of values - collect all inputs
+        // Array of values - collect from .array-value divs, excluding nested inline nodes
         const values = [];
-        inputs.each(function () {
-          let val = $(this).val();
-          try {
-            val = JSON.parse(val);
-          } catch (e) {
-            // Keep as string
+        const $arrayValues = $propertyRow
+          .children(".property-value")
+          .children(".array-value");
+        
+        $arrayValues.each(function () {
+          const $arrayValue = $(this);
+          
+          // Check if this array value contains an inline node card (nested object)
+          const $inlineCard = $arrayValue.children(".inline-node-card");
+          if ($inlineCard.length > 0) {
+            // This is a reference/object - keep original value structure
+            const idx = $arrayValue.index();
+            if (idx < originalValue.length) {
+              values.push(originalValue[idx]);
+            }
+          } else {
+            // This is a simple value - collect from input
+            const $input = $arrayValue.find("input, textarea, select").first();
+            if ($input.length > 0) {
+              let val = $input.val();
+              try {
+                val = JSON.parse(val);
+              } catch (e) {
+                // Keep as string
+              }
+              values.push(val);
+            }
           }
-          values.push(val);
         });
         node[key] = values;
       } else {
-        // Single value - use the first input only
-        if (inputs.length > 0) {
-          const input = inputs.eq(0);
-          let val = input.val();
+        // Single value - use direct child input only, not from nested nodes
+        const $input = $propertyRow
+          .children(".property-value")
+          .children("input, textarea, select")
+          .first();
+          
+        if ($input.length > 0) {
+          let val = $input.val();
 
           try {
             val = JSON.parse(val);
@@ -117,8 +139,13 @@ export function collectChangesFromDOM() {
 }
 
 export function saveChanges() {
-  // First, collect any changes from the DOM
-  collectChangesFromDOM();
+  // Note: In view mode, there are no input fields to collect from.
+  // Changes should already be in jsonData from when they were made in edit mode.
+  // Only collect from DOM if we're currently in edit mode.
+  const isEditMode = window.isEditMode;
+  if (isEditMode) {
+    collectChangesFromDOM();
+  }
 
   // Detect if we're in integrated mode (has fileId and siteUrl)
   const fileId = getFileId();
@@ -337,12 +364,17 @@ export async function saveToDataverse() {
 }
 
 export function exportData() {
+  // Note: In view mode, there are no input fields to collect from.
+  // Changes should already be in jsonData from when they were made in edit mode.
+  // Only collect from DOM if we're currently in edit mode.
+  const isEditMode = window.isEditMode;
+  if (isEditMode) {
+    collectChangesFromDOM();
+  }
+
   const jsonData = getJsonData();
 
-  // Collect any changes from DOM before exporting
-  collectChangesFromDOM();
-
-  // Clear changed tracking after collecting (export means data is saved)
+  // Clear changed tracking after export (export means data is saved)
   $(".property-row.changed").removeClass("changed");
   clearChangedElements();
 
