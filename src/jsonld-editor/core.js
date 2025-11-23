@@ -102,8 +102,7 @@ $(document).ready(async function () {
       // Show load local file button instead of error
       $("#load-local-btn").show();
       $("#load-dataverse-btn").show();
-      // In standalone mode, always show save button
-      $("#save-btn").removeClass("hidden");
+      // In standalone mode, save button visibility handled by event-handlers
       $("#content").html(`
                         <div class="alert alert-info">
                             <strong>No Dataverse parameters detected.</strong> Use the "Load Local File" button in the top left to select a CDI JSON-LD file from your computer.
@@ -234,12 +233,26 @@ $(document).ready(async function () {
 
     // Setup event handlers
     setupEventHandlers();
+
+    // Update save button visibility based on mode (standalone vs embedded)
+    if (typeof window.updateSaveButtonVisibility === "function") {
+      window.updateSaveButtonVisibility();
+    }
+
+    // Trigger validation immediately after loading (if shapes are available)
+    // Import validateData dynamically to avoid circular dependency
+    if (selectedShape) {
+      // Use dynamic import to call validation after everything is set up
+      import("./validation.js").then(({ validateData }) => {
+        // Call validation directly without debounce delay for initial load
+        validateData();
+      });
+    }
   } catch (error) {
     console.error("Error loading data:", error);
     $("#load-local-btn").show();
     $("#load-dataverse-btn").show();
-    // In standalone mode (error case), always show save button
-    $("#save-btn").removeClass("hidden");
+    // Save button visibility handled by event-handlers
     $("#content").html(`
                     <div class="alert alert-danger">
                         <strong>Error:</strong> Failed to load CDI data. ${error.message}

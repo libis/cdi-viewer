@@ -21,6 +21,9 @@ import {
   getValidationReport,
   setFileId,
   setSiteUrl,
+  getFileId,
+  getSiteUrl,
+  getChangedElementsCount,
 } from "./state.js";
 import { normalizeToGraphFormat } from "./cdi-json-ld-helpers.js";
 import { loadShapes } from "./cdi-shacl-loader.js";
@@ -34,7 +37,6 @@ import {
 } from "./data-extraction.js";
 import { renderAddRootNodeComponent } from "./cdi-graph-helpers.js";
 import { parseDataverseUrl } from "./dataverse-url-parser.js";
-import { getFileId, getSiteUrl } from "./state.js";
 import {
   setupNamespaceHandlers,
   updateNamespaceSectionVisibility,
@@ -332,17 +334,11 @@ export function setupEventHandlers() {
     setIsEditMode(!currentEditMode);
     const isEditMode = getIsEditMode();
 
-    // Check if in standalone mode
-    const fileId = getFileId();
-    const siteUrl = getSiteUrl();
-    const isStandaloneMode = !(fileId && siteUrl);
-
     if (isEditMode) {
       $(this)
         .html('<span class="glyphicon glyphicon-eye-open"></span> View Mode')
         .removeClass("btn-primary")
         .addClass("btn-warning");
-      $("#save-btn").removeClass("hidden");
       $("#add-root-node-container").removeClass("hidden");
       renderAddRootNodeComponent();
       $("#add-namespace-btn").removeClass("hidden");
@@ -357,15 +353,15 @@ export function setupEventHandlers() {
         .html('<span class="glyphicon glyphicon-edit"></span> Enable Editing')
         .removeClass("btn-warning")
         .addClass("btn-primary");
-
-      // In standalone mode, keep save button visible even in view mode
-      if (!isStandaloneMode) {
-        $("#save-btn").addClass("hidden");
-      }
       $("#add-root-node-container").addClass("hidden");
       $("#add-namespace-btn").addClass("hidden");
 
       renderData();
+    }
+    
+    // Update save button visibility based on changes (in both modes)
+    if (window.updateSaveButtonVisibility) {
+      window.updateSaveButtonVisibility();
     }
     // Re-apply search highlights after re-rendering (use setTimeout to ensure DOM is ready)
     setTimeout(() => {
@@ -446,6 +442,24 @@ export function setupEventHandlers() {
   $("#filenameInput").on("input", function () {
     updateSaveButtonState();
   });
+
+  // Function to update save button visibility based on changes
+  // Export this so it can be called when changes are tracked
+  window.updateSaveButtonVisibility = function updateSaveButtonVisibility() {
+    const hasChanges = getChangedElementsCount() > 0;
+    const fileId = getFileId();
+    const siteUrl = getSiteUrl();
+    const isStandaloneMode = !(fileId && siteUrl);
+
+    // Show save button if:
+    // - In standalone mode (always), OR
+    // - In Dataverse mode AND there are changes
+    if (isStandaloneMode || hasChanges) {
+      $("#save-btn").removeClass("hidden");
+    } else {
+      $("#save-btn").addClass("hidden");
+    }
+  };
 
   // Function to update save button state
   function updateSaveButtonState() {

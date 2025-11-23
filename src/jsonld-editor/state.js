@@ -95,6 +95,10 @@ const changedElements = new Set();
 
 export function addChangedElement(compositeId) {
   changedElements.add(compositeId);
+  // Update save button visibility when changes are tracked
+  if (typeof window !== "undefined" && window.updateSaveButtonVisibility) {
+    window.updateSaveButtonVisibility();
+  }
 }
 
 export function hasChangedElement(compositeId) {
@@ -103,6 +107,10 @@ export function hasChangedElement(compositeId) {
 
 export function clearChangedElements() {
   changedElements.clear();
+  // Update save button visibility when changes are cleared
+  if (typeof window !== "undefined" && window.updateSaveButtonVisibility) {
+    window.updateSaveButtonVisibility();
+  }
 }
 
 export function getAllChangedElements() {
