@@ -206,25 +206,20 @@ export function renderNodeTree(node, index, depth) {
 
   card.append(body);
 
-  // Add property suggestions in edit mode
-  if (isEditMode && shaclShapesStore) {
-    const suggestions = getPropertySuggestions(node, types);
-
-    if (suggestions.length > 0) {
-      const suggestionsSection = createPropertySuggestionsSection(
-        suggestions,
-        id,
-        body
-      );
-      card.append(suggestionsSection);
-    } else {
-      // Even with no SHACL suggestions, allow adding custom properties using unified UI
-      const suggestionsSection = createPropertySuggestionsSection(
-        [], // No SHACL suggestions
-        id
-      );
-      card.append(suggestionsSection);
-    }
+  // Add property suggestions in edit mode (with or without SHACL shapes)
+  if (isEditMode) {
+    // Get SHACL suggestions if shapes are loaded, otherwise use empty array
+    const suggestions = shaclShapesStore 
+      ? getPropertySuggestions(node, types) 
+      : [];
+    
+    // Always show the Add Properties section in edit mode
+    // This allows custom property addition even without SHACL shapes
+    const suggestionsSection = createPropertySuggestionsSection(
+      suggestions,
+      id
+    );
+    card.append(suggestionsSection);
   }
 
   return card;
