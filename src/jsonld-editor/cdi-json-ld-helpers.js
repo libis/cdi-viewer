@@ -16,9 +16,6 @@ const LEGACY_CONTEXT_URLS = {
     "shapes/ddi-cdi.jsonld",
 };
 
-// Cached local context for fallback (optional)
-let cachedLocalContext = null;
-
 /**
  * Safely resolve a prefix to its namespace URI from a JSON-LD context.
  * Handles arrays, objects, and external URLs robustly.
@@ -34,7 +31,7 @@ export function resolvePrefix(context, prefix) {
 
   // Handle string context (URL) - we can't resolve from it directly
   if (typeof context === "string") {
-    return cachedLocalContext?.[prefix] || null;
+    return null;
   }
 
   // Handle object context (simple case)
@@ -57,9 +54,6 @@ export function resolvePrefix(context, prefix) {
         }
       }
     }
-
-    // Fallback to cached local context
-    return cachedLocalContext?.[prefix] || null;
   }
 
   return null;
@@ -170,33 +164,6 @@ function buildViewerContext(data) {
 
   // Case 2: single string or object – just resolve once.
   return resolveContextEntry(originalContext);
-}
-
-/**
- * Load and cache the local DDI-CDI context from ddi-cdi.jsonld.
- * This provides a fallback when external contexts fail to load.
- */
-async function _loadLocalContext() {
-  if (cachedLocalContext) {
-    return cachedLocalContext;
-  }
-
-  try {
-    const response = await fetch("shapes/ddi-cdi.jsonld");
-    if (response.ok) {
-      const doc = await response.json();
-      if (doc["@context"]) {
-        // Store the context for future use
-        cachedLocalContext = doc["@context"];
-        log(LOG_LEVEL.INFO, "Loaded local DDI-CDI context for fallback");
-        return cachedLocalContext;
-      }
-    }
-  } catch (error) {
-    console.warn("Could not load local DDI-CDI context:", error);
-  }
-
-  return null;
 }
 
 // Normalize JSON-LD to @graph format
