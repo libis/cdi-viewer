@@ -9,6 +9,7 @@ import {
   addChangedElement,
   hasChangedElement,
 } from "./state.js";
+import { collectChangesFromDOM } from "./data-extraction.js";
 import { classifyProperty } from "./cdi-shacl-helpers.js";
 import { scheduleValidation } from "./validation.js";
 import { humanizeKey } from "./text-utils.js";
@@ -164,6 +165,8 @@ export function renderNodeTree(node, index, depth) {
           })
         ) {
           if (deleteNode(id)) {
+            // Collect any unsaved DOM changes before re-rendering
+            collectChangesFromDOM();
             // Re-render to show updated graph
             renderData();
           }
@@ -480,6 +483,7 @@ function renderProperty(key, value, nodeId, nodeTypes) {
               { title: "Convert to Single", confirmText: "Convert" }
             )
           ) {
+            collectChangesFromDOM();
             convertPropertyToSingle(nodeId, key);
             renderData();
           }
@@ -537,6 +541,7 @@ function renderProperty(key, value, nodeId, nodeTypes) {
         )
         .css({ "margin-left": "5px" })
         .click(function () {
+          collectChangesFromDOM();
           convertPropertyToArray(nodeId, key);
           renderData();
         });
@@ -631,6 +636,7 @@ function showAddReferenceModal(nodeId, propertyKey, forArray) {
 
       if (existingNodeId) {
         // Add reference to existing node
+        collectChangesFromDOM();
         addReferenceToProperty(nodeId, propertyKey, existingNodeId);
         $("#addReferenceModal").modal("hide");
         renderData();
@@ -642,6 +648,7 @@ function showAddReferenceModal(nodeId, propertyKey, forArray) {
       ) {
         // Create new node
         const type = newNodeType || "Object";
+        collectChangesFromDOM();
         createAndReferenceNewNode(nodeId, propertyKey, type, forArray);
         $("#addReferenceModal").modal("hide");
         renderData();

@@ -206,8 +206,12 @@ export function renderNamespaceTable() {
           ) {
             removeNamespace(prefix);
             renderNamespaceTable();
-            // Use dynamic import to avoid circular dependency
-            import("./render.js").then((module) => module.renderData());
+            // Collect any unsaved DOM changes before re-rendering
+            import("./data-extraction.js").then((dataModule) => {
+              dataModule.collectChangesFromDOM();
+              // Use dynamic import to avoid circular dependency
+              import("./render.js").then((renderModule) => renderModule.renderData());
+            });
             // Dispatch custom event for namespace selectors to update
             window.dispatchEvent(new CustomEvent("namespacesChanged"));
           }
@@ -345,8 +349,12 @@ export function setupNamespaceHandlers() {
       $("#namespaceModal").modal("hide");
       renderNamespaceTable();
       updateNamespaceSectionVisibility(); // Make sure namespace section is visible
-      // Use dynamic import to avoid circular dependency
-      import("./render.js").then((module) => module.renderData());
+      // Collect any unsaved DOM changes before re-rendering
+      import("./data-extraction.js").then((dataModule) => {
+        dataModule.collectChangesFromDOM();
+        // Use dynamic import to avoid circular dependency
+        import("./render.js").then((renderModule) => renderModule.renderData());
+      });
       // Dispatch custom event for namespace selectors to update
       window.dispatchEvent(new CustomEvent("namespacesChanged"));
 

@@ -208,8 +208,12 @@ export function createAndAddRootNode(nodeType) {
   }
   jsonData["@graph"].push(newNode);
 
-  // Re-render (use dynamic import to avoid circular dependency)
-  import("./render.js").then((module) => module.renderData());
+  // Collect any unsaved DOM changes before re-rendering
+  import("./data-extraction.js").then((dataModule) => {
+    dataModule.collectChangesFromDOM();
+    // Re-render (use dynamic import to avoid circular dependency)
+    import("./render.js").then((renderModule) => renderModule.renderData());
+  });
 
   // Highlight new node without scrolling (user is at Add Node section)
   setTimeout(() => {

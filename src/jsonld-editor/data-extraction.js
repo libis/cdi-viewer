@@ -9,8 +9,6 @@ import {
   getSiteUrl,
   getFileId,
   getOriginalFileName,
-  getChangedElementsCount,
-  getAllChangedElements,
   clearChangedElements,
 } from "./state.js";
 import { parseDataverseUrl } from "./dataverse-url-parser.js";
@@ -18,74 +16,52 @@ import { showAlert } from "./modal-dialogs.js";
 import { getNodeById } from "./graph-structure.js";
 
 export function collectChangesFromDOM() {
-  // Check if there are any actual changes using the persistent Set
-  const hasChanges = getChangedElementsCount() > 0;
-  if (!hasChanges) {
-    return; // No changes, keep original jsonData unchanged
+  // Collect ALL properties from ALL visible nodes when in edit mode
+  // This ensures we don't lose any data during re-renders
+  const jsonData = getJsonData();
+  if (!jsonData || !jsonData["@graph"]) {
+    return;
   }
 
-  // Get all changed composite IDs from the Set
-  const changedIds = getAllChangedElements();
-
-  // Parse composite IDs and group by nodeId
-  const changesByNode = new Map();
-  changedIds.forEach((compositeId) => {
-    const dotIndex = compositeId.indexOf(".");
-    if (dotIndex === -1) {
-      return; // Invalid format
+  // Process each node card in the DOM
+  $(".node-card").each(function () {
+    const $card = $(this);
+    const nodeId = $card.find(".node-id").first().text();
+    
+    if (!nodeId) {
+      return;
     }
 
-    const nodeId = compositeId.substring(0, dotIndex);
-    const propertyKey = compositeId.substring(dotIndex + 1);
-
-    if (!changesByNode.has(nodeId)) {
-      changesByNode.set(nodeId, new Set());
-    }
-    changesByNode.get(nodeId).add(propertyKey);
-  });
-
-  // Update only the changed properties in jsonData
-  changesByNode.forEach((propertyKeys, nodeId) => {
     const node = getNodeById(nodeId);
     if (!node) {
       return;
     }
 
-    // Find the card for this node
-    const $card = $(`.node-card`).filter(function () {
-      return $(this).find(".node-id").first().text() === nodeId;
-    });
+    // Process each property row for this node
+    const $propertyRows = $card
+      .children(".node-body")
+      .find(".property-row")
+      .filter(function () {
+        // Only process properties that belong to THIS node (not nested inline nodes)
+        return $(this).attr("data-node-id") === nodeId;
+      });
 
-    if ($card.length === 0) {
-      return;
-    }
-
-    // Update each changed property
-    propertyKeys.forEach((key) => {
-      // CRITICAL: Use children().find() to avoid selecting nested node properties
-      // .find() alone would search ALL descendants including nested nodes
-      const $propertyRow = $card
-        .children(".node-body")
-        .find(`.property-row[data-property="${key}"]`)
-        .filter(function () {
-          // Double-check this property row belongs to THIS node, not a nested one
-          return $(this).attr("data-node-id") === nodeId;
-        });
-
-      if ($propertyRow.length === 0) {
+    $propertyRows.each(function () {
+      const $propertyRow = $(this);
+      const key = $propertyRow.attr("data-property");
+      
+      if (!key) {
         return;
       }
 
-      // Determine if the original value was an array by checking the current node structure
-      const originalValue = node[key];
-      const wasArray = Array.isArray(originalValue);
+      // Check if this is an array property by looking at the DOM structure
+      const $arrayValues = $propertyRow
+        .children(".property-value")
+        .children(".array-value");
 
-      if (wasArray) {
-        // Array of values - collect from .array-value divs, excluding nested inline nodes
+      if ($arrayValues.length > 0) {
+        // This is an array - collect all values
         const values = [];
-        const $arrayValues = $propertyRow
-          .children(".property-value")
-          .children(".array-value");
         
         $arrayValues.each(function () {
           const $arrayValue = $(this);
@@ -93,10 +69,13 @@ export function collectChangesFromDOM() {
           // Check if this array value contains an inline node card (nested object)
           const $inlineCard = $arrayValue.children(".inline-node-card");
           if ($inlineCard.length > 0) {
-            // This is a reference/object - keep original value structure
-            const idx = $arrayValue.index();
-            if (idx < originalValue.length) {
-              values.push(originalValue[idx]);
+            // This is a reference/object - get from current node data
+            const currentValue = node[key];
+            if (Array.isArray(currentValue)) {
+              const idx = $arrayValue.index();
+              if (idx < currentValue.length) {
+                values.push(currentValue[idx]);
+              }
             }
           } else {
             // This is a simple value - collect from input
@@ -112,9 +91,11 @@ export function collectChangesFromDOM() {
             }
           }
         });
+        
+        // Update the array in jsonData
         node[key] = values;
       } else {
-        // Single value - use direct child input only, not from nested nodes
+        // Single value - look for input in property-value container
         const $input = $propertyRow
           .children(".property-value")
           .children("input, textarea, select")
@@ -134,7 +115,7 @@ export function collectChangesFromDOM() {
     });
   });
 
-  // jsonData['@graph'] is already updated in place - no need to replace it
+  // jsonData['@graph'] is already updated in place
   // NOTE: We do NOT clear the changed tracking here - that only happens after save/export
 }
 

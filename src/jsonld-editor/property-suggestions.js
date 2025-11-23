@@ -305,13 +305,21 @@ export function createPropertySuggestionsSection(suggestions, nodeId) {
         addComplexPropertyToNode(nodeId, suggestion);
       } else {
         // Add the property to the data and re-render
-        addPropertyToNode(nodeId, suggestion.path, "");
-        import("./render.js").then((module) => module.renderData());
+        // Collect any unsaved changes first to prevent data loss
+        import("./data-extraction.js").then((dataModule) => {
+          dataModule.collectChangesFromDOM();
+          addPropertyToNode(nodeId, suggestion.path, "");
+          import("./render.js").then((renderModule) => renderModule.renderData());
+        });
       }
     },
     onAddCustom: (fullName) => {
-      addPropertyToNode(nodeId, fullName, "");
-      import("./render.js").then((module) => module.renderData());
+      // Collect any unsaved changes first to prevent data loss
+      import("./data-extraction.js").then((dataModule) => {
+        dataModule.collectChangesFromDOM();
+        addPropertyToNode(nodeId, fullName, "");
+        import("./render.js").then((renderModule) => renderModule.renderData());
+      });
     },
   });
 }
@@ -332,8 +340,12 @@ export function addComplexPropertyToNode(nodeId, suggestion) {
     asArray
   );
 
-  // Re-render to show the new node (use dynamic import to avoid circular dependency)
-  import("./render.js").then((module) => module.renderData());
+  // Collect any unsaved DOM changes before re-rendering
+  import("./data-extraction.js").then((dataModule) => {
+    dataModule.collectChangesFromDOM();
+    // Re-render to show the new node (use dynamic import to avoid circular dependency)
+    import("./render.js").then((renderModule) => renderModule.renderData());
+  });
 
   // Highlight new node without scrolling (user is at Add Properties section)
   setTimeout(() => {
