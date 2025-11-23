@@ -14,6 +14,7 @@ import {
   setFileId,
   setSiteUrl,
   setOriginalFileName,
+  setIsEmbeddedMode,
   getFileId,
   getSiteUrl,
   getJsonData,
@@ -63,6 +64,9 @@ $(document).ready(async function () {
     // Check if we have a callback parameter (external tool invocation)
     const callbackParam = urlParams.get("callback");
     if (callbackParam) {
+      // Mark as embedded mode (Dataverse iframe)
+      setIsEmbeddedMode(true);
+      
       // Decode the callback URL
       const callbackUrl = atob(callbackParam);
 

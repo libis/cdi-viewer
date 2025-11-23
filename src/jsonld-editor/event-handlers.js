@@ -24,6 +24,7 @@ import {
   getFileId,
   getSiteUrl,
   getChangedElementsCount,
+  getIsEmbeddedMode,
 } from "./state.js";
 import { normalizeToGraphFormat } from "./cdi-json-ld-helpers.js";
 import { loadShapes } from "./cdi-shacl-loader.js";
@@ -238,15 +239,31 @@ export function setupEventHandlers() {
         const fileText = await response.text();
         const parsedData = JSON.parse(fileText);
 
-        // Extract filename from response headers or URL
-        const contentDisposition = response.headers.get("Content-Disposition");
+        // Try to get the original filename from file metadata API
         let filename = "dataverse-file.jsonld";
-        if (contentDisposition) {
-          const filenameMatch =
-            contentDisposition.match(/filename="?([^"]+)"?/);
-          if (filenameMatch) {
-            filename = filenameMatch[1];
+        try {
+          const metadataUrl = `${parseResult.serverUrl}/api/files/${parseResult.fileId}`;
+          const metadataFetchOptions = {
+            method: "GET",
+            headers: {},
+          };
+          if (apiToken) {
+            metadataFetchOptions.headers["X-Dataverse-key"] = apiToken;
           }
+          
+          const metadataResponse = await fetch(metadataUrl, metadataFetchOptions);
+          if (metadataResponse.ok) {
+            const metadata = await metadataResponse.json();
+            if (
+              metadata.data &&
+              metadata.data.dataFile &&
+              metadata.data.dataFile.filename
+            ) {
+              filename = metadata.data.dataFile.filename;
+            }
+          }
+        } catch (e) {
+          console.warn("Could not fetch filename from metadata, using default:", e);
         }
 
         // Set filename and IDs for export and future saves
@@ -297,10 +314,9 @@ export function setupEventHandlers() {
         // Update namespace section visibility
         updateNamespaceSectionVisibility();
 
-        // In standalone mode, ensure save button is visible
-        const isStandaloneMode = !(getFileId() && getSiteUrl());
-        if (isStandaloneMode) {
-          $("#save-btn").removeClass("hidden");
+        // Update save button visibility (for standalone mode)
+        if (typeof window.updateSaveButtonVisibility === "function") {
+          window.updateSaveButtonVisibility();
         }
 
         $("#content").prepend(`
@@ -447,14 +463,12 @@ export function setupEventHandlers() {
   // Export this so it can be called when changes are tracked
   window.updateSaveButtonVisibility = function updateSaveButtonVisibility() {
     const hasChanges = getChangedElementsCount() > 0;
-    const fileId = getFileId();
-    const siteUrl = getSiteUrl();
-    const isStandaloneMode = !(fileId && siteUrl);
+    const isEmbedded = getIsEmbeddedMode();
 
     // Show save button if:
     // - In standalone mode (always), OR
-    // - In Dataverse mode AND there are changes
-    if (isStandaloneMode || hasChanges) {
+    // - In embedded mode AND there are changes
+    if (!isEmbedded || hasChanges) {
       $("#save-btn").removeClass("hidden");
     } else {
       $("#save-btn").addClass("hidden");

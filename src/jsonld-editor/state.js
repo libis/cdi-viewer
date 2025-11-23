@@ -77,6 +77,9 @@ export const state = {
   /** @type {string} Suggested filename for export/save operations */
   originalFileName: "cdi-metadata.jsonld",
 
+  /** @type {boolean} Whether the app is running in embedded mode (true = Dataverse iframe, false = standalone) */
+  isEmbeddedMode: false,
+
   /** @type {Object|null} Expanded JSON-LD format (all contexts resolved, used for validation) */
   expandedJsonLd: null,
 
@@ -216,6 +219,14 @@ export function getHadOriginalGraph() {
 
 export function setHadOriginalGraph(had) {
   state.hadOriginalGraph = had;
+}
+
+export function getIsEmbeddedMode() {
+  return state.isEmbeddedMode;
+}
+
+export function setIsEmbeddedMode(embedded) {
+  state.isEmbeddedMode = embedded;
 }
 
 export function getDefaultTypeNamespace() {
