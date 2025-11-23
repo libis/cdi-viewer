@@ -322,7 +322,7 @@ export function setupEventHandlers() {
   // Toggle edit mode
   $("#toggle-edit-btn").click(async function () {
     const currentEditMode = getIsEditMode();
-    
+
     // Only collect changes when LEAVING edit mode (going to view mode)
     // Don't collect when entering edit mode from view mode (no inputs to collect from!)
     if (currentEditMode) {

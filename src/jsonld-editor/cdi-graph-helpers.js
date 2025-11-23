@@ -313,7 +313,7 @@ export function convertPropertyToArray(nodeId, propertyKey) {
     const currentValue = node[propertyKey];
     if (!Array.isArray(currentValue)) {
       node[propertyKey] = currentValue ? [currentValue] : [];
-      
+
       // Track this conversion as a change
       const compositeId = `${nodeId}.${propertyKey}`;
       addChangedElement(compositeId);
@@ -330,7 +330,7 @@ export function convertPropertyToSingle(nodeId, propertyKey) {
     const currentValue = node[propertyKey];
     if (Array.isArray(currentValue)) {
       node[propertyKey] = currentValue.length > 0 ? currentValue[0] : "";
-      
+
       // Track this conversion as a change
       const compositeId = `${nodeId}.${propertyKey}`;
       addChangedElement(compositeId);

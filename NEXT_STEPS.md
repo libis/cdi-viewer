@@ -166,69 +166,81 @@ All planned features for v1.0 release have been implemented. Focus now on:
 **Goal:** Fix any issues discovered during testing
 
 **Current Test Status (November 23, 2025):**
+
 - **Unit Tests:** ✅ 70/70 passing (100%)
 - **E2E Tests:** 67/118 passing (57%) - **+1 from validation fix**
 - **Total Failing E2E:** 51 tests (was 52)
 
 **Recent Fixes:**
+
 - ✅ "Changed" marking persistence across mode toggles
-- ✅ Array vs single value type preservation  
+- ✅ Array vs single value type preservation
 - ✅ Validation status persistence after shape switch ⭐ **FIXED TODAY**
 - ✅ Node deletion with cascade cleanup
 
 **Failing E2E Tests by Category:**
 
 **1. Cross-Browser & Responsive (7 tests)** - Test infrastructure issues
+
 - Load and display file correctly
-- Edit mode functions correctly  
+- Edit mode functions correctly
 - Search functionality works
 - Mobile/Tablet/Desktop view layouts
 - Touch interactions
 
 **2. Dataverse Integration (13 tests)** - Likely selector/timing issues
+
 - Error handling (2): Invalid JSON-LD, network errors
 - Integrated mode (2): Filename pre-fill, missing fileId
 - Load from Dataverse (3): Button, API token, URL parsing
 - Save to Dataverse (4): New file, replace, modifications, errors
-- *Note: Features work manually, tests need selector updates*
+- _Note: Features work manually, tests need selector updates_
 
 **3. Array Operations (4 tests)** - Need verification
+
 - Display array values correctly
 - Convert single ↔ array
 - Data integrity validation
 
 **4. Custom Namespace Properties (7 tests)** - Selector issues
+
 - Add/edit/delete custom properties
 - Namespace handling
 - Edit mode preservation
-- *Note: Tests use wrong CSS selectors, need `[data-testid]` updates*
+- _Note: Tests use wrong CSS selectors, need `[data-testid]` updates_
 
 **5. Custom Property UI (5 tests)** - Selector/timing issues
+
 - Bordered section display
 - Inline UI functionality
 - Keyboard navigation
 
 **6. Document Creation (9 tests)** - Timing/selector issues
+
 - Root node dropdown
 - Shape-specific documents
 - Context preservation
-- *Note: Features work, tests have timing issues*
+- _Note: Features work, tests have timing issues_
 
 **7. Editing & Export (3 tests)** - Need investigation
+
 - Changed marking persistence (may be fixed)
 - Export with changes
 - Export with validation errors
 
 **8. File Loading (2 tests)** - Likely selector issues
+
 - Load and render with validation
 - Edit mode toggle
 
 **9. Namespace Management (3 tests)** - Need verification
+
 - Prefix uniqueness validation
 - Delete custom namespace
 - Section visibility toggle
 
 **10. Validation (1 test)** - ✅ **ALL FIXED!**
+
 - ~~Handle validation with different shape sources~~ ✅ Fixed - validation now runs in view mode too
 
 **Action Plan:**
@@ -237,6 +249,7 @@ All planned features for v1.0 release have been implemented. Focus now on:
 **Priority 1: Verify Recent Fixes** ✅ **COMPLETED (Nov 23)**
 
 Test results from verification run:
+
 - **editing.spec.ts:** 8/9 passing (89%)
   - ❌ 1 test failing: "preserve changed marking when toggling" - timeout finding "Disable Editing" button
   - Test infrastructure issue: button selector problem
@@ -252,6 +265,7 @@ Test results from verification run:
   - Need to investigate: status may be cleared when switching shapes
 
 **Summary:** Most core fixes are working! Failures are primarily:
+
 1. Test selector issues (button not found)
 2. Test expectation mismatches (checking wrong elements)
 3. One actual issue: validation status cleared on shape switch
@@ -259,17 +273,20 @@ Test results from verification run:
 **Priority 2: Fix Validation Status Issue** ✅ **FIXED (Nov 23)**
 
 Fixed validation status persistence after shape switching:
+
 - **Root cause:** Validation only ran in edit mode after shape switch
 - **Solution:** Run validation in both edit and view modes when data is loaded
 - **Result:** Status remains visible showing current validation state
 - **Tests:** ✅ All 6/6 validation tests now passing (100%)
 
 Code changes:
+
 - Modified event-handlers.js shape selector and custom URL handlers
 - Changed logic to always validate when data exists, regardless of mode
 - Status shows persistent validation results instead of temporary "shapes loaded" message
 
 **Priority 3: Test Infrastructure Updates (NEXT - Estimated: 30-35 tests)**
+
 - Update E2E test selectors to use `data-testid` attributes
 - Fix timing issues with async operations
 - Add proper waits for animations/transitions
@@ -277,6 +294,7 @@ Code changes:
 - Categories: Custom properties (12), Document creation (9), Dataverse (13), Cross-browser (7)
 
 **Priority 3: Feature Verification (Estimated: 10-15 tests)**
+
 - Array operations: Verify conversion features work
 - Export: Test change preservation
 - Namespace: Test validation logic
