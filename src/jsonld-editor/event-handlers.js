@@ -321,10 +321,14 @@ export function setupEventHandlers() {
 
   // Toggle edit mode
   $("#toggle-edit-btn").click(async function () {
-    // Collect any changes before switching modes
-    collectChangesFromDOM();
-
     const currentEditMode = getIsEditMode();
+    
+    // Only collect changes when LEAVING edit mode (going to view mode)
+    // Don't collect when entering edit mode from view mode (no inputs to collect from!)
+    if (currentEditMode) {
+      collectChangesFromDOM();
+    }
+
     setIsEditMode(!currentEditMode);
     const isEditMode = getIsEditMode();
 
@@ -532,14 +536,14 @@ export function setupEventHandlers() {
           renderData();
         }
 
-        // Re-validate if in edit mode
-        if (getIsEditMode()) {
+        // Re-validate regardless of mode to show current validation status
+        if (getJsonData() && getJsonData()["@graph"]) {
           await validateDataImmediate();
         } else {
-          // Use the centralized status function with auto-clear
+          // No data loaded yet, just show shapes loaded message
           setValidationStatus(
-            '<span class="label label-success">Custom shapes loaded</span>',
-            2000
+            '<span class="label label-success">Shapes loaded</span>',
+            0 // Don't auto-clear
           );
         }
       } catch (error) {
@@ -579,14 +583,14 @@ export function setupEventHandlers() {
           renderData();
         }
 
-        // Re-validate if in edit mode
-        if (getIsEditMode()) {
+        // Re-validate regardless of mode to show current validation status
+        if (getJsonData() && getJsonData()["@graph"]) {
           await validateDataImmediate();
         } else {
-          // Use the centralized status function with auto-clear
+          // No data loaded yet, just show shapes loaded message
           setValidationStatus(
-            '<span class="label label-success">Custom shapes loaded</span>',
-            2000
+            '<span class="label label-success">Shapes loaded</span>',
+            0 // Don't auto-clear
           );
         }
       } catch (error) {

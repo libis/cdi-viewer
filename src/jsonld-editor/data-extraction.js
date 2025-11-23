@@ -62,7 +62,13 @@ export function collectChangesFromDOM() {
 
     // Update each changed property
     propertyKeys.forEach((key) => {
-      const $propertyRow = $card.find(`.property-row[data-property="${key}"]`);
+      // CRITICAL: Use children().find() to avoid selecting nested node properties
+      // .find() alone would search ALL descendants including nested nodes
+      const $propertyRow = $card.children(".node-body").find(`.property-row[data-property="${key}"]`).filter(function() {
+        // Double-check this property row belongs to THIS node, not a nested one
+        return $(this).attr("data-node-id") === nodeId;
+      });
+      
       if ($propertyRow.length === 0) {
         return;
       }
