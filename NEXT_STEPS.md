@@ -71,6 +71,7 @@
 - ✅ Automatic initialization when adding root node to empty state
 
 **Tested Nov 23, 2025:**
+
 - ✅ **WITH SHACL shapes loaded**: Works perfectly - can create complete documents with nodes and properties
 - ✅ **Custom nodes as root (SHACL loaded)**: Works perfectly - Add Properties panel available
 - ✅ **WITHOUT SHACL shapes (generic mode)**: Fixed and verified working
@@ -79,6 +80,7 @@
 - ✅ **Namespace integration**: Can add namespaces and use them in properties (`schema:Test3`)
 
 **Recent Fix (Nov 23, 2025):**
+
 - Bug: Root node in generic mode (no SHACL) lacked Add Properties panel
 - Cause: Render logic required both `isEditMode && shaclShapesStore` to show Add Properties
 - Fix: Changed to `if (isEditMode)` - panel now shows regardless of SHACL shapes loaded
@@ -153,6 +155,7 @@ All planned features for v1.0 release have been implemented. Focus now on:
 **Status: ONLY REMAINING TESTING NEEDED**
 
 **All Standalone Features Fully Tested & Working (Nov 23, 2025):** ✅
+
 - ✅ Document creation (with and without SHACL shapes)
 - ✅ Generic mode (custom types, properties, namespaces)
 - ✅ Namespace management (add, use in properties, export)
@@ -167,6 +170,7 @@ All planned features for v1.0 release have been implemented. Focus now on:
 **Dataverse Integration Testing (To Do Tomorrow):**
 
 **Integrated Mode (fileId + siteUrl parameters):**
+
 - Load viewer with fileId and siteUrl parameters
 - Verify URL field hidden in save modal
 - Verify filename pre-filled from metadata
@@ -174,6 +178,7 @@ All planned features for v1.0 release have been implemented. Focus now on:
 - Test error handling
 
 **Standalone Dataverse Features:**
+
 - Load from Dataverse button functionality
 - URL parser (6 different Dataverse URL formats)
 - API token support for unpublished files
@@ -181,6 +186,7 @@ All planned features for v1.0 release have been implemented. Focus now on:
 - Save to Dataverse (add new file to dataset)
 
 **End-to-End Dataverse Workflows:**
+
 - Load from Dataverse → enable edit → modify → save back
 - Load from Dataverse → validate → fix violations → save
 - Create new document → save to Dataverse dataset
@@ -203,6 +209,7 @@ All planned features for v1.0 release have been implemented. Focus now on:
 **None - All critical functionality working correctly!** 🎉
 
 **All Core Features Verified Working (Nov 23, 2025):**
+
 - ✅ Document creation in all modes (SHACL + generic)
 - ✅ Custom types and properties (with/without namespaces)
 - ✅ Namespace management (add, use, export)
@@ -222,7 +229,7 @@ All planned features for v1.0 release have been implemented. Focus now on:
   3. ✅ View mode data loss bug - Only collect changes when leaving edit mode
   4. ✅ Generic mode document creation - Add Properties panel now shows without SHACL shapes
 - ✅ "Changed" marking persistence across mode toggles
-- ✅ Array vs single value type preservation  
+- ✅ Array vs single value type preservation
 - ✅ Validation status persistence after shape switch
 - ✅ Node deletion with cascade cleanup
 - ✅ **Custom property tests fixed**: 23/25 passing (92%) - added schema namespace, fixed selectors
@@ -231,18 +238,21 @@ All planned features for v1.0 release have been implemented. Focus now on:
 **Failing E2E Tests by Category:**
 
 **CLEANED UP (Nov 23, 2025):**
+
 - ✅ **Removed**: Cross-browser/responsive (7 tests) - not needed
 - ✅ **Skipped**: Dataverse integration (13 tests) - testing separately with local instance
 - ✅ **Skipped**: Document creation (9 tests) - functionality working, tests can be re-enabled later
 
 **Document Creation Test Note (Nov 23):**
+
 - Tests were skipped due to earlier observed issues
 - Manual testing revealed: Works well, including generic mode (Nov 23 fix)
 - Tests can be re-enabled when test infrastructure improvements are scheduled
 
 **TO FIX LATER (Low Priority - Test Infrastructure Only):**
+
 1. **Array Operations (3 tests)** - Test expectations wrong, functionality works ✅
-2. **Custom Properties (2 tests)** - Minor test issues, functionality works ✅  
+2. **Custom Properties (2 tests)** - Minor test issues, functionality works ✅
 3. **Namespace Management (3 tests)** - Timing/validation issues in tests, functionality works ✅
 4. **File Loading (2 tests)** - Expects visible namespace (intentionally hidden), functionality works ✅
 5. **Export (2 tests)** - Selector issues, functionality works ✅
@@ -287,7 +297,7 @@ Fixed validation status persistence after shape switching - all 6 validation tes
 
 **Priority 5: Test Infrastructure Updates (DEFERRED - Low Priority)**
 
-- Update E2E test selectors to use `data-testid` attributes  
+- Update E2E test selectors to use `data-testid` attributes
 - Fix timing issues with async operations
 - Add proper waits for animations/transitions
 - **Note**: Most failures are test infrastructure, not actual bugs
@@ -296,7 +306,7 @@ Fixed validation status persistence after shape switching - all 6 validation tes
 **Priority 6: Feature Verification (DEFERRED - Low Priority)**
 
 - Array operations: ✅ Verified working manually - tests need expectation fixes
-- Export: ✅ Verified working manually - tests have selector issues  
+- Export: ✅ Verified working manually - tests have selector issues
 - Namespace: ✅ Verified working manually - tests have timing issues
 - File loading: ✅ Verified working manually - tests expect visible namespace (intentionally hidden)
 

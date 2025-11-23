@@ -200,10 +200,10 @@ export function renderNodeTree(node, index, depth) {
   // Add property suggestions in edit mode (with or without SHACL shapes)
   if (isEditMode) {
     // Get SHACL suggestions if shapes are loaded, otherwise use empty array
-    const suggestions = shaclShapesStore 
-      ? getPropertySuggestions(node, types) 
+    const suggestions = shaclShapesStore
+      ? getPropertySuggestions(node, types)
       : [];
-    
+
     // Always show the Add Properties section in edit mode
     // This allows custom property addition even without SHACL shapes
     const suggestionsSection = createPropertySuggestionsSection(
@@ -426,9 +426,7 @@ function renderProperty(key, value, nodeId, nodeTypes) {
         .html('<span class="glyphicon glyphicon-plus"></span> Add Value')
         .click(function () {
           const newValDiv = $("<div>").addClass("array-value");
-          newValDiv.append(
-            createValueInput("", classification)
-          );
+          newValDiv.append(createValueInput("", classification));
 
           // Add delete button for the new value
           const deleteBtn = $("<button>")
@@ -494,9 +492,7 @@ function renderProperty(key, value, nodeId, nodeTypes) {
     if (inlineCard) {
       valueContainer.append(inlineCard);
     } else {
-      valueContainer.append(
-        createValueInput(value, classification)
-      );
+      valueContainer.append(createValueInput(value, classification));
     }
 
     // Action buttons row for single values in edit mode
