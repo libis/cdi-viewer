@@ -1,6 +1,7 @@
 {
   "@context": {
     "myns": "http://example.org/myNamespace#",
+    "schema": "http://schema.org/",
     "xsd": "http://www.w3.org/2001/XMLSchema#"
   },
   "@graph": [

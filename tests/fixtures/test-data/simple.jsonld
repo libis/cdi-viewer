@@ -2,6 +2,7 @@
   "@context": {
     "@vocab": "http://example.org/vocab#",
     "ddi": "https://ddialliance.org/Specification/DDI-CDI/1.0/RDF/",
+    "schema": "http://schema.org/",
     "xsd": "http://www.w3.org/2001/XMLSchema#"
   },
   "@graph": [

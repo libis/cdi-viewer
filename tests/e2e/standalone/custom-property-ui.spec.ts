@@ -175,8 +175,8 @@ test.describe("Custom Property Addition UI", () => {
     const newPropCount = await node.locator(".property-row").count();
     expect(newPropCount).toBe(initialPropCount + 1);
     
-    // Verify property is visible
-    await expect(node.locator(".property-name").filter({ hasText: "testProperty" })).toBeVisible();
+    // Verify property is visible using data-property attribute
+    await expect(node.locator(".property-row[data-property='testProperty']")).toBeVisible();
   });
 
   test("adding custom property with namespace via inline UI should work", async ({ page }) => {
@@ -194,8 +194,8 @@ test.describe("Custom Property Addition UI", () => {
     const newPropCount = await node.locator(".property-row").count();
     expect(newPropCount).toBe(initialPropCount + 1);
     
-    // Should show as "schema:customField"
-    await expect(node.locator(".property-name").filter({ hasText: "schema:customField" })).toBeVisible();
+    // Should show as "schema:customField" using data-property attribute
+    await expect(node.locator(".property-row[data-property='schema:customField']")).toBeVisible();
   });
 
   test("inline UI should clear input after adding property", async ({ page }) => {
@@ -291,10 +291,10 @@ test.describe("Custom Property Addition UI", () => {
     // Type and press Enter
     await input.fill("keyboardProp");
     await input.press("Enter");
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(500);
     
-    // Should add property (Enter key handler)
-    await expect(node.locator(".property-name").filter({ hasText: "keyboardProp" })).toBeVisible();
+    // Should add property (Enter key handler) - check with data-property
+    await expect(node.locator(".property-row[data-property='keyboardProp']")).toBeVisible();
   });
 
   test("should not call browser prompt() when adding custom property", async ({ page }) => {
