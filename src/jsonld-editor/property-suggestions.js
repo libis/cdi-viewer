@@ -299,7 +299,7 @@ export function createPropertySuggestionsSection(suggestions, nodeId) {
   return createUnifiedAddComponent({
     type: "property",
     suggestions: suggestions,
-    onAdd: (selectedPath, suggestion) => {
+    onAdd: (_selectedPath, suggestion) => {
       if (suggestion.isComplex) {
         // Always create a separate node and reference it
         addComplexPropertyToNode(nodeId, suggestion);

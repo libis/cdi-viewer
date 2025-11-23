@@ -32,18 +32,9 @@ import {
   markNodeRendered,
   isNodeRendered,
   getRootNodeIds,
-  getParentMap,
   getNodeById,
   nodeExists,
 } from "./graph-structure.js";
-
-/**
- * Get the parent map for filter algorithms
- * @deprecated Use getParentMap() from graph-structure.js instead
- */
-export function getNodeParentMap() {
-  return getParentMap();
-}
 
 export function renderData() {
   const jsonData = getJsonData();
@@ -396,7 +387,7 @@ function renderProperty(key, value, nodeId, nodeTypes) {
       if (inlineCard) {
         valDiv.append(inlineCard);
       } else {
-        valDiv.append(createValueInput(key, val, nodeId, idx, classification));
+        valDiv.append(createValueInput(val, classification));
       }
 
       // Add delete button in edit mode
@@ -436,7 +427,7 @@ function renderProperty(key, value, nodeId, nodeTypes) {
         .click(function () {
           const newValDiv = $("<div>").addClass("array-value");
           newValDiv.append(
-            createValueInput(key, "", nodeId, value.length, classification)
+            createValueInput("", classification)
           );
 
           // Add delete button for the new value
@@ -504,7 +495,7 @@ function renderProperty(key, value, nodeId, nodeTypes) {
       valueContainer.append(inlineCard);
     } else {
       valueContainer.append(
-        createValueInput(key, value, nodeId, null, classification)
+        createValueInput(value, classification)
       );
     }
 
@@ -666,13 +657,7 @@ function showAddReferenceModal(nodeId, propertyKey, forArray) {
     });
 }
 
-export function createValueInput(
-  key,
-  value,
-  nodeId,
-  arrayIndex,
-  classification
-) {
+export function createValueInput(value, classification) {
   // Check if value is a reference to another node (has @id)
   if (value?.["@id"]) {
     const refId = value["@id"];
