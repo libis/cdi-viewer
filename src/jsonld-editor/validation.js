@@ -12,6 +12,7 @@ import {
   setValidationReport,
 } from "./state.js";
 import { jsonLdToN3Store } from "./cdi-shacl-loader.js";
+import { getCompactNodeId } from "./uri-utils.js";
 
 // RDF factory for creating RDF/JS compliant datasets
 // Use rdfDataModel directly and add dataset method via Object.assign to preserve prototype
@@ -221,7 +222,8 @@ export async function validateData() {
       const $list = $violationsContainer.find("ol");
 
       violations.forEach((v) => {
-        const nodeId = v.focusNode.split("/").pop();
+        // Convert the full URI back to compact node ID (e.g., "xas:485749")
+        const nodeId = getCompactNodeId(v.focusNode);
         const $listItem = $("<li>");
 
         // Create clickable node ID button (matching reference button style)
@@ -241,7 +243,7 @@ export async function validateData() {
               targetCard.removeClass("collapsed");
               targetCard[0].scrollIntoView({
                 behavior: "smooth",
-                block: "center",
+                block: "start",
               });
               targetCard.addClass("highlight");
               setTimeout(() => targetCard.removeClass("highlight"), 2000);

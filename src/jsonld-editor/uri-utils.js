@@ -101,6 +101,77 @@ export function getExpandedPropertyUri(nodeId, propertyKey) {
 }
 
 /**
+ * Convert a full URI back to a compact node ID by checking @graph
+ * @param {string} fullUri - The full URI to convert
+ * @returns {string} The compact node ID or the URI fragment if not found
+ */
+export function getCompactNodeId(fullUri) {
+  if (!fullUri) {
+    return null;
+  }
+
+  // If it doesn't look like a full URI, return as-is (might already be compact)
+  if (!fullUri.startsWith("http://") && !fullUri.startsWith("https://")) {
+    return fullUri;
+  }
+
+  const jsonData = getJsonData();
+  const expandedJsonLd = getExpandedJsonLd();
+
+  // Try to find the node in the graph by checking expanded JSON-LD
+  if (expandedJsonLd && Array.isArray(expandedJsonLd)) {
+    const expandedNode = expandedJsonLd.find((n) => n["@id"] === fullUri);
+    if (expandedNode) {
+      // Found in expanded - now find the compact form in original data
+      if (jsonData && jsonData["@graph"]) {
+        // The expanded node might have a compact @id in the original
+        // We need to find which node in @graph corresponds to this expanded node
+        // by matching the expanded @id with the expanded form of compact IDs
+        for (const node of jsonData["@graph"]) {
+          const compactId = node["@id"];
+          const expandedId = getExpandedNodeId(compactId);
+          if (expandedId === fullUri) {
+            return compactId;
+          }
+        }
+      }
+    }
+  }
+
+  // Fallback: try to compact using context
+  if (jsonData && jsonData["@context"]) {
+    const context = jsonData["@context"];
+    const contexts = Array.isArray(context) ? context : [context];
+
+    for (const ctx of contexts) {
+      if (typeof ctx === "object" && ctx !== null) {
+        // Check each namespace prefix
+        for (const [prefix, namespace] of Object.entries(ctx)) {
+          if (prefix === "@vocab") {
+            continue;
+          }
+          if (typeof namespace === "string" && fullUri.startsWith(namespace)) {
+            // This URI uses this namespace - create compact form
+            const localPart = fullUri.substring(namespace.length);
+            return `${prefix}:${localPart}`;
+          }
+        }
+      }
+    }
+  }
+
+  // Last resort: extract the fragment after last / or #
+  // But preserve the # if it's there (for IDs like "#Sample_Dataset")
+  if (fullUri.includes("#")) {
+    // Extract everything after the last # and prepend #
+    return "#" + fullUri.split("#").pop();
+  } else {
+    // Extract everything after the last /
+    return fullUri.split("/").pop();
+  }
+}
+
+/**
  * Extract a readable label from a URI
  * @param {string} uri - The URI to extract label from
  * @returns {string} Human-readable label

@@ -26,6 +26,7 @@ import {
   deleteNode,
 } from "./cdi-graph-helpers.js";
 import { showAlert, showConfirm } from "./modal-dialogs.js";
+import { getCompactNodeId } from "./uri-utils.js";
 import {
   resetGraphStructure,
   buildGraphStructure,
@@ -677,10 +678,16 @@ export function createValueInput(value, classification) {
       .attr("title", "Click to jump to this node")
       .click(function (e) {
         e.preventDefault();
-        const targetCard = $(`.node-card[data-node-id="${refId}"]`);
+        const compactId = getCompactNodeId(refId);
+        const targetCard = $(`.node-card[data-node-id="${compactId}"]`);
         if (targetCard.length) {
+          // Expand any collapsed parent cards
+          targetCard.parents(".node-card").removeClass("collapsed");
+          // Expand the target card itself
           targetCard.removeClass("collapsed");
-          targetCard[0].scrollIntoView({ behavior: "smooth", block: "center" });
+          // Scroll with the top of the card at the top of the viewport (with some offset)
+          targetCard[0].scrollIntoView({ behavior: "smooth", block: "start" });
+          // Add temporary highlight
           targetCard.addClass("highlight");
           setTimeout(() => targetCard.removeClass("highlight"), 2000);
         } else {
@@ -706,10 +713,16 @@ export function createValueInput(value, classification) {
       .attr("title", "Click to jump to this node")
       .click(function (e) {
         e.preventDefault();
-        const targetCard = $(`.node-card[data-node-id="${value}"]`);
+        const compactId = getCompactNodeId(value);
+        const targetCard = $(`.node-card[data-node-id="${compactId}"]`);
         if (targetCard.length) {
+          // Expand any collapsed parent cards
+          targetCard.parents(".node-card").removeClass("collapsed");
+          // Expand the target card itself
           targetCard.removeClass("collapsed");
-          targetCard[0].scrollIntoView({ behavior: "smooth", block: "center" });
+          // Scroll with the top of the card at the top of the viewport (with some offset)
+          targetCard[0].scrollIntoView({ behavior: "smooth", block: "start" });
+          // Add temporary highlight
           targetCard.addClass("highlight");
           setTimeout(() => targetCard.removeClass("highlight"), 2000);
         } else {
