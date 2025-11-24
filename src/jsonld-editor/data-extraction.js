@@ -10,12 +10,14 @@ import {
   getFileId,
   getOriginalFileName,
   clearChangedElements,
+  getIsEditMode,
 } from "./state.js";
 import { parseDataverseUrl } from "./dataverse-url-parser.js";
 import { showAlert } from "./modal-dialogs.js";
 import { getNodeById } from "./graph-structure.js";
 
 export function collectChangesFromDOM() {
+  console.log("collectChangesFromDOM: Starting data collection from DOM");
   // Collect ALL properties from ALL visible nodes when in edit mode
   // This ensures we don't lose any data during re-renders
   const jsonData = getJsonData();
@@ -123,7 +125,7 @@ export function saveChanges() {
   // Note: In view mode, there are no input fields to collect from.
   // Changes should already be in jsonData from when they were made in edit mode.
   // Only collect from DOM if we're currently in edit mode.
-  const isEditMode = window.isEditMode;
+  const isEditMode = getIsEditMode();
   if (isEditMode) {
     collectChangesFromDOM();
   }
@@ -348,7 +350,7 @@ export function exportData() {
   // Note: In view mode, there are no input fields to collect from.
   // Changes should already be in jsonData from when they were made in edit mode.
   // Only collect from DOM if we're currently in edit mode.
-  const isEditMode = window.isEditMode;
+  const isEditMode = getIsEditMode();
   if (isEditMode) {
     collectChangesFromDOM();
   }
