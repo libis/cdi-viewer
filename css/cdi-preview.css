@@ -2,7 +2,7 @@
 
 :root {
     /* Toolbar offset used when scrolling elements into view to compensate for the sticky toolbar */
-    --toolbar-scroll-offset: 300px;
+    --toolbar-scroll-offset: 320px;
 }
 
 body {
