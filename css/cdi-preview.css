@@ -19,6 +19,8 @@ body {
     margin-bottom: 10px;
     background: white;
     position: relative;
+    /* Ensure clicks that jump to node cards account for the sticky toolbar */
+    scroll-margin-top: 300px;
 }
 
 .node-card.tree-node {
