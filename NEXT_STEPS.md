@@ -27,13 +27,13 @@ Status summary (most important facts)
 Goal: remove remaining risk vectors (native dialogs, innerHTML hotspots) and add small tests.
 
 - [x] Replace any remaining native `alert()` / `confirm()` / `prompt()` with `showAlert()`/`showConfirm()`/`showPrompt()` (files: `event-handlers.js`, `cdi-shacl-loader.js`, `unified-add-component.js`).  
-      Note: **done in `src/`** — all application code now uses the modal helpers. Vendor / previewer bundles still contain legacy native dialogs (see `dataverse-previewers/*`) and should be audited separately.
+       Note: **done in `src/`** — all application code now uses the modal helpers. Vendor / previewer bundles still contain legacy native dialogs (see `dataverse-previewers/*`) and should be audited separately.
       Owner: frontend / test author — Est: 30–90 min
 - [x] Harden DOM insertions: audit and replace `.html()`/`innerHTML` that interpolate variables with `escapeHtml()` or safe DOM APIs. Produce a short report of hotspots and apply fixes.  
-      Note: Most `src/` rendering code now uses `document.createTextNode`, `quickEl` and `escapeHtml()` where appropriate. The remaining risky hotspots are primarily in vendor/previewer bundles (`dataverse-previewers/**`, minified libs) and must be handled separately (audit/report + sanitize).
+       Note: Most `src/` rendering code now uses `document.createTextNode`, `quickEl` and `escapeHtml()` where appropriate. The remaining risky hotspots are primarily in vendor/previewer bundles (`dataverse-previewers/**`, minified libs) and must be handled separately (audit/report + sanitize).
       Owner: frontend — Est: 60–180 min
 - [x] Add focused unit or e2e tests that exercise the most sensitive paths (modal flows + server-provided string paths).  
-      Note: Modal tests were added (see `tests/e2e/standalone/modal-a11y.spec.ts`) and some targeted tests for document creation and namespaces are enabled. More targeted tests for server-provided strings and vendor paths are recommended.
+       Note: Modal tests were added (see `tests/e2e/standalone/modal-a11y.spec.ts`) and some targeted tests for document creation and namespaces are enabled. More targeted tests for server-provided strings and vendor paths are recommended.
       Owner: test owner — Est: 30–60 min
 
 ### Priority B — Test stability & Dataverse verification (HIGH) — 2–6 hrs
@@ -41,7 +41,7 @@ Goal: remove remaining risk vectors (native dialogs, innerHTML hotspots) and add
 Goal: make e2e deterministic, triage failing tests and re-enable Dataverse suites once local harness is available.
 
 - [ ] Triage the remaining failing e2e tests (now reduced after recent fixes) and fix any outstanding infra issues (selectors / waits / expectations).  
-      Status: Most infra flakes have been addressed (document creation, dataverse suites re-enabled). A handful of test-only failures remain (selectors/timeouts) and are tracked separately — these are test-infrastructure fixes (not app regressions).
+       Status: Most infra flakes have been addressed (document creation, dataverse suites re-enabled). A handful of test-only failures remain (selectors/timeouts) and are tracked separately — these are test-infrastructure fixes (not app regressions).
       Owner: test engineer — Est: 2–4 hrs
 - [ ] Run Dataverse integration tests against a local test instance and re-enable skipped Dataverse tests.  
        Owner: integrator — Est: 1–2 hrs (plus test environment)
@@ -62,7 +62,7 @@ Goal: ensure modals and keyboard flows are robust and aria-friendly across brows
 - [x] Convert toolbar offset into a CSS variable (`--toolbar-scroll-offset`) and apply to `.node-card` / `.search-highlight` (tiny cosmetic fix).  
        Owner: frontend — Est: 15–30 min
 - [x] Replace stray `console.log` in `src/index.js` with project logger (`logInfo()`), remove leftover debug prints.  
-      Note: `src/index.js` no longer uses console.log. There is still a DEBUG-level console call in `src/jsonld-editor/state.js` (intended for debug builds). Consider replacing with `logDebug()` for consistency and zero-console policy in production.
+       Note: `src/index.js` no longer uses console.log. There is still a DEBUG-level console call in `src/jsonld-editor/state.js` (intended for debug builds). Consider replacing with `logDebug()` for consistency and zero-console policy in production.
       Owner: maintainer — Est: 10–30 min
 - [ ] Final README / CHANGELOG / release notes and GitHub Pages smoke test.  
        Owner: release mgr — Est: 30–60 min
