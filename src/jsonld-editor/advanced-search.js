@@ -19,6 +19,10 @@ let caseSensitive = false;
 let useRegex = false;
 let lastSearchTerm = "";
 let searchRefreshTimeout = null;
+let autoJump = false;
+let searchAutoJumpTimeout = null;
+const AUTO_JUMP_KEY = "searchAutoJump";
+const AUTO_JUMP_DELAY = 700; // ms - pause after typing before auto jump
 
 /**
  * Check if text matches search term with current settings
@@ -193,10 +197,24 @@ export function performSearch() {
   updateSearchCounter();
   updateNavigationButtons();
 
-  // Don't auto-navigate when matches are found — this was causing the UI to
-  // jump away from the active input while the user was typing (very disruptive).
-  // Users can navigate matches explicitly using Enter / F3 or the navigation
-  // buttons. Keep currentMatchIndex at -1 so no automatic focus/scroll happens.
+  // Schedule auto-jump if option enabled: wait for a short pause after typing
+  // to avoid disrupting the user while typing. If the option is disabled, do
+  // nothing here (navigation remains explicit via Enter/F3 or nav buttons).
+  if (searchAutoJumpTimeout) {
+    clearTimeout(searchAutoJumpTimeout);
+    searchAutoJumpTimeout = null;
+  }
+
+  if (autoJump && searchMatches.length > 0) {
+    // Schedule a jump to the first match after a pause — only if we haven't
+    // already navigated (currentMatchIndex === -1)
+    searchAutoJumpTimeout = setTimeout(() => {
+      if (currentMatchIndex === -1 && lastSearchTerm === searchTerm) {
+        navigateToMatch("next");
+      }
+      searchAutoJumpTimeout = null;
+    }, AUTO_JUMP_DELAY);
+  }
 }
 
 /**
@@ -343,6 +361,28 @@ export function setupAdvancedSearchHandlers() {
     }
 
     performSearch();
+  });
+
+  // Auto-jump toggle: read saved preference and wire up handler
+  try {
+    const stored = localStorage.getItem(AUTO_JUMP_KEY);
+    autoJump = stored === "true";
+  } catch (e) {
+    autoJump = false;
+  }
+  $("#auto-jump-toggle").prop("checked", autoJump);
+  $("#auto-jump-toggle").on("change", function () {
+    autoJump = $(this).is(":checked");
+    try {
+      localStorage.setItem(AUTO_JUMP_KEY, autoJump ? "true" : "false");
+    } catch (e) {}
+  });
+
+  // When the search input loses focus, if autoJump is enabled, jump to first match
+  $("#search-input").on("blur", function () {
+    if (autoJump && searchMatches.length > 0 && currentMatchIndex === -1) {
+      navigateToMatch("next");
+    }
   });
 
   // Clear button

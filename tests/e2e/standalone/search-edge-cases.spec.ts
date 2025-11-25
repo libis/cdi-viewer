@@ -199,4 +199,57 @@ test.describe('Search Edge Cases', () => {
     const currentCount = await page.locator('.current-search-match').count();
     expect(currentCount).toBeGreaterThan(0);
   });
+
+  test('auto-jump toggle enables jump after pause', async ({ page }) => {
+    const testFilePath = path.join(__dirname, '../../../examples/cdi/SimpleSample.jsonld');
+    await page.click('#load-local-btn');
+    await page.setInputFiles('#local-file-input', testFilePath);
+    await expect(page.locator('[data-testid^="node-card-"]')).toHaveCount(26);
+
+    // Make sure the toggle exists and is OFF by default, then enable it
+    const toggle = page.locator('#auto-jump-toggle');
+    await expect(toggle).toBeVisible();
+    await expect(toggle).not.toBeChecked();
+    await toggle.check();
+
+    // Scroll away from first match
+    const lastNode = page.locator('[data-testid^="node-card-"]').nth(24);
+    await lastNode.scrollIntoViewIfNeeded();
+
+    // Type search and wait for auto-jump delay (700ms plus margin)
+    const searchInput = page.locator('#search-input');
+    await searchInput.fill('Sample');
+    await page.waitForTimeout(900);
+
+    // After pause, a current match should be active (auto-jump)
+    const currentCount = await page.locator('.current-search-match').count();
+    expect(currentCount).toBeGreaterThan(0);
+  });
+
+  test('auto-jump toggle triggers immediate jump on blur', async ({ page }) => {
+    const testFilePath = path.join(__dirname, '../../../examples/cdi/SimpleSample.jsonld');
+    await page.click('#load-local-btn');
+    await page.setInputFiles('#local-file-input', testFilePath);
+    await expect(page.locator('[data-testid^="node-card-"]')).toHaveCount(26);
+
+    const toggle = page.locator('#auto-jump-toggle');
+    await expect(toggle).toBeVisible();
+    if (!(await toggle.isChecked())) {
+      await toggle.check();
+    }
+
+    // Ensure we're away from first match
+    const lastNode = page.locator('[data-testid^="node-card-"]').nth(25);
+    await lastNode.scrollIntoViewIfNeeded();
+
+    const searchInput = page.locator('#search-input');
+    await searchInput.fill('Dataset');
+
+    // Blur the input - this should cause an immediate jump if auto-jump enabled
+    await searchInput.evaluate((el: HTMLInputElement) => el.blur());
+    await page.waitForTimeout(200);
+
+    const currentCount = await page.locator('.current-search-match').count();
+    expect(currentCount).toBeGreaterThan(0);
+  });
 });
