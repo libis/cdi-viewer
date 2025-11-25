@@ -6,11 +6,9 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './tests/e2e',
   
-  // Skip specific test files
-  testIgnore: [
-    '**/dataverse/**', // Skip Dataverse tests - will test with local instance separately
-    '**/document-creation.spec.ts', // Skip document creation tests - known issues, not critical
-  ],
+  // Previously we skipped some sets of tests (dataverse, document creation) in CI.
+  // For local test stabilization work we want all tests run — do not ignore those files.
+  testIgnore: [],
   
   // Maximum time one test can run
   timeout: 30 * 1000,

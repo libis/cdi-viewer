@@ -17,9 +17,9 @@ test.describe('Error Handling', () => {
     
     await page.setInputFiles('#local-file-input', filePath);
     
-    // Should show error message
-    await expect(page.locator('.alert-danger')).toBeVisible();
-    await expect(page.locator('.alert-danger')).toContainText(/failed to load|invalid|error/i);
+    // Should show error modal
+    await expect(page.locator('[data-testid="alert-modal"]')).toBeVisible();
+    await expect(page.locator('[data-testid="alert-modal"]')).toContainText(/failed to load|invalid|error/i);
     
     // Content area should remain empty
     await expect(page.locator('.node-card')).toHaveCount(0);
@@ -31,12 +31,13 @@ test.describe('Error Handling', () => {
     
     // Try to select shapes that require network fetch
     await page.selectOption('#shape-selector', 'custom');
+    // Enter custom URL then press ENTER (UI handles Enter for custom shape URL)
     await page.fill('#custom-shape-url', 'https://example.org/nonexistent-shapes.ttl');
-    await page.click('#load-shapes-btn');
+    await page.keyboard.press('Enter');
     
-    // Should show error message
-    await expect(page.locator('.alert-danger')).toBeVisible({ timeout: 10000 });
-    await expect(page.locator('.alert-danger')).toContainText(/failed to load shapes|network error|could not fetch/i);
+    // Should show error modal for failed shape load
+    await expect(page.locator('[data-testid="alert-modal"]')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('[data-testid="alert-modal"]')).toContainText(/failed to load|failed to fetch|could not fetch|network error/i);
   });
 
   test('Handle validation errors gracefully', async ({ page }) => {

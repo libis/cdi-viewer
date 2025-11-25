@@ -67,10 +67,10 @@ test.describe('Dataverse Load', () => {
       await expect(page.locator('#loadDataverseModal')).toBeVisible({ timeout: 5000 });
       
       // Enter file URL
-      await page.fill('#file-url-input', 'https://mock.dataverse.org/file.xhtml?fileId=123');
+      await page.fill('#loadDataverseUrlInput', 'https://mock.dataverse.org/file.xhtml?fileId=123');
       
       // Submit
-      await page.click('#confirm-load-btn');
+      await page.click('#confirmLoadBtn');
       await page.waitForTimeout(2000);
       
       // Verify file loaded
@@ -108,10 +108,11 @@ test.describe('Dataverse Load', () => {
       await expect(page.locator('#loadDataverseModal')).toBeVisible();
       
       // Enter URL and token
-      await page.fill('#file-url-input', 'https://mock.dataverse.org/api/access/datafile/123');
-      await page.fill('#api-token-input', 'test-token-12345');
+      // Use API files endpoint format that the URL parser accepts
+      await page.fill('#loadDataverseUrlInput', 'https://mock.dataverse.org/api/files/123');
+      await page.fill('#loadApiTokenInput', 'test-token-12345');
       
-      await page.click('#confirm-load-btn');
+      await page.click('#confirmLoadBtn');
       await page.waitForTimeout(1000);
       
       // Verify token was sent
@@ -167,7 +168,7 @@ test.describe('Dataverse Load', () => {
       
       if (exists) {
         await loadButton.click();
-        await page.fill('#file-url-input', url);
+        await page.fill('#loadDataverseUrlInput', url);
         
         // Should accept the URL format
         const confirmBtn = page.locator('#confirm-load-btn');

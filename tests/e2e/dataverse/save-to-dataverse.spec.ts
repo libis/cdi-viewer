@@ -53,11 +53,10 @@ test.describe('Dataverse Save', () => {
       // Modal should open
       await expect(page.locator('#saveModal')).toBeVisible();
       
-      // Select "Save as new"
-      await page.click('#save-as-new-radio');
-      
-      // Verify new filename field is visible
-      await expect(page.locator('#new-filename-input')).toBeVisible();
+      // Current UI uses a single filename input — ensure it's present and we can change it
+      const filenameInput = page.locator('#filenameInput');
+      await expect(filenameInput).toBeVisible();
+      await filenameInput.fill('new-file.jsonld');
     }
   });
 
@@ -87,19 +86,19 @@ test.describe('Dataverse Save', () => {
       await saveBtn.click();
       await expect(page.locator('#saveModal')).toBeVisible();
       
-      // Select "Replace existing"
-      await page.click('#replace-existing-radio');
-      
-      // Filename should be pre-filled and read-only
-      const filenameInput = page.locator('#filename-input');
-      await expect(filenameInput).toHaveAttribute('readonly');
+      // Confirm the filename input is present and contains the pre-filled filename
+      const filenameInput = page.locator('#filenameInput');
+      await expect(filenameInput).toBeVisible();
+      const prefilled = await filenameInput.inputValue();
+      expect(prefilled.length).toBeGreaterThan(0);
     }
   });
 
   test('Save with modifications', async ({ page }) => {
     let saveRequestReceived = false;
     
-    await page.route('**/api/access/datafile/**', async route => {
+    // Save endpoints are not always under access/datafile route - match broader '/api/' paths
+    await page.route('**/api/**', async route => {
       if (route.request().method() === 'PUT' || route.request().method() === 'POST') {
         saveRequestReceived = true;
         await route.fulfill({ status: 200, body: JSON.stringify({ status: 'ok' }) });
@@ -131,7 +130,9 @@ test.describe('Dataverse Save', () => {
     const saveBtn = page.locator('#save-btn');
     if (await saveBtn.isVisible()) {
       await saveBtn.click();
-      await page.click('#confirm-save-btn');
+      // Fill API token required by save flow
+      await page.fill('#apiTokenInput', 'test-token-12345');
+      await page.click('#confirmSaveBtn');
       await page.waitForTimeout(1000);
       
       // Verify save request was made
@@ -164,11 +165,11 @@ test.describe('Dataverse Save', () => {
     const saveBtn = page.locator('#save-btn');
     if (await saveBtn.isVisible()) {
       await saveBtn.click();
-      await page.click('#confirm-save-btn');
+      await page.click('#confirmSaveBtn');
       await page.waitForTimeout(1000);
       
-      // Should show error message
-      await expect(page.locator('.alert-danger')).toBeVisible();
+      // Should show alert modal on save error
+      await expect(page.locator('[data-testid="alert-modal"]')).toBeVisible();
     }
   });
 });
