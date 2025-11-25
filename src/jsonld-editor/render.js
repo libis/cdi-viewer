@@ -13,7 +13,7 @@ import {
 } from "./state.js";
 import { escapeHtml } from "./modal-dialogs.js";
 import { collectChangesFromDOM } from "./data-extraction.js";
-import { sanitizeForTestId, createTestId } from "./dom-utils.js";
+import { sanitizeForTestId, createTestId, quickEl } from "./dom-utils.js";
 import { classifyProperty } from "./cdi-shacl-helpers.js";
 import { scheduleValidation } from "./validation.js";
 import { humanizeKey } from "./text-utils.js";
@@ -673,55 +673,61 @@ function showAddReferenceModal(
 
   const actionText = replaceMode ? "Replace with" : forArray ? "Add" : "Add";
 
-  const modalHtml = `
-    <div class="modal fade" id="addReferenceModal" tabindex="-1" role="dialog">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal">
-              <span>&times;</span>
-            </button>
-            <h4 class="modal-title">
-              <span class="glyphicon glyphicon-link"></span>
-              ${actionText} Reference or New Object
-            </h4>
-          </div>
-          <div class="modal-body">
-            <div class="form-group">
-              <label><strong>Option 1: Reference Existing Node</strong></label>
-              <select id="existingNodeSelect" class="form-control">
-                <option value="">-- Select an existing node --</option>
-                ${availableNodes
-                  .map(
-                    (node) =>
-                      `<option value="${escapeHtml(node.id)}">${escapeHtml(
-                        node.id
-                      )} (${escapeHtml(node.type || "Unknown")})</option>`
-                  )
-                  .join("")}
-              </select>
-            </div>
-            <div class="form-group">
-              <label><strong>Option 2: Create New Object</strong></label>
-              <input type="text" id="newNodeType" class="form-control" 
-                     placeholder="Enter object type (e.g., ValueAndConceptDescription)">
-              <small class="help-block">Leave empty to create generic Object</small>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-            <button type="button" class="btn btn-primary" id="confirmAddReference">
-              <span class="glyphicon glyphicon-ok"></span> ${actionText}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
+  // Build modal DOM using safe helpers (avoid string HTML concatenation)
+  const $modal = quickEl("div", { class: "modal fade", id: "addReferenceModal", tabindex: -1, role: "dialog" });
 
-  // Remove existing modal
+  const $dialog = quickEl("div", { class: "modal-dialog", role: "document" });
+  const $content = quickEl("div", { class: "modal-content" });
+
+  // Header
+  const $header = quickEl("div", { class: "modal-header" });
+  const $closeBtn = quickEl("button", { type: "button", class: "close", "data-dismiss": "modal" }, [quickEl("span", {}, ["×"]) ]);
+  const $title = quickEl("h4", { class: "modal-title" });
+  $title.append(quickEl("span", { class: "glyphicon glyphicon-link" }));
+  $title.append(document.createTextNode(` ${actionText} Reference or New Object`));
+
+  $header.append($closeBtn, $title);
+
+  // Body
+  const $body = quickEl("div", { class: "modal-body" });
+  const $existingGroup = quickEl("div", { class: "form-group" });
+  $existingGroup.append(quickEl("label", {}, [quickEl("strong", {}, ["Option 1: Reference Existing Node"]) ]));
+
+  const $select = quickEl("select", { id: "existingNodeSelect", class: "form-control" });
+  $select.append(quickEl("option", { value: "" }, ["-- Select an existing node --"]));
+  availableNodes.forEach((node) => {
+    // Use attribute/value setting + .text() semantics to avoid injecting HTML
+    const $opt = quickEl("option");
+    $opt.attr("value", node.id);
+    $opt.text(`${node.id} (${node.type || "Unknown"})`);
+    $select.append($opt);
+  });
+  $existingGroup.append($select);
+
+  const $newObjGroup = quickEl("div", { class: "form-group" });
+  $newObjGroup.append(quickEl("label", {}, [quickEl("strong", {}, ["Option 2: Create New Object"]) ]));
+  $newObjGroup.append(
+    quickEl("input", { type: "text", id: "newNodeType", class: "form-control", placeholder: "Enter object type (e.g., ValueAndConceptDescription)" })
+  );
+  $newObjGroup.append(quickEl("small", { class: "help-block" }, ["Leave empty to create generic Object"]));
+
+  $body.append($existingGroup, $newObjGroup);
+
+  // Footer
+  const $footer = quickEl("div", { class: "modal-footer" });
+  $footer.append(quickEl("button", { type: "button", class: "btn btn-default", "data-dismiss": "modal" }, ["Cancel"]));
+  const $confirmBtn = quickEl("button", { type: "button", class: "btn btn-primary", id: "confirmAddReference" });
+  $confirmBtn.append(quickEl("span", { class: "glyphicon glyphicon-ok" }));
+  $confirmBtn.append(document.createTextNode(` ${actionText}`));
+  $footer.append($confirmBtn);
+
+  $content.append($header, $body, $footer);
+  $dialog.append($content);
+  $modal.append($dialog);
+
+  // Remove any existing modal and append safely-built modal DOM
   $("#addReferenceModal").remove();
-  $("body").append(modalHtml);
+  $("body").append($modal);
   $("#addReferenceModal").modal("show");
 
   // Handle confirm

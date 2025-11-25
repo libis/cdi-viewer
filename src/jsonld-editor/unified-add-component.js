@@ -11,6 +11,7 @@
 
 import { extractNamespaces } from "./namespace-manager.js";
 import { showAlert } from "./modal-dialogs.js";
+import { quickEl } from "./dom-utils.js";
 
 /**
  * Create a unified add component (works for both properties and root nodes)
@@ -96,9 +97,9 @@ export function createUnifiedAddComponent(options) {
   // Add button for dropdown selection
   const addBtn = $("<button>")
     .addClass("btn btn-primary")
-    .html(
-      `<span class="glyphicon glyphicon-plus"></span> Add ${isProperty ? "Property" : "Node"}`
-    )
+    .empty()
+    .append(quickEl("span", { class: "glyphicon glyphicon-plus" }))
+    .append(document.createTextNode(` Add ${isProperty ? "Property" : "Node"}`))
     .click(async function () {
       const selectedValue = dropdown.val();
       if (!selectedValue) {
@@ -167,7 +168,9 @@ export function createUnifiedAddComponent(options) {
   // Add custom button
   const addCustomBtn = $("<button>")
     .addClass("btn btn-success")
-    .html('<span class="glyphicon glyphicon-plus"></span> Add')
+    .empty()
+    .append(quickEl("span", { class: "glyphicon glyphicon-plus" }))
+    .append(document.createTextNode(" Add"))
     .click(async function () {
       const prefix = namespaceSelect.val();
       const name = customInput.val().trim();

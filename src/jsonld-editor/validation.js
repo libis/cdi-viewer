@@ -228,16 +228,22 @@ export async function validateData() {
       $validationDetails.empty();
       $validationDetails.css("margin-top", "0");
     } else {
-      $("#validation-status").html(
-        '<span class="validation-badge invalid">' +
-          '<span class="glyphicon glyphicon-exclamation-sign"></span> ' +
-          violations.length +
-          " violation(s)" +
-          "</span>" +
-          '<button id="toggle-violations-btn" class="btn btn-sm btn-default" style="margin-left: 10px;">' +
-          '<span class="glyphicon glyphicon-chevron-down"></span> Show Details' +
-          "</button>"
-      );
+      // Build validation status using safe DOM nodes (avoid string concatenation with variables)
+      const $statusContainer = $("<span>");
+
+      const $badge = $("<span>").addClass("validation-badge invalid");
+      $badge.append($("<span>").addClass("glyphicon glyphicon-exclamation-sign"));
+      $badge.append(document.createTextNode(" " + String(violations.length) + " violation(s)"));
+
+      const $toggleBtn = $("<button>")
+        .attr("id", "toggle-violations-btn")
+        .addClass("btn btn-sm btn-default")
+        .css("margin-left", "10px");
+      $toggleBtn.append($("<span>").addClass("glyphicon glyphicon-chevron-down"));
+      $toggleBtn.append(document.createTextNode(" Show Details"));
+
+      $statusContainer.append($badge).append($toggleBtn);
+      $("#validation-status").empty().append($statusContainer);
 
       // Show violations list (initially hidden)
       const $violationsContainer = $(
