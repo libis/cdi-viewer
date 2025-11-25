@@ -64,32 +64,38 @@ export function collectChangesFromDOM() {
       if ($arrayValues.length > 0) {
         // This is an array - collect all values
         const values = [];
+        const currentValue = node[key];
         
-        $arrayValues.each(function () {
+        $arrayValues.each(function (arrayIndex) {
           const $arrayValue = $(this);
           
           // Check if this array value contains an inline node card (nested object)
           const $inlineCard = $arrayValue.children(".inline-node-card");
           if ($inlineCard.length > 0) {
-            // This is a reference/object - get from current node data
-            const currentValue = node[key];
-            if (Array.isArray(currentValue)) {
-              const idx = $arrayValue.index();
-              if (idx < currentValue.length) {
-                values.push(currentValue[idx]);
-              }
+            // This is a reference/object - get from current node data using iteration index
+            if (Array.isArray(currentValue) && arrayIndex < currentValue.length) {
+              values.push(currentValue[arrayIndex]);
             }
           } else {
-            // This is a simple value - collect from input
-            const $input = $arrayValue.find("input, textarea, select").first();
-            if ($input.length > 0) {
-              let val = $input.val();
-              try {
-                val = JSON.parse(val);
-              } catch (e) {
-                // Keep as string
+            // Check if this is a reference-container (both styles preserved)
+            const $refContainer = $arrayValue.children(".reference-container");
+            if ($refContainer.length > 0) {
+              // This is a reference - preserve from current data using iteration index
+              if (Array.isArray(currentValue) && arrayIndex < currentValue.length) {
+                values.push(currentValue[arrayIndex]);
               }
-              values.push(val);
+            } else {
+              // This is a simple value - collect from input
+              const $input = $arrayValue.find("input, textarea, select").first();
+              if ($input.length > 0) {
+                let val = $input.val();
+                try {
+                  val = JSON.parse(val);
+                } catch (e) {
+                  // Keep as string
+                }
+                values.push(val);
+              }
             }
           }
         });
@@ -97,21 +103,32 @@ export function collectChangesFromDOM() {
         // Update the array in jsonData
         node[key] = values;
       } else {
-        // Single value - look for input in property-value container
-        const $input = $propertyRow
+        // Single value - check if it's a reference first
+        const $refContainer = $propertyRow
           .children(".property-value")
-          .children("input, textarea, select")
+          .children(".reference-container")
           .first();
-          
-        if ($input.length > 0) {
-          let val = $input.val();
 
-          try {
-            val = JSON.parse(val);
-          } catch (e) {
-            // Keep as string if not valid JSON
+        if ($refContainer.length > 0) {
+          // This is a reference - preserve the current value (don't overwrite style)
+          // The value is already correct in node[key]
+        } else {
+          // Look for input field
+          const $input = $propertyRow
+            .children(".property-value")
+            .children("input, textarea, select")
+            .first();
+            
+          if ($input.length > 0) {
+            let val = $input.val();
+
+            try {
+              val = JSON.parse(val);
+            } catch (e) {
+              // Keep as string if not valid JSON
+            }
+            node[key] = val;
           }
-          node[key] = val;
         }
       }
     });

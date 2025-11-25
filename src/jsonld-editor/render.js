@@ -66,21 +66,55 @@ export function renderData() {
   });
 }
 
+// Helper: Check if a value is a pure reference (no properties other than @id, @type, @context)
+function isPureReference(value) {
+  // String reference like "#Sample_Key"
+  if (typeof value === "string" && isNodeReference(value)) {
+    return true;
+  }
+  // Object reference like {"@id": "#Sample_Key"}
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    const keys = Object.keys(value);
+    const nonMetadataKeys = keys.filter(
+      (k) => k !== "@id" && k !== "@type" && k !== "@context"
+    );
+    // Has @id and no other properties (except @type/@context)
+    return value["@id"] && nonMetadataKeys.length === 0;
+  }
+  return false;
+}
+
+// Helper: Extract the reference ID from either format
+function extractReferenceId(value) {
+  if (typeof value === "string" && isNodeReference(value)) {
+    return value;
+  }
+  if (value && typeof value === "object" && value["@id"]) {
+    return value["@id"];
+  }
+  return null;
+}
+
+// Helper: Determine if a value is string-style or object-style reference
+function isStringStyleReference(value) {
+  return typeof value === "string" && isNodeReference(value);
+}
+
 // Extract all @id references from a value (handles arrays, nested objects, and string references)
 export function extractNodeReferences(value) {
   const refs = [];
   if (Array.isArray(value)) {
     value.forEach((item) => {
-      if (typeof item === "object" && item["@id"]) {
-        refs.push(item["@id"]);
-      } else if (typeof item === "string" && isNodeReference(item)) {
-        refs.push(item);
+      const refId = extractReferenceId(item);
+      if (refId) {
+        refs.push(refId);
       }
     });
-  } else if (typeof value === "object" && value !== null && value["@id"]) {
-    refs.push(value["@id"]);
-  } else if (typeof value === "string" && isNodeReference(value)) {
-    refs.push(value);
+  } else {
+    const refId = extractReferenceId(value);
+    if (refId) {
+      refs.push(refId);
+    }
   }
   return refs;
 }
@@ -320,7 +354,12 @@ function renderProperty(key, value, nodeId, nodeTypes) {
       return null;
     }
 
-    const inlineCard = $("<div>").addClass("node-card inline-node-card").css({
+    // Skip pure references - let them be rendered as clickable buttons
+    if (isPureReference(val)) {
+      return null;
+    }
+
+    const inlineCard = $("").addClass("node-card inline-node-card").css({
       "margin-top": "5px",
       "margin-bottom": "5px",
     });
@@ -576,8 +615,10 @@ function renderProperty(key, value, nodeId, nodeTypes) {
   return row;
 }
 
-function showAddReferenceModal(nodeId, propertyKey, forArray) {
+function showAddReferenceModal(nodeId, propertyKey, forArray, replaceMode = false) {
   const availableNodes = getAllNodesForReference();
+
+  const actionText = replaceMode ? "Replace with" : (forArray ? "Add" : "Add");
 
   const modalHtml = `
     <div class="modal fade" id="addReferenceModal" tabindex="-1" role="dialog">
@@ -589,7 +630,7 @@ function showAddReferenceModal(nodeId, propertyKey, forArray) {
             </button>
             <h4 class="modal-title">
               <span class="glyphicon glyphicon-link"></span>
-              Add Reference or New Object
+              ${actionText} Reference or New Object
             </h4>
           </div>
           <div class="modal-body">
@@ -615,7 +656,7 @@ function showAddReferenceModal(nodeId, propertyKey, forArray) {
           <div class="modal-footer">
             <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
             <button type="button" class="btn btn-primary" id="confirmAddReference">
-              <span class="glyphicon glyphicon-ok"></span> Add
+              <span class="glyphicon glyphicon-ok"></span> ${actionText}
             </button>
           </div>
         </div>
@@ -638,7 +679,7 @@ function showAddReferenceModal(nodeId, propertyKey, forArray) {
       if (existingNodeId) {
         // Add reference to existing node
         collectChangesFromDOM();
-        addReferenceToProperty(nodeId, propertyKey, existingNodeId);
+        addReferenceToProperty(nodeId, propertyKey, existingNodeId, forArray, replaceMode);
         $("#addReferenceModal").modal("hide");
         renderData();
       } else if (
@@ -650,7 +691,7 @@ function showAddReferenceModal(nodeId, propertyKey, forArray) {
         // Create new node
         const type = newNodeType || "Object";
         collectChangesFromDOM();
-        createAndReferenceNewNode(nodeId, propertyKey, type, forArray);
+        createAndReferenceNewNode(nodeId, propertyKey, type, forArray, replaceMode);
         $("#addReferenceModal").modal("hide");
         renderData();
       } else {
@@ -662,10 +703,12 @@ function showAddReferenceModal(nodeId, propertyKey, forArray) {
 }
 
 export function createValueInput(value, classification) {
-  // Check if value is a reference to another node (has @id)
-  if (value?.["@id"]) {
-    const refId = value["@id"];
-    const refContainer = $("<div>").addClass("reference-container");
+  // Check if value is a reference (either format)
+  const refId = extractReferenceId(value);
+  if (refId) {
+    const refContainer = $("<div>")
+      .addClass("reference-container")
+      .attr("data-reference-style", isStringStyleReference(value) ? "string" : "object");
 
     // Create a clickable button to jump to the referenced node
     const jumpBtn = $("<button>")
@@ -692,41 +735,6 @@ export function createValueInput(value, classification) {
           setTimeout(() => targetCard.removeClass("highlight"), 2000);
         } else {
           showAlert("Referenced node not found: " + refId);
-        }
-      });
-
-    refContainer.append(jumpBtn);
-    return refContainer;
-  }
-
-  // Check if string value is a node reference (like "#Sample_Key")
-  if (typeof value === "string" && isNodeReference(value)) {
-    const refContainer = $("<div>").addClass("reference-container");
-
-    const jumpBtn = $("<button>")
-      .addClass("btn btn-sm btn-info reference-btn")
-      .attr(
-        "data-testid",
-        `jump-to-node-btn-${value.replace(/[^a-zA-Z0-9]/g, "_")}`
-      )
-      .html(`<span class="glyphicon glyphicon-arrow-right"></span> ${value}`)
-      .attr("title", "Click to jump to this node")
-      .click(function (e) {
-        e.preventDefault();
-        const compactId = getCompactNodeId(value);
-        const targetCard = $(`.node-card[data-node-id="${compactId}"]`);
-        if (targetCard.length) {
-          // Expand any collapsed parent cards
-          targetCard.parents(".node-card").removeClass("collapsed");
-          // Expand the target card itself
-          targetCard.removeClass("collapsed");
-          // Scroll with the top of the card at the top of the viewport (with some offset)
-          targetCard[0].scrollIntoView({ behavior: "smooth", block: "start" });
-          // Add temporary highlight
-          targetCard.addClass("highlight");
-          setTimeout(() => targetCard.removeClass("highlight"), 2000);
-        } else {
-          showAlert("Referenced node not found: " + value);
         }
       });
 

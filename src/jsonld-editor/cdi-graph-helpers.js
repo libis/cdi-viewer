@@ -358,19 +358,29 @@ export function getAllNodesForReference() {
   }));
 }
 
-export function addReferenceToProperty(nodeId, propertyKey, referenceId) {
+export function addReferenceToProperty(nodeId, propertyKey, referenceId, forArray = false, replaceMode = false) {
   const jsonData = getJsonData();
   const node = getNodeById(nodeId);
 
   if (node) {
+    // Default to object-style reference: {"@id": referenceId}
     const reference = { "@id": referenceId };
     const currentValue = node[propertyKey];
 
-    if (Array.isArray(currentValue)) {
-      currentValue.push(reference);
-    } else if (currentValue) {
-      node[propertyKey] = [currentValue, reference];
+    if (replaceMode) {
+      // Replace mode: replace the current value with the new reference
+      node[propertyKey] = reference;
+    } else if (forArray || Array.isArray(currentValue)) {
+      // Array mode: add to array
+      if (Array.isArray(currentValue)) {
+        currentValue.push(reference);
+      } else if (currentValue) {
+        node[propertyKey] = [currentValue, reference];
+      } else {
+        node[propertyKey] = [reference];
+      }
     } else {
+      // Single value mode: just set it
       node[propertyKey] = reference;
     }
 
@@ -386,7 +396,8 @@ export function createAndReferenceNewNode(
   nodeId,
   propertyKey,
   nodeType,
-  asArray = false
+  asArray = false,
+  replaceMode = false
 ) {
   const jsonData = getJsonData();
 
@@ -406,10 +417,14 @@ export function createAndReferenceNewNode(
   // Add reference to parent node
   const parentNode = getNodeById(nodeId);
   if (parentNode) {
+    // Default to object-style reference: {"@id": newNodeId}
     const reference = { "@id": newNodeId };
     const currentValue = parentNode[propertyKey];
 
-    if (asArray) {
+    if (replaceMode) {
+      // Replace mode: replace the current value
+      parentNode[propertyKey] = reference;
+    } else if (asArray) {
       // Always create/append to array
       if (Array.isArray(currentValue)) {
         currentValue.push(reference);
