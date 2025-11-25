@@ -1,5 +1,10 @@
 /* CDI Data Viewer & Editor Styles */
 
+:root {
+    /* Toolbar offset used when scrolling elements into view to compensate for the sticky toolbar */
+    --toolbar-scroll-offset: 300px;
+}
+
 body {
     padding: 10px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -20,7 +25,7 @@ body {
     background: white;
     position: relative;
     /* Ensure clicks that jump to node cards account for the sticky toolbar */
-    scroll-margin-top: 300px;
+    scroll-margin-top: var(--toolbar-scroll-offset);
 }
 
 .node-card.tree-node {
@@ -83,10 +88,10 @@ body {
 .search-highlight {
     background-color: yellow;
     font-weight: bold;
-    /* Add scroll margin to account for sticky toolbar height
-       Toolbar is ~190px base + validation panel when expanded (~150px)
-       Using 300px to ensure content appears below toolbar with some buffer */
-    scroll-margin-top: 300px;
+     /* Add scroll margin to account for sticky toolbar height
+         Toolbar is ~190px base + validation panel when expanded (~150px)
+         Using CSS variable to allow a single place to tune offset */
+     scroll-margin-top: var(--toolbar-scroll-offset);
 }
 
 /* Lighter background for input/textarea fields */
@@ -122,6 +127,8 @@ textarea.search-highlight {
     border-left: 3px solid #28a745;
     background: #f8f9fa;
     position: relative;
+    /* Ensure inline property anchors also account for toolbar offset */
+    scroll-margin-top: var(--toolbar-scroll-offset);
 }
 
 .property-row.shacl-defined {
