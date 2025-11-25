@@ -26,7 +26,7 @@ import {
   getChangedElementsCount,
   getIsEmbeddedMode,
 } from "./state.js";
-import { showAlert, showConfirm, escapeHtml } from "./modal-dialogs.js";
+import { showAlert, showConfirm } from "./modal-dialogs.js";
 import {
   normalizeToGraphFormat,
   migrateContextFormat,
