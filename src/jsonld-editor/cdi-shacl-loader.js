@@ -14,6 +14,7 @@ import {
   setCurrentShapeSource,
   setDefaultTypeNamespace,
 } from "./state.js";
+import { showAlert } from "./modal-dialogs.js";
 
 // Load SHACL shapes from a URL with fallback to local
 export async function loadShapes(shapeSource, customUrl = null) {
@@ -74,7 +75,7 @@ export async function loadShapes(shapeSource, customUrl = null) {
         $("#shape-selector").val("local-fallback");
 
         // Show user notification
-        alert(
+        await showAlert(
           `Could not load shapes from:\n${shapeUrl}\n\nFalling back to local built-in DDI-CDI shapes.\n\nError: ${error.message}`
         );
 

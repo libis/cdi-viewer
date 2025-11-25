@@ -397,3 +397,30 @@ Fixed validation status persistence after shape switching - all 6 validation tes
 - User acceptance testing
 - Documentation for administrators
 - Support plan
+
+## ✅ Final Code Review & Safety Audit (Nov 25, 2025)
+
+After a focused final review (lint, formatting, build and full unit tests) a security/quality audit was performed across the codebase. Below are the findings and prioritized action items to finish cleanup and harden the project for v1.0.
+
+### Key findings
+- ✅ Lint, Prettier, build and unit tests: all green (70/70 passing)
+- ✅ Scroll behavior: search highlighting and jump-to links now respect the sticky toolbar offset — `scroll-margin-top: 300px` was applied to `.node-card` to match `.search-highlight`.
+- ⚠️ Native alerts: a handful of small `alert()` calls remain (e.g. `event-handlers.js`, `cdi-shacl-loader.js`, `unified-add-component.js`) — inconsistent with the modal `showAlert()` UX and harder to test.
+- ⚠️ Potential XSS / HTML injection points: a number of `.html()` and template string injections include variables directly (not escaped). These include some UI rendering code and server feedback areas (eg. `render.js`, `event-handlers.js`, `core.js`). `modal-dialogs.js` already exposes a safe `escapeHtml()` helper which should be reused where needed.
+- 🔧 Small cleanup items: `src/index.js` contains a `console.log` message (replace with `logInfo()`), and vendor/example/test files contain console output or `var` declarations (acceptable in vendor/test but worth noting).
+- 🧭 Maintenance opportunities: several large files are good candidates for refactor to improve maintainability and testability: `render.js` (~1,071 lines), `event-handlers.js` (~654 lines), `cdi-shacl-helpers.js` (~505 lines).
+
+### Priority action items
+1. High: Replace native `alert()` calls with `showAlert()` for consistent UX and testability.
+2. High: Harden all `.html()` / string-based DOM insertion where external data is interpolated — use `escapeHtml()` or inject text nodes instead.
+3. Medium: Move the 300px toolbar offset into a CSS variable `--toolbar-scroll-offset` and apply to `.search-highlight`, `.node-card`, and optionally `.property-row`.
+4. Medium: Remove or replace the `console.log` in `src/index.js` with `logInfo()` to keep logging consistent.
+5. Medium: Add focused Playwright e2e tests for scroll/jump behavior and modal UX, plus ARIA improvements for accessibility.
+6. Low: Consider refactoring very large files into smaller modules for readability and better unit-test coverage.
+
+### Suggested short-term plan (I can implement these next):
+- Fix remaining `alert()` calls → replace with `showAlert()` in `event-handlers.js`, `cdi-shacl-loader.js`, and `unified-add-component.js`.
+- Harden the highest-risk `.html()`/template injection sites using `escapeHtml()` or safe DOM API calls.
+- Convert the toolbar offset into a CSS variable and apply to target selectors.
+
+If you'd like I can implement the high-priority changes now and add a small e2e test to verify scroll behavior.

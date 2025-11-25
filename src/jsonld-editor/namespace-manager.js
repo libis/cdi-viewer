@@ -368,11 +368,12 @@ export function setupNamespaceHandlers() {
       window.dispatchEvent(new CustomEvent("namespacesChanged"));
 
       // Show success message
-      const message = $(`
-        <div class="alert alert-success" style="margin: 10px 0;">
-          <strong>Success!</strong> Added namespace: <code>${prefix}</code> → <code>${uri}</code>
-        </div>
-      `);
+      const message = $("<div>").addClass("alert alert-success").css("margin", "10px 0;");
+      message.append($("<strong>").text("Success! "));
+      message.append(document.createTextNode(" Added namespace: "));
+      message.append($("<code>").text(prefix));
+      message.append(document.createTextNode(" → "));
+      message.append($("<code>").text(uri));
       $("#namespace-section").after(message);
       setTimeout(
         () =>
@@ -419,18 +420,17 @@ function validateNamespaceInputs() {
   }
 
   if (errors.length > 0) {
-    feedback.html(`
-      <div class="alert alert-danger" style="margin-bottom: 0;">
-        ${errors.map((e) => `<div>• ${e}</div>`).join("")}
-      </div>
-    `);
+    const errDiv = $("<div>").addClass("alert alert-danger").css("margin-bottom", "0");
+    errors.forEach((e) => {
+      // use text() to avoid injecting HTML
+      errDiv.append($("<div>").text(`• ${e}`));
+    });
+    feedback.empty().append(errDiv);
   } else if (prefix && uri) {
-    feedback.html(`
-      <div class="alert alert-success" style="margin-bottom: 0;">
-        <span class="glyphicon glyphicon-ok"></span> Valid namespace definition
-      </div>
-    `);
+    const okDiv = $("<div>").addClass("alert alert-success").css("margin-bottom", "0");
+    okDiv.append($("<span>").addClass("glyphicon glyphicon-ok")).append(document.createTextNode(" Valid namespace definition"));
+    feedback.empty().append(okDiv);
   } else {
-    feedback.html("");
+    feedback.empty();
   }
 }

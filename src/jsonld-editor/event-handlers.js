@@ -26,6 +26,7 @@ import {
   getChangedElementsCount,
   getIsEmbeddedMode,
 } from "./state.js";
+import { showAlert, showConfirm, escapeHtml } from "./modal-dialogs.js";
 import {
   normalizeToGraphFormat,
   migrateContextFormat,
@@ -106,7 +107,7 @@ export function setupEventHandlers() {
               log(LOG_LEVEL.INFO, "SHACL shapes loaded for validation");
             } catch (shapeError) {
               logError("Failed to load SHACL shapes:", shapeError);
-              alert(
+              await showAlert(
                 "Warning: Failed to load SHACL shapes. Continuing in generic mode.\n\n" +
                   shapeError.message
               );
@@ -135,14 +136,13 @@ export function setupEventHandlers() {
           window.updateSaveButtonVisibility();
         }
 
-        $("#content").prepend(`
-                        <div class="alert alert-success" style="margin-bottom: 10px;">
-                            <strong>Loaded:</strong> ${file.name}
-                        </div>
-                    `);
+        const $loadedMsg = $("<div>").addClass("alert alert-success").css("margin-bottom", "10px");
+        $loadedMsg.append($("<strong>").text("Loaded:"));
+        $loadedMsg.append(document.createTextNode(" " + file.name));
+        $("#content").prepend($loadedMsg);
       } catch (error) {
         logError("Error loading local file:", error);
-        alert("Failed to load file: " + error.message);
+        await showAlert("Failed to load file: " + error.message);
       }
 
       // Reset input so same file can be selected again
@@ -175,20 +175,26 @@ export function setupEventHandlers() {
 
     const parseResult = parseDataverseUrl(url);
 
-    if (parseResult.valid && parseResult.type === "replace") {
-      feedbackDiv.html(
-        '<span style="color: #5cb85c;"><span class="glyphicon glyphicon-ok"></span> Valid file URL</span>'
-      );
+       if (parseResult.valid && parseResult.type === "replace") {
+         feedbackDiv.empty();
+         const $okSpan = $("<span>").css("color", "#5cb85c");
+         $okSpan.append($("<span>").addClass("glyphicon glyphicon-ok"));
+         $okSpan.append(document.createTextNode(" Valid file URL"));
+         feedbackDiv.append($okSpan);
       $("#confirmLoadBtn").prop("disabled", false);
     } else if (parseResult.valid && parseResult.type === "add") {
-      feedbackDiv.html(
-        '<span style="color: #d9534f;"><span class="glyphicon glyphicon-remove"></span> This is a dataset URL. Please provide a file URL.</span>'
-      );
+         feedbackDiv.empty();
+         const $addSpan = $("<span>").css("color", "#d9534f");
+         $addSpan.append($("<span>").addClass("glyphicon glyphicon-remove"));
+         $addSpan.append(document.createTextNode(" This is a dataset URL. Please provide a file URL."));
+         feedbackDiv.append($addSpan);
       $("#confirmLoadBtn").prop("disabled", true);
     } else {
-      feedbackDiv.html(
-        `<span style="color: #d9534f;"><span class="glyphicon glyphicon-remove"></span> ${parseResult.error}</span>`
-      );
+         feedbackDiv.empty();
+         const $errSpan = $("<span>").css("color", "#d9534f");
+         $errSpan.append($("<span>").addClass("glyphicon glyphicon-remove"));
+         $errSpan.append(document.createTextNode(" " + parseResult.error));
+         feedbackDiv.append($errSpan);
       $("#confirmLoadBtn").prop("disabled", true);
     }
   });
@@ -201,13 +207,13 @@ export function setupEventHandlers() {
       const apiToken = $("#loadApiTokenInput").val().trim();
 
       if (!url) {
-        alert("Please enter a file URL.");
+        await showAlert("Please enter a file URL.");
         return;
       }
 
       const parseResult = parseDataverseUrl(url);
       if (!parseResult.valid || parseResult.type !== "replace") {
-        alert("Please enter a valid file URL.");
+        await showAlert("Please enter a valid file URL.");
         return;
       }
 
@@ -215,11 +221,6 @@ export function setupEventHandlers() {
       $("#loadDataverseModal").modal("hide");
 
       try {
-        // Show loading indicator
-        $("body").append(
-          '<div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; justify-content: center;"><div style="background: white; padding: 20px; border-radius: 5px;"><span class="glyphicon glyphicon-refresh spinning"></span> Loading file from Dataverse...</div></div>'
-        );
-
         // Construct download URL
         const downloadUrl = `${parseResult.serverUrl}/api/access/datafile/${parseResult.fileId}`;
 
@@ -313,7 +314,7 @@ export function setupEventHandlers() {
               log(LOG_LEVEL.INFO, "SHACL shapes loaded for validation");
             } catch (shapeError) {
               logError("Failed to load SHACL shapes:", shapeError);
-              alert(
+              await showAlert(
                 "Warning: Failed to load SHACL shapes. Continuing in generic mode.\\n\\n" +
                   shapeError.message
               );
@@ -332,18 +333,17 @@ export function setupEventHandlers() {
           window.updateSaveButtonVisibility();
         }
 
-        $("#content").prepend(`
-          <div class="alert alert-success" style="margin-bottom: 10px;">
-            <strong>Loaded from Dataverse:</strong> ${filename}
-          </div>
-        `);
+            const $loadedFromDataverse = $("<div>").addClass("alert alert-success").css("margin-bottom", "10px");
+            $loadedFromDataverse.append($("<strong>").text("Loaded from Dataverse:"));
+            $loadedFromDataverse.append(document.createTextNode(" " + filename));
+            $("#content").prepend($loadedFromDataverse);
       } catch (error) {
         logError("Error loading file from Dataverse:", error);
-        alert(
-          "Error loading file from Dataverse:\\n\\n" +
-            error.message +
-            "\\n\\nPlease check:\\n• The URL is correct\\n• The file is published (or provide an API token)\\n• The file is in JSON-LD format"
-        );
+          await showAlert(
+            "Error loading file from Dataverse:\n\n" +
+              error.message +
+              "\n\nPlease check:\n• The URL is correct\n• The file is published (or provide an API token)\n• The file is in JSON-LD format"
+          );
       } finally {
         // Remove loading overlay
         $("#loading-overlay").remove();
@@ -403,14 +403,13 @@ export function setupEventHandlers() {
     // Validate before saving
     await validateDataImmediate();
     // Check if validation passed
-    setTimeout(() => {
+    setTimeout(async () => {
       const validationReport = getValidationReport();
       if (validationReport && !validationReport.conforms) {
-        if (
-          !confirm(
-            "Your data has validation errors. Do you want to save anyway?"
-          )
-        ) {
+        const confirmed = await showConfirm(
+          "Your data has validation errors. Do you want to save anyway?"
+        );
+        if (!confirmed) {
           return;
         }
       }
@@ -604,7 +603,7 @@ export function setupEventHandlers() {
       const customUrl = $(this).val().trim();
 
       if (!customUrl) {
-        alert("Please enter a valid URL");
+        await showAlert("Please enter a valid URL");
         return;
       }
 
@@ -639,7 +638,7 @@ export function setupEventHandlers() {
         $("#validation-status").html(
           '<span class="validation-badge invalid">Custom shape load failed</span>'
         );
-        alert(
+        await showAlert(
           `Failed to load custom SHACL shapes from:\n${customUrl}\n\nError: ${error.message}\n\nPlease check:\n• The URL is accessible\n• The file is valid Turtle (.ttl) format\n• CORS is enabled on the server`
         );
       }

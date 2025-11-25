@@ -267,11 +267,10 @@ $(document).ready(async function () {
     $("#load-local-btn").show();
     $("#load-dataverse-btn").show();
     // Save button visibility handled by event-handlers
-    $("#content").html(`
-                    <div class="alert alert-danger">
-                        <strong>Error:</strong> Failed to load CDI data. ${error.message}
-                    </div>
-                `);
+    const $err = $("<div>").addClass("alert alert-danger");
+    $err.append($("<strong>").text("Error:"));
+    $err.append(document.createTextNode(" Failed to load CDI data. " + String(error.message)));
+    $("#content").html($err);
     setupEventHandlers();
   }
 });

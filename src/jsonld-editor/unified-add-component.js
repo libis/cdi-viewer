@@ -10,6 +10,7 @@
  */
 
 import { extractNamespaces } from "./namespace-manager.js";
+import { showAlert } from "./modal-dialogs.js";
 
 /**
  * Create a unified add component (works for both properties and root nodes)
@@ -98,10 +99,10 @@ export function createUnifiedAddComponent(options) {
     .html(
       `<span class="glyphicon glyphicon-plus"></span> Add ${isProperty ? "Property" : "Node"}`
     )
-    .click(function () {
+    .click(async function () {
       const selectedValue = dropdown.val();
       if (!selectedValue) {
-        alert(`Please select a ${isProperty ? "property" : "node type"} first`);
+        await showAlert(`Please select a ${isProperty ? "property" : "node type"} first`);
         return;
       }
 
@@ -167,12 +168,12 @@ export function createUnifiedAddComponent(options) {
   const addCustomBtn = $("<button>")
     .addClass("btn btn-success")
     .html('<span class="glyphicon glyphicon-plus"></span> Add')
-    .click(function () {
+    .click(async function () {
       const prefix = namespaceSelect.val();
       const name = customInput.val().trim();
 
       if (!name) {
-        alert(`Please enter a ${isProperty ? "property" : "type"} name`);
+        await showAlert(`Please enter a ${isProperty ? "property" : "type"} name`);
         return;
       }
 

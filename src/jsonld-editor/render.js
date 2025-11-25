@@ -11,6 +11,7 @@ import {
   logDebug,
   logInfo,
 } from "./state.js";
+import { escapeHtml } from "./modal-dialogs.js";
 import { collectChangesFromDOM } from "./data-extraction.js";
 import { classifyProperty } from "./cdi-shacl-helpers.js";
 import { scheduleValidation } from "./validation.js";
@@ -692,7 +693,9 @@ function showAddReferenceModal(
                 ${availableNodes
                   .map(
                     (node) =>
-                      `<option value="${node.id}">${node.id} (${node.type || "Unknown"})</option>`
+                      `<option value="${escapeHtml(node.id)}">${escapeHtml(
+                        node.id
+                      )} (${escapeHtml(node.type || "Unknown")})</option>`
                   )
                   .join("")}
               </select>
@@ -783,7 +786,8 @@ export function createValueInput(value, classification) {
         "data-testid",
         `jump-to-node-btn-${refId.replace(/[^a-zA-Z0-9]/g, "_")}`
       )
-      .html(`<span class="glyphicon glyphicon-arrow-right"></span> ${refId}`)
+      .html('<span class="glyphicon glyphicon-arrow-right"></span> ')
+      .append(document.createTextNode(String(refId)))
       .attr("title", "Click to jump to this node")
       .click(function (e) {
         e.preventDefault();
@@ -1003,7 +1007,14 @@ export function highlightText(element, searchTerm, options = {}) {
           ).textContent;
 
           if (lastIndex > 0) {
-            $this.html(html);
+            // html was assembled from textContent values, so it contains escaped data
+            // Parse it into nodes then append (avoid inserting external strings directly)
+            $this.empty();
+            const tmp = document.createElement("div");
+            tmp.innerHTML = html;
+            while (tmp.firstChild) {
+              $this.append(tmp.firstChild);
+            }
           }
         } catch (e) {
           // Invalid regex - skip highlighting
@@ -1038,7 +1049,14 @@ export function highlightText(element, searchTerm, options = {}) {
             text.substring(lastIndex)
           ).textContent;
 
-          $this.html(html);
+          // Replace raw html string with safe DOM nodes built from textContent
+          $this.empty();
+          const tempSimple = document.createElement("div");
+          // html is composed using textContent above so it's safe to parse here
+          tempSimple.innerHTML = html;
+          while (tempSimple.firstChild) {
+            $this.append(tempSimple.firstChild);
+          }
         }
       }
     });

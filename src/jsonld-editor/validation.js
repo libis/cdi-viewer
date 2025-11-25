@@ -61,6 +61,23 @@ export function setValidationStatus(html, autoClearMs = 0) {
 }
 
 /**
+ * Set a validation status message as plain text (safe) rather than raw HTML.
+ * Use this when showing user/server provided strings to avoid accidental HTML injection.
+ */
+export function setValidationStatusText(text, autoClearMs = 0) {
+  clearStatusTimeout();
+  // Use text() to ensure any markup is escaped
+  $("#validation-status").text(String(text));
+
+  if (autoClearMs > 0) {
+    statusClearTimeout = setTimeout(() => {
+      $("#validation-status").text("");
+      statusClearTimeout = null;
+    }, autoClearMs);
+  }
+}
+
+/**
  * Convert N3 Store to RDF/JS Dataset
  */
 function storeToDataset(store) {
@@ -236,9 +253,8 @@ export async function validateData() {
         const $nodeBtn = $("<button>")
           .addClass("btn btn-sm btn-info reference-btn")
           .css({ marginRight: "8px" })
-          .html(
-            `<span class="glyphicon glyphicon-arrow-right"></span> ${nodeId}`
-          )
+          .html('<span class="glyphicon glyphicon-arrow-right"></span> ')
+          .append(document.createTextNode(String(nodeId)))
           .attr("title", "Click to jump to this node")
           .click(function (e) {
             e.preventDefault();
@@ -257,7 +273,7 @@ export async function validateData() {
           });
 
         $listItem.append($nodeBtn);
-        $listItem.append(`<span> - ${v.path}: ${v.message}</span>`);
+        $listItem.append($("<span>").text(" - " + v.path + ": " + v.message));
         $list.append($listItem);
       });
 
