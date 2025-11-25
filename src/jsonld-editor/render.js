@@ -71,7 +71,7 @@ export function renderData() {
   const allNonBlankNodes = jsonData["@graph"]
     .filter((n) => !n["@id"].startsWith("_:"))
     .map((n) => n["@id"]);
-  
+
   allNonBlankNodes.forEach((nodeId) => {
     if (!isNodeRendered(nodeId)) {
       const node = getNodeById(nodeId);
@@ -246,7 +246,14 @@ export function renderNodeTree(node, index, depth, ancestors = new Set()) {
   // Render all properties except @id and @type
   Object.keys(node).forEach((key) => {
     if (key !== "@id" && key !== "@type" && key !== "@context") {
-      const propertyRow = renderPropertyTree(key, node[key], id, types, depth, ancestors);
+      const propertyRow = renderPropertyTree(
+        key,
+        node[key],
+        id,
+        types,
+        depth,
+        ancestors
+      );
       body.append(propertyRow);
     }
   });
@@ -272,7 +279,14 @@ export function renderNodeTree(node, index, depth, ancestors = new Set()) {
   return card;
 }
 
-export function renderPropertyTree(key, value, nodeId, nodeTypes, depth, ancestors = new Set()) {
+export function renderPropertyTree(
+  key,
+  value,
+  nodeId,
+  nodeTypes,
+  depth,
+  ancestors = new Set()
+) {
   const container = $("<div>");
 
   // First render the property itself
@@ -288,7 +302,9 @@ export function renderPropertyTree(key, value, nodeId, nodeTypes, depth, ancesto
         // Detect cycles: if refId is in our ancestor chain, don't inline it
         // (it will be rendered as a clickable reference button instead)
         if (ancestors.has(refId)) {
-          console.log(`Cycle detected: ${nodeId} → ${refId}. Reference will be shown as clickable link.`);
+          console.log(
+            `Cycle detected: ${nodeId} → ${refId}. Reference will be shown as clickable link.`
+          );
           return; // Don't inline - the reference button in the property value is sufficient
         }
 
@@ -644,10 +660,15 @@ function renderProperty(key, value, nodeId, nodeTypes) {
   return row;
 }
 
-function showAddReferenceModal(nodeId, propertyKey, forArray, replaceMode = false) {
+function showAddReferenceModal(
+  nodeId,
+  propertyKey,
+  forArray,
+  replaceMode = false
+) {
   const availableNodes = getAllNodesForReference();
 
-  const actionText = replaceMode ? "Replace with" : (forArray ? "Add" : "Add");
+  const actionText = replaceMode ? "Replace with" : forArray ? "Add" : "Add";
 
   const modalHtml = `
     <div class="modal fade" id="addReferenceModal" tabindex="-1" role="dialog">
@@ -708,7 +729,13 @@ function showAddReferenceModal(nodeId, propertyKey, forArray, replaceMode = fals
       if (existingNodeId) {
         // Add reference to existing node
         collectChangesFromDOM();
-        addReferenceToProperty(nodeId, propertyKey, existingNodeId, forArray, replaceMode);
+        addReferenceToProperty(
+          nodeId,
+          propertyKey,
+          existingNodeId,
+          forArray,
+          replaceMode
+        );
         $("#addReferenceModal").modal("hide");
         renderData();
       } else if (
@@ -720,7 +747,13 @@ function showAddReferenceModal(nodeId, propertyKey, forArray, replaceMode = fals
         // Create new node
         const type = newNodeType || "Object";
         collectChangesFromDOM();
-        createAndReferenceNewNode(nodeId, propertyKey, type, forArray, replaceMode);
+        createAndReferenceNewNode(
+          nodeId,
+          propertyKey,
+          type,
+          forArray,
+          replaceMode
+        );
         $("#addReferenceModal").modal("hide");
         renderData();
       } else {
@@ -737,7 +770,10 @@ export function createValueInput(value, classification) {
   if (refId) {
     const refContainer = $("<div>")
       .addClass("reference-container")
-      .attr("data-reference-style", isStringStyleReference(value) ? "string" : "object");
+      .attr(
+        "data-reference-style",
+        isStringStyleReference(value) ? "string" : "object"
+      );
 
     // Create a clickable button to jump to the referenced node
     const jumpBtn = $("<button>")
@@ -928,7 +964,9 @@ export function highlightText(element, searchTerm, options = {}) {
 
   // Highlight matching text in regular elements (including badges)
   element
-    .find(".property-label, .property-path, .value-display, .node-id, .property-badge")
+    .find(
+      ".property-label, .property-path, .value-display, .node-id, .property-badge"
+    )
     .each(function () {
       const $this = $(this);
       const text = $this.text();

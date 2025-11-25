@@ -401,7 +401,11 @@ export function setupAdvancedSearchHandlers() {
 
   // Auto-refresh search when content changes (in edit mode)
   // Use event delegation to handle dynamically added inputs
-  $(document).on("input change", ".property-row input, .property-row textarea", function() {
-    refreshSearchAfterEdit();
-  });
+  $(document).on(
+    "input change",
+    ".property-row input, .property-row textarea",
+    function () {
+      refreshSearchAfterEdit();
+    }
+  );
 }

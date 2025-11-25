@@ -445,7 +445,7 @@ attachEventHandlers();
 window.updateSaveButtonVisibility = function updateSaveButtonVisibility() {
   const hasChanges = getChangedElementsCount() > 0;
   const isEmbedded = getIsEmbeddedMode();
-  
+
   // Logic:
   // - Standalone (!isEmbedded): Always show (can save to Dataverse anytime)
   // - Embedded (isEmbedded): Show only when changes exist
@@ -458,6 +458,7 @@ window.updateSaveButtonVisibility = function updateSaveButtonVisibility() {
 ```
 
 **Called from:**
+
 - `addChangedElement()` in state.js (after every change)
 - `clearChangedElements()` in state.js (after save/export)
 - Initial load in core.js (lines 242-244)

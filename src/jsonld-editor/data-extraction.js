@@ -30,7 +30,7 @@ export function collectChangesFromDOM() {
   $(".node-card").each(function () {
     const $card = $(this);
     const nodeId = $card.find(".node-id").first().text();
-    
+
     if (!nodeId) {
       return;
     }
@@ -52,7 +52,7 @@ export function collectChangesFromDOM() {
     $propertyRows.each(function () {
       const $propertyRow = $(this);
       const key = $propertyRow.attr("data-property");
-      
+
       if (!key) {
         return;
       }
@@ -66,15 +66,18 @@ export function collectChangesFromDOM() {
         // This is an array - collect all values
         const values = [];
         const currentValue = node[key];
-        
+
         $arrayValues.each(function (arrayIndex) {
           const $arrayValue = $(this);
-          
+
           // Check if this array value contains an inline node card (nested object)
           const $inlineCard = $arrayValue.children(".inline-node-card");
           if ($inlineCard.length > 0) {
             // This is a reference/object - get from current node data using iteration index
-            if (Array.isArray(currentValue) && arrayIndex < currentValue.length) {
+            if (
+              Array.isArray(currentValue) &&
+              arrayIndex < currentValue.length
+            ) {
               values.push(currentValue[arrayIndex]);
             }
           } else {
@@ -82,12 +85,17 @@ export function collectChangesFromDOM() {
             const $refContainer = $arrayValue.children(".reference-container");
             if ($refContainer.length > 0) {
               // This is a reference - preserve from current data using iteration index
-              if (Array.isArray(currentValue) && arrayIndex < currentValue.length) {
+              if (
+                Array.isArray(currentValue) &&
+                arrayIndex < currentValue.length
+              ) {
                 values.push(currentValue[arrayIndex]);
               }
             } else {
               // This is a simple value - collect from input
-              const $input = $arrayValue.find("input, textarea, select").first();
+              const $input = $arrayValue
+                .find("input, textarea, select")
+                .first();
               if ($input.length > 0) {
                 let val = $input.val();
                 try {
@@ -100,7 +108,7 @@ export function collectChangesFromDOM() {
             }
           }
         });
-        
+
         // Update the array in jsonData
         node[key] = values;
       } else {
@@ -119,7 +127,7 @@ export function collectChangesFromDOM() {
             .children(".property-value")
             .children("input, textarea, select")
             .first();
-            
+
           if ($input.length > 0) {
             let val = $input.val();
 

@@ -211,7 +211,9 @@ export function renderNamespaceTable() {
             import("./data-extraction.js").then((dataModule) => {
               dataModule.collectChangesFromDOM();
               // Use dynamic import to avoid circular dependency
-              import("./render.js").then((renderModule) => renderModule.renderData());
+              import("./render.js").then((renderModule) =>
+                renderModule.renderData()
+              );
             });
             // Dispatch custom event for namespace selectors to update
             window.dispatchEvent(new CustomEvent("namespacesChanged"));

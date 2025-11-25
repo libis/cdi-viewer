@@ -24,7 +24,10 @@ import {
   getChangedElementsCount,
   getIsEmbeddedMode,
 } from "./state.js";
-import { normalizeToGraphFormat, migrateContextFormat } from "./cdi-json-ld-helpers.js";
+import {
+  normalizeToGraphFormat,
+  migrateContextFormat,
+} from "./cdi-json-ld-helpers.js";
 import { loadShapes } from "./cdi-shacl-loader.js";
 import { renderData } from "./render.js";
 import { validateDataImmediate, setValidationStatus } from "./validation.js";
@@ -251,8 +254,11 @@ export function setupEventHandlers() {
           if (apiToken) {
             metadataFetchOptions.headers["X-Dataverse-key"] = apiToken;
           }
-          
-          const metadataResponse = await fetch(metadataUrl, metadataFetchOptions);
+
+          const metadataResponse = await fetch(
+            metadataUrl,
+            metadataFetchOptions
+          );
           if (metadataResponse.ok) {
             const metadata = await metadataResponse.json();
             if (
@@ -264,7 +270,10 @@ export function setupEventHandlers() {
             }
           }
         } catch (e) {
-          console.warn("Could not fetch filename from metadata, using default:", e);
+          console.warn(
+            "Could not fetch filename from metadata, using default:",
+            e
+          );
         }
 
         // Set filename and IDs for export and future saves
@@ -379,7 +388,7 @@ export function setupEventHandlers() {
 
       renderData();
     }
-    
+
     // Update save button visibility based on changes (in both modes)
     if (window.updateSaveButtonVisibility) {
       window.updateSaveButtonVisibility();

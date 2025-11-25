@@ -19,7 +19,10 @@ import {
   getSiteUrl,
   getJsonData,
 } from "./state.js";
-import { normalizeToGraphFormat, migrateContextFormat } from "./cdi-json-ld-helpers.js";
+import {
+  normalizeToGraphFormat,
+  migrateContextFormat,
+} from "./cdi-json-ld-helpers.js";
 import { loadShapes } from "./cdi-shacl-loader.js";
 import { renderData } from "./render.js";
 import { setupEventHandlers } from "./event-handlers.js";
@@ -66,7 +69,7 @@ $(document).ready(async function () {
     if (callbackParam) {
       // Mark as embedded mode (Dataverse iframe)
       setIsEmbeddedMode(true);
-      
+
       // Decode the callback URL
       const callbackUrl = atob(callbackParam);
 

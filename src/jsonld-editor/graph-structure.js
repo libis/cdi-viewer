@@ -229,8 +229,12 @@ export function getRootNodeIds() {
   // If no root nodes exist, we likely have a cycle or all nodes are referenced
   // Pick the first non-blank node as an arbitrary starting point
   if (rootNodes.length === 0) {
-    logDebug("No root nodes found - possible cycle detected. Using first non-blank node as root.");
-    const firstNonBlank = jsonData["@graph"].find((n) => !n["@id"].startsWith("_:"));
+    logDebug(
+      "No root nodes found - possible cycle detected. Using first non-blank node as root."
+    );
+    const firstNonBlank = jsonData["@graph"].find(
+      (n) => !n["@id"].startsWith("_:")
+    );
     if (firstNonBlank) {
       return [firstNonBlank["@id"]];
     }

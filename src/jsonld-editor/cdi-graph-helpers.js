@@ -359,7 +359,13 @@ export function getAllNodesForReference() {
   }));
 }
 
-export function addReferenceToProperty(nodeId, propertyKey, referenceId, forArray = false, replaceMode = false) {
+export function addReferenceToProperty(
+  nodeId,
+  propertyKey,
+  referenceId,
+  forArray = false,
+  replaceMode = false
+) {
   const jsonData = getJsonData();
   const node = getNodeById(nodeId);
 

@@ -309,7 +309,9 @@ export function createPropertySuggestionsSection(suggestions, nodeId) {
         import("./data-extraction.js").then((dataModule) => {
           dataModule.collectChangesFromDOM();
           addPropertyToNode(nodeId, suggestion.path, "");
-          import("./render.js").then((renderModule) => renderModule.renderData());
+          import("./render.js").then((renderModule) =>
+            renderModule.renderData()
+          );
         });
       }
     },
