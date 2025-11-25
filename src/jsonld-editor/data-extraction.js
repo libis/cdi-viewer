@@ -326,7 +326,11 @@ export async function saveToDataverse() {
     const blob = new Blob([jsonldString], { type: mimeType });
 
     // Show saving indicator
-    $("#save-btn").prop("disabled", true).empty().append(iconSpan("glyphicon glyphicon-refresh spinning")).append(document.createTextNode(" Saving..."));
+    $("#save-btn")
+      .prop("disabled", true)
+      .empty()
+      .append(iconSpan("glyphicon glyphicon-refresh spinning"))
+      .append(document.createTextNode(" Saving..."));
 
     let result;
     if (operationType === "replace") {
@@ -362,7 +366,11 @@ export async function saveToDataverse() {
     );
   } finally {
     // Reset button
-    $("#save-btn").prop("disabled", false).empty().append(iconSpan("glyphicon glyphicon-floppy-disk")).append(document.createTextNode(" Save to Dataverse"));
+    $("#save-btn")
+      .prop("disabled", false)
+      .empty()
+      .append(iconSpan("glyphicon glyphicon-floppy-disk"))
+      .append(document.createTextNode(" Save to Dataverse"));
   }
 }
 

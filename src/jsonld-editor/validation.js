@@ -69,7 +69,7 @@ export function setValidationStatus(content, autoClearMs = 0) {
   }
 
   if (autoClearMs > 0) {
-      statusClearTimeout = setTimeout(() => {
+    statusClearTimeout = setTimeout(() => {
       $("#validation-status").empty();
       statusClearTimeout = null;
     }, autoClearMs);
@@ -151,7 +151,11 @@ export async function validateData() {
     // Check if SHACL shapes are loaded
     const shaclShapesStore = getShaclShapesStore();
     if (!shaclShapesStore) {
-      $("#validation-status").empty().append(labelSpan("No SHACL shapes loaded - cannot validate", "warning"));
+      $("#validation-status")
+        .empty()
+        .append(
+          labelSpan("No SHACL shapes loaded - cannot validate", "warning")
+        );
       const $validationDetails = $("#validation-details");
       $validationDetails.empty();
       $validationDetails.css("margin-top", "0"); // Remove margin when empty
@@ -242,14 +246,22 @@ export async function validateData() {
       const $statusContainer = $("<span>");
 
       const $badge = $("<span>").addClass("validation-badge invalid");
-      $badge.append($("<span>").addClass("glyphicon glyphicon-exclamation-sign"));
-      $badge.append(document.createTextNode(" " + String(violations.length) + " violation(s)"));
+      $badge.append(
+        $("<span>").addClass("glyphicon glyphicon-exclamation-sign")
+      );
+      $badge.append(
+        document.createTextNode(
+          " " + String(violations.length) + " violation(s)"
+        )
+      );
 
       const $toggleBtn = $("<button>")
         .attr("id", "toggle-violations-btn")
         .addClass("btn btn-sm btn-default")
         .css("margin-left", "10px");
-      $toggleBtn.append($("<span>").addClass("glyphicon glyphicon-chevron-down"));
+      $toggleBtn.append(
+        $("<span>").addClass("glyphicon glyphicon-chevron-down")
+      );
       $toggleBtn.append(document.createTextNode(" Show Details"));
 
       $statusContainer.append($badge).append($toggleBtn);
@@ -311,13 +323,19 @@ export async function validateData() {
           $icon
             .removeClass("glyphicon-chevron-up")
             .addClass("glyphicon-chevron-down");
-          $btn.empty().append(iconSpan("glyphicon glyphicon-chevron-down")).append(document.createTextNode(" Show Details"));
+          $btn
+            .empty()
+            .append(iconSpan("glyphicon glyphicon-chevron-down"))
+            .append(document.createTextNode(" Show Details"));
         } else {
           $details.slideDown(200);
           $icon
             .removeClass("glyphicon-chevron-down")
             .addClass("glyphicon-chevron-up");
-          $btn.empty().append(iconSpan("glyphicon glyphicon-chevron-up")).append(document.createTextNode(" Hide Details"));
+          $btn
+            .empty()
+            .append(iconSpan("glyphicon glyphicon-chevron-up"))
+            .append(document.createTextNode(" Hide Details"));
         }
       });
     }
@@ -337,9 +355,9 @@ export async function validateData() {
     }
 
     // Use safe DOM/text insertion for validation error messages
-    const statusSpan = $("<span>").addClass("validation-badge invalid").text(
-      "Validation Error: " + String(errorMsg)
-    );
+    const statusSpan = $("<span>")
+      .addClass("validation-badge invalid")
+      .text("Validation Error: " + String(errorMsg));
     $("#validation-status").empty().append(statusSpan);
     $("#validation-details").empty();
   } finally {
@@ -422,10 +440,7 @@ function updatePropertyValidation(violations) {
           .addClass(
             "glyphicon glyphicon-exclamation-sign validation-error-icon"
           )
-          .attr(
-            "data-testid",
-            createTestId("validation-error", path)
-          )
+          .attr("data-testid", createTestId("validation-error", path))
           .attr("title", message)
           .attr("data-toggle", "tooltip")
           .attr("data-placement", "top");
@@ -457,10 +472,7 @@ function updatePropertyValidation(violations) {
             : "Node validation failed";
         const icon = $("<span>")
           .addClass("glyphicon glyphicon-exclamation-sign node-validation-icon")
-          .attr(
-            "data-testid",
-            createTestId("node-validation-error", nodeId)
-          )
+          .attr("data-testid", createTestId("node-validation-error", nodeId))
           .attr("title", message)
           .attr("data-toggle", "tooltip")
           .attr("data-placement", "right")

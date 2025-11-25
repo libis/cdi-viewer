@@ -103,7 +103,9 @@ export function createUnifiedAddComponent(options) {
     .click(async function () {
       const selectedValue = dropdown.val();
       if (!selectedValue) {
-        await showAlert(`Please select a ${isProperty ? "property" : "node type"} first`);
+        await showAlert(
+          `Please select a ${isProperty ? "property" : "node type"} first`
+        );
         return;
       }
 
@@ -176,7 +178,9 @@ export function createUnifiedAddComponent(options) {
       const name = customInput.val().trim();
 
       if (!name) {
-        await showAlert(`Please enter a ${isProperty ? "property" : "type"} name`);
+        await showAlert(
+          `Please enter a ${isProperty ? "property" : "type"} name`
+        );
         return;
       }
 

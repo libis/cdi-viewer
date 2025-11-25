@@ -227,7 +227,9 @@ export function renderNamespaceTable() {
         });
       actionsCell.append(deleteBtn);
     } else {
-      actionsCell.empty().append(quickEl('span', { style: 'color: #999;' }, ['—']));
+      actionsCell
+        .empty()
+        .append(quickEl("span", { style: "color: #999;" }, ["—"]));
     }
     row.append(actionsCell);
 
@@ -253,7 +255,10 @@ export function updateNamespaceSectionVisibility() {
         .find(".glyphicon")
         .removeClass("glyphicon-chevron-up")
         .addClass("glyphicon-chevron-down");
-      btn.empty().append(iconSpan('glyphicon glyphicon-chevron-down')).append(document.createTextNode(' Expand'));
+      btn
+        .empty()
+        .append(iconSpan("glyphicon glyphicon-chevron-down"))
+        .append(document.createTextNode(" Expand"));
     }
   } else {
     $("#namespace-section").hide();
@@ -277,13 +282,19 @@ export function setupNamespaceHandlers() {
       icon
         .removeClass("glyphicon-chevron-up")
         .addClass("glyphicon-chevron-down");
-      $(this).empty().append(iconSpan('glyphicon glyphicon-chevron-down')).append(document.createTextNode(' Expand'));
+      $(this)
+        .empty()
+        .append(iconSpan("glyphicon glyphicon-chevron-down"))
+        .append(document.createTextNode(" Expand"));
     } else {
       content.slideDown();
       icon
         .removeClass("glyphicon-chevron-down")
         .addClass("glyphicon-chevron-up");
-      $(this).empty().append(iconSpan('glyphicon glyphicon-chevron-up')).append(document.createTextNode(' Collapse'));
+      $(this)
+        .empty()
+        .append(iconSpan("glyphicon glyphicon-chevron-up"))
+        .append(document.createTextNode(" Collapse"));
     }
   });
 
@@ -364,7 +375,9 @@ export function setupNamespaceHandlers() {
       window.dispatchEvent(new CustomEvent("namespacesChanged"));
 
       // Show success message
-      const message = $("<div>").addClass("alert alert-success").css("margin", "10px 0;");
+      const message = $("<div>")
+        .addClass("alert alert-success")
+        .css("margin", "10px 0;");
       message.append($("<strong>").text("Success! "));
       message.append(document.createTextNode(" Added namespace: "));
       message.append($("<code>").text(prefix));
@@ -416,15 +429,21 @@ function validateNamespaceInputs() {
   }
 
   if (errors.length > 0) {
-    const errDiv = $("<div>").addClass("alert alert-danger").css("margin-bottom", "0");
+    const errDiv = $("<div>")
+      .addClass("alert alert-danger")
+      .css("margin-bottom", "0");
     errors.forEach((e) => {
       // use text() to avoid injecting HTML
       errDiv.append($("<div>").text(`• ${e}`));
     });
     feedback.empty().append(errDiv);
   } else if (prefix && uri) {
-    const okDiv = $("<div>").addClass("alert alert-success").css("margin-bottom", "0");
-    okDiv.append($("<span>").addClass("glyphicon glyphicon-ok")).append(document.createTextNode(" Valid namespace definition"));
+    const okDiv = $("<div>")
+      .addClass("alert alert-success")
+      .css("margin-bottom", "0");
+    okDiv
+      .append($("<span>").addClass("glyphicon glyphicon-ok"))
+      .append(document.createTextNode(" Valid namespace definition"));
     feedback.empty().append(okDiv);
   } else {
     feedback.empty();

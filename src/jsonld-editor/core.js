@@ -114,14 +114,16 @@ $(document).ready(async function () {
       $("#load-local-btn").show();
       $("#load-dataverse-btn").show();
       // In standalone mode, save button visibility handled by event-handlers
-      $("#content").empty().append(
-        quickEl("div", { class: "alert alert-info" }, [
-          quickEl("strong", {}, ["No Dataverse parameters detected."]),
-          document.createTextNode(
-            ' Use the "Load Local File" button in the top left to select a CDI JSON-LD file from your computer.'
-          ),
-        ])
-      );
+      $("#content")
+        .empty()
+        .append(
+          quickEl("div", { class: "alert alert-info" }, [
+            quickEl("strong", {}, ["No Dataverse parameters detected."]),
+            document.createTextNode(
+              ' Use the "Load Local File" button in the top left to select a CDI JSON-LD file from your computer.'
+            ),
+          ])
+        );
       setupEventHandlers();
       return;
     }
@@ -273,7 +275,11 @@ $(document).ready(async function () {
     // Save button visibility handled by event-handlers
     const $err = $("<div>").addClass("alert alert-danger");
     $err.append($("<strong>").text("Error:"));
-    $err.append(document.createTextNode(" Failed to load CDI data. " + String(error.message)));
+    $err.append(
+      document.createTextNode(
+        " Failed to load CDI data. " + String(error.message)
+      )
+    );
     $("#content").empty().append($err);
     setupEventHandlers();
   }

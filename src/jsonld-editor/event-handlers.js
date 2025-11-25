@@ -137,7 +137,9 @@ export function setupEventHandlers() {
           window.updateSaveButtonVisibility();
         }
 
-        const $loadedMsg = $("<div>").addClass("alert alert-success").css("margin-bottom", "10px");
+        const $loadedMsg = $("<div>")
+          .addClass("alert alert-success")
+          .css("margin-bottom", "10px");
         $loadedMsg.append($("<strong>").text("Loaded:"));
         $loadedMsg.append(document.createTextNode(" " + file.name));
         $("#content").prepend($loadedMsg);
@@ -176,26 +178,30 @@ export function setupEventHandlers() {
 
     const parseResult = parseDataverseUrl(url);
 
-       if (parseResult.valid && parseResult.type === "replace") {
-         feedbackDiv.empty();
-         const $okSpan = $("<span>").css("color", "#5cb85c");
-         $okSpan.append($("<span>").addClass("glyphicon glyphicon-ok"));
-         $okSpan.append(document.createTextNode(" Valid file URL"));
-         feedbackDiv.append($okSpan);
+    if (parseResult.valid && parseResult.type === "replace") {
+      feedbackDiv.empty();
+      const $okSpan = $("<span>").css("color", "#5cb85c");
+      $okSpan.append($("<span>").addClass("glyphicon glyphicon-ok"));
+      $okSpan.append(document.createTextNode(" Valid file URL"));
+      feedbackDiv.append($okSpan);
       $("#confirmLoadBtn").prop("disabled", false);
     } else if (parseResult.valid && parseResult.type === "add") {
-         feedbackDiv.empty();
-         const $addSpan = $("<span>").css("color", "#d9534f");
-         $addSpan.append($("<span>").addClass("glyphicon glyphicon-remove"));
-         $addSpan.append(document.createTextNode(" This is a dataset URL. Please provide a file URL."));
-         feedbackDiv.append($addSpan);
+      feedbackDiv.empty();
+      const $addSpan = $("<span>").css("color", "#d9534f");
+      $addSpan.append($("<span>").addClass("glyphicon glyphicon-remove"));
+      $addSpan.append(
+        document.createTextNode(
+          " This is a dataset URL. Please provide a file URL."
+        )
+      );
+      feedbackDiv.append($addSpan);
       $("#confirmLoadBtn").prop("disabled", true);
     } else {
-         feedbackDiv.empty();
-         const $errSpan = $("<span>").css("color", "#d9534f");
-         $errSpan.append($("<span>").addClass("glyphicon glyphicon-remove"));
-         $errSpan.append(document.createTextNode(" " + parseResult.error));
-         feedbackDiv.append($errSpan);
+      feedbackDiv.empty();
+      const $errSpan = $("<span>").css("color", "#d9534f");
+      $errSpan.append($("<span>").addClass("glyphicon glyphicon-remove"));
+      $errSpan.append(document.createTextNode(" " + parseResult.error));
+      feedbackDiv.append($errSpan);
       $("#confirmLoadBtn").prop("disabled", true);
     }
   });
@@ -334,17 +340,21 @@ export function setupEventHandlers() {
           window.updateSaveButtonVisibility();
         }
 
-            const $loadedFromDataverse = $("<div>").addClass("alert alert-success").css("margin-bottom", "10px");
-            $loadedFromDataverse.append($("<strong>").text("Loaded from Dataverse:"));
-            $loadedFromDataverse.append(document.createTextNode(" " + filename));
-            $("#content").prepend($loadedFromDataverse);
+        const $loadedFromDataverse = $("<div>")
+          .addClass("alert alert-success")
+          .css("margin-bottom", "10px");
+        $loadedFromDataverse.append(
+          $("<strong>").text("Loaded from Dataverse:")
+        );
+        $loadedFromDataverse.append(document.createTextNode(" " + filename));
+        $("#content").prepend($loadedFromDataverse);
       } catch (error) {
         logError("Error loading file from Dataverse:", error);
-          await showAlert(
-            "Error loading file from Dataverse:\n\n" +
-              error.message +
-              "\n\nPlease check:\n• The URL is correct\n• The file is published (or provide an API token)\n• The file is in JSON-LD format"
-          );
+        await showAlert(
+          "Error loading file from Dataverse:\n\n" +
+            error.message +
+            "\n\nPlease check:\n• The URL is correct\n• The file is published (or provide an API token)\n• The file is in JSON-LD format"
+        );
       } finally {
         // Remove loading overlay
         $("#loading-overlay").remove();
@@ -560,7 +570,9 @@ export function setupEventHandlers() {
         renderData();
       }
 
-      $("#validation-status").empty().append(labelSpan("No shapes loaded - generic mode", "warning"));
+      $("#validation-status")
+        .empty()
+        .append(labelSpan("No shapes loaded - generic mode", "warning"));
       setTimeout(() => {
         $("#validation-status").empty();
       }, 2000);
@@ -571,7 +583,9 @@ export function setupEventHandlers() {
 
       // Load the selected shape
       try {
-        $("#validation-status").empty().append(labelSpan("Loading shapes...", "info"));
+        $("#validation-status")
+          .empty()
+          .append(labelSpan("Loading shapes...", "info"));
         await loadShapes(selectedSource);
 
         // Re-render Add Root Node component with new node types
@@ -593,7 +607,13 @@ export function setupEventHandlers() {
         }
       } catch (error) {
         logError("Error loading custom shape:", error);
-        $("#validation-status").empty().append($('<span>').addClass('validation-badge invalid').text('Shape load failed'));
+        $("#validation-status")
+          .empty()
+          .append(
+            $("<span>")
+              .addClass("validation-badge invalid")
+              .text("Shape load failed")
+          );
       }
     }
   });
@@ -611,7 +631,9 @@ export function setupEventHandlers() {
       }
 
       try {
-        $("#validation-status").empty().append(labelSpan("Loading custom shapes...", "info"));
+        $("#validation-status")
+          .empty()
+          .append(labelSpan("Loading custom shapes...", "info"));
         await loadShapes("custom", customUrl);
 
         // Re-render Add Root Node component with new node types
@@ -633,7 +655,13 @@ export function setupEventHandlers() {
         }
       } catch (error) {
         logError("Error loading custom shape:", error);
-        $("#validation-status").empty().append($('<span>').addClass('validation-badge invalid').text('Custom shape load failed'));
+        $("#validation-status")
+          .empty()
+          .append(
+            $("<span>")
+              .addClass("validation-badge invalid")
+              .text("Custom shape load failed")
+          );
         await showAlert(
           `Failed to load custom SHACL shapes from:\n${customUrl}\n\nError: ${error.message}\n\nPlease check:\n• The URL is accessible\n• The file is valid Turtle (.ttl) format\n• CORS is enabled on the server`
         );

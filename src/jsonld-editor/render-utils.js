@@ -11,14 +11,18 @@ export function iconSpan(className) {
 export function iconTextNode(iconClass, text) {
   const $frag = document.createDocumentFragment();
   $frag.appendChild(iconSpan(iconClass)[0]);
-  if (text) $frag.appendChild(document.createTextNode(" " + text));
+  if (text) {
+    $frag.appendChild(document.createTextNode(" " + text));
+  }
   return $frag;
 }
 
 export function iconButton(iconClass, text, attrs = {}) {
   const $btn = quickEl("button", attrs);
   $btn.append(iconSpan(iconClass));
-  if (text) $btn.append(document.createTextNode(" " + text));
+  if (text) {
+    $btn.append(document.createTextNode(" " + text));
+  }
   return $btn;
 }
 

@@ -11,9 +11,9 @@ import {
   logDebug,
   logInfo,
 } from "./state.js";
-import { escapeHtml } from "./modal-dialogs.js";
+import { iconSpan } from "./render-utils.js";
 import { collectChangesFromDOM } from "./data-extraction.js";
-import { sanitizeForTestId, createTestId, quickEl } from "./dom-utils.js";
+import { createTestId, quickEl } from "./dom-utils.js";
 import { classifyProperty } from "./cdi-shacl-helpers.js";
 import { scheduleValidation } from "./validation.js";
 import { humanizeKey } from "./text-utils.js";
@@ -53,7 +53,11 @@ export function renderData() {
   buildGraphStructure();
 
   if (!jsonData || !jsonData["@graph"]) {
-    content.empty().append(quickEl("div", { class: "alert alert-warning" }, ["No data to display"]));
+    content
+      .empty()
+      .append(
+        quickEl("div", { class: "alert alert-warning" }, ["No data to display"])
+      );
     return;
   }
 
@@ -206,10 +210,7 @@ export function renderNodeTree(node, index, depth, ancestors = new Set()) {
   if (isEditMode) {
     const deleteBtn = $("<button>")
       .addClass("btn btn-xs btn-danger delete-node-btn")
-      .attr(
-        "data-testid",
-        createTestId("delete-node-btn", id)
-      )
+      .attr("data-testid", createTestId("delete-node-btn", id))
       .empty()
       .append(iconSpan("glyphicon glyphicon-trash"))
       .css("margin-left", "10px")
@@ -512,10 +513,7 @@ function renderProperty(key, value, nodeId, nodeTypes) {
     if (getIsEditMode()) {
       const addBtn = $("<button>")
         .addClass("btn btn-sm btn-default add-value-btn")
-        .attr(
-          "data-testid",
-          createTestId("add-value-btn", key)
-        )
+        .attr("data-testid", createTestId("add-value-btn", key))
         .empty()
         .append(iconSpan("glyphicon glyphicon-plus"))
         .append(document.createTextNode(" Add Value"))
@@ -543,10 +541,7 @@ function renderProperty(key, value, nodeId, nodeTypes) {
       // Add Reference/Object button for arrays
       const addRefBtn = $("<button>")
         .addClass("btn btn-sm btn-info add-reference-btn")
-        .attr(
-          "data-testid",
-          createTestId("add-reference-btn", key)
-        )
+        .attr("data-testid", createTestId("add-reference-btn", key))
         .empty()
         .append(iconSpan("glyphicon glyphicon-link"))
         .append(document.createTextNode(" Add Reference/Object"))
@@ -561,10 +556,7 @@ function renderProperty(key, value, nodeId, nodeTypes) {
     if (getIsEditMode()) {
       const convertBtn = $("<button>")
         .addClass("btn btn-xs btn-default convert-btn")
-        .attr(
-          "data-testid",
-          createTestId("convert-to-single-btn", key)
-        )
+        .attr("data-testid", createTestId("convert-to-single-btn", key))
         .empty()
         .append(iconSpan("glyphicon glyphicon-resize-small"))
         .append(document.createTextNode(" Convert to Single"))
@@ -602,10 +594,7 @@ function renderProperty(key, value, nodeId, nodeTypes) {
       if (!classification.isRequired) {
         const deleteBtn = $("<button>")
           .addClass("btn btn-xs btn-danger")
-          .attr(
-            "data-testid",
-            createTestId("delete-property-btn", key)
-          )
+          .attr("data-testid", createTestId("delete-property-btn", key))
           .empty()
           .append(iconSpan("glyphicon glyphicon-trash"))
           .append(document.createTextNode(" Delete"))
@@ -627,10 +616,7 @@ function renderProperty(key, value, nodeId, nodeTypes) {
       // Convert to Array button
       const convertToArrayBtn = $("<button>")
         .addClass("btn btn-xs btn-default")
-        .attr(
-          "data-testid",
-          createTestId("convert-to-array-btn", key)
-        )
+        .attr("data-testid", createTestId("convert-to-array-btn", key))
         .empty()
         .append(iconSpan("glyphicon glyphicon-resize-full"))
         .append(document.createTextNode(" Convert to Array"))
@@ -681,27 +667,47 @@ function showAddReferenceModal(
   const actionText = replaceMode ? "Replace with" : forArray ? "Add" : "Add";
 
   // Build modal DOM using safe helpers (avoid string HTML concatenation)
-  const $modal = quickEl("div", { class: "modal fade", id: "addReferenceModal", tabindex: -1, role: "dialog" });
+  const $modal = quickEl("div", {
+    class: "modal fade",
+    id: "addReferenceModal",
+    tabindex: -1,
+    role: "dialog",
+  });
 
   const $dialog = quickEl("div", { class: "modal-dialog", role: "document" });
   const $content = quickEl("div", { class: "modal-content" });
 
   // Header
   const $header = quickEl("div", { class: "modal-header" });
-  const $closeBtn = quickEl("button", { type: "button", class: "close", "data-dismiss": "modal" }, [quickEl("span", {}, ["×"]) ]);
+  const $closeBtn = quickEl(
+    "button",
+    { type: "button", class: "close", "data-dismiss": "modal" },
+    [quickEl("span", {}, ["×"])]
+  );
   const $title = quickEl("h4", { class: "modal-title" });
   $title.append(quickEl("span", { class: "glyphicon glyphicon-link" }));
-  $title.append(document.createTextNode(` ${actionText} Reference or New Object`));
+  $title.append(
+    document.createTextNode(` ${actionText} Reference or New Object`)
+  );
 
   $header.append($closeBtn, $title);
 
   // Body
   const $body = quickEl("div", { class: "modal-body" });
   const $existingGroup = quickEl("div", { class: "form-group" });
-  $existingGroup.append(quickEl("label", {}, [quickEl("strong", {}, ["Option 1: Reference Existing Node"]) ]));
+  $existingGroup.append(
+    quickEl("label", {}, [
+      quickEl("strong", {}, ["Option 1: Reference Existing Node"]),
+    ])
+  );
 
-  const $select = quickEl("select", { id: "existingNodeSelect", class: "form-control" });
-  $select.append(quickEl("option", { value: "" }, ["-- Select an existing node --"]));
+  const $select = quickEl("select", {
+    id: "existingNodeSelect",
+    class: "form-control",
+  });
+  $select.append(
+    quickEl("option", { value: "" }, ["-- Select an existing node --"])
+  );
   availableNodes.forEach((node) => {
     // Use attribute/value setting + .text() semantics to avoid injecting HTML
     const $opt = quickEl("option");
@@ -712,18 +718,41 @@ function showAddReferenceModal(
   $existingGroup.append($select);
 
   const $newObjGroup = quickEl("div", { class: "form-group" });
-  $newObjGroup.append(quickEl("label", {}, [quickEl("strong", {}, ["Option 2: Create New Object"]) ]));
   $newObjGroup.append(
-    quickEl("input", { type: "text", id: "newNodeType", class: "form-control", placeholder: "Enter object type (e.g., ValueAndConceptDescription)" })
+    quickEl("label", {}, [
+      quickEl("strong", {}, ["Option 2: Create New Object"]),
+    ])
   );
-  $newObjGroup.append(quickEl("small", { class: "help-block" }, ["Leave empty to create generic Object"]));
+  $newObjGroup.append(
+    quickEl("input", {
+      type: "text",
+      id: "newNodeType",
+      class: "form-control",
+      placeholder: "Enter object type (e.g., ValueAndConceptDescription)",
+    })
+  );
+  $newObjGroup.append(
+    quickEl("small", { class: "help-block" }, [
+      "Leave empty to create generic Object",
+    ])
+  );
 
   $body.append($existingGroup, $newObjGroup);
 
   // Footer
   const $footer = quickEl("div", { class: "modal-footer" });
-  $footer.append(quickEl("button", { type: "button", class: "btn btn-default", "data-dismiss": "modal" }, ["Cancel"]));
-  const $confirmBtn = quickEl("button", { type: "button", class: "btn btn-primary", id: "confirmAddReference" });
+  $footer.append(
+    quickEl(
+      "button",
+      { type: "button", class: "btn btn-default", "data-dismiss": "modal" },
+      ["Cancel"]
+    )
+  );
+  const $confirmBtn = quickEl("button", {
+    type: "button",
+    class: "btn btn-primary",
+    id: "confirmAddReference",
+  });
   $confirmBtn.append(quickEl("span", { class: "glyphicon glyphicon-ok" }));
   $confirmBtn.append(document.createTextNode(` ${actionText}`));
   $footer.append($confirmBtn);
@@ -796,10 +825,7 @@ export function createValueInput(value, classification) {
     // Create a clickable button to jump to the referenced node
     const jumpBtn = $("<button>")
       .addClass("btn btn-sm btn-info reference-btn")
-      .attr(
-        "data-testid",
-        createTestId("jump-to-node-btn", refId)
-      )
+      .attr("data-testid", createTestId("jump-to-node-btn", refId))
       .empty()
       .append(iconSpan("glyphicon glyphicon-arrow-right"))
       .append(document.createTextNode(" "))
@@ -996,7 +1022,6 @@ export function highlightText(element, searchTerm, options = {}) {
         try {
           const flags = caseSensitive ? "g" : "gi";
           let lastIndex = 0;
-          let html = "";
           let match;
 
           // Use a new regex for each match to reset lastIndex
@@ -1006,7 +1031,9 @@ export function highlightText(element, searchTerm, options = {}) {
           while ((match = searchRegex.exec(text)) !== null) {
             // Add text before match as text node
             if (match.index > lastIndex) {
-              frag.appendChild(document.createTextNode(text.substring(lastIndex, match.index)));
+              frag.appendChild(
+                document.createTextNode(text.substring(lastIndex, match.index))
+              );
             }
             // Add highlighted match as a span node
             const span = document.createElement("span");
@@ -1021,7 +1048,9 @@ export function highlightText(element, searchTerm, options = {}) {
           }
           // Add remaining text
           if (lastIndex < text.length) {
-            frag.appendChild(document.createTextNode(text.substring(lastIndex)));
+            frag.appendChild(
+              document.createTextNode(text.substring(lastIndex))
+            );
           }
 
           if (lastIndex > 0) {
@@ -1047,11 +1076,17 @@ export function highlightText(element, searchTerm, options = {}) {
           // Find all occurrences and build nodes for each segment
           while (index >= 0) {
             if (index > lastIndex) {
-              frag.appendChild(document.createTextNode(text.substring(lastIndex, index)));
+              frag.appendChild(
+                document.createTextNode(text.substring(lastIndex, index))
+              );
             }
             const span = document.createElement("span");
             span.className = "search-highlight";
-            span.appendChild(document.createTextNode(text.substring(index, index + compareTerm.length)));
+            span.appendChild(
+              document.createTextNode(
+                text.substring(index, index + compareTerm.length)
+              )
+            );
             frag.appendChild(span);
             lastIndex = index + compareTerm.length;
             index = compareText.indexOf(compareTerm, lastIndex);
@@ -1059,7 +1094,9 @@ export function highlightText(element, searchTerm, options = {}) {
 
           // Append remaining text
           if (lastIndex < text.length) {
-            frag.appendChild(document.createTextNode(text.substring(lastIndex)));
+            frag.appendChild(
+              document.createTextNode(text.substring(lastIndex))
+            );
           }
 
           // Replace content with composed fragment

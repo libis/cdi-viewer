@@ -24,13 +24,20 @@ export function createTestId(prefix, value) {
 export function quickEl(tag, attrs = {}, children = []) {
   const $el = $(`<${tag}>`);
   Object.entries(attrs).forEach(([k, v]) => {
-    if (v === undefined || v === null) return;
+    if (v === undefined || v === null) {
+      return;
+    }
     $el.attr(k, v);
   });
   (Array.isArray(children) ? children : [children]).forEach((c) => {
-    if (c == null) return;
-    if (typeof c === "string") $el.append(document.createTextNode(c));
-    else $el.append(c);
+    if (c === null) {
+      return;
+    }
+    if (typeof c === "string") {
+      $el.append(document.createTextNode(c));
+    } else {
+      $el.append(c);
+    }
   });
   return $el;
 }

@@ -4,6 +4,7 @@
  */
 
 import $ from "jquery";
+import { quickEl } from "./dom-utils.js";
 
 /**
  * Show an alert modal (replacement for window.alert)
@@ -12,47 +13,97 @@ import $ from "jquery";
  */
 export function showAlert(message) {
   return new Promise((resolve) => {
-    const modal = $(`
-      <div class="custom-modal-overlay" data-testid="alert-modal">
-        <div class="custom-modal">
-          <div class="custom-modal-header">
-            <h4>Alert</h4>
-          </div>
-          <div class="custom-modal-body">
-            <p>${escapeHtml(message)}</p>
-          </div>
-          <div class="custom-modal-footer">
-            <button class="btn btn-primary" data-testid="alert-ok-btn">OK</button>
-          </div>
-        </div>
-      </div>
-    `);
+    const prevActive = document.activeElement;
 
-    modal.find('[data-testid="alert-ok-btn"]').on("click", () => {
-      modal.remove();
+    // Unique ids for aria
+    const titleId = `modal-title-${Date.now()}`;
+    const descId = `modal-desc-${Date.now()}`;
+
+    const $overlay = quickEl("div", {
+      class: "custom-modal-overlay",
+      "data-testid": "alert-modal",
+      role: "dialog",
+      "aria-modal": "true",
+      "aria-labelledby": titleId,
+      "aria-describedby": descId,
+    });
+    const $modal = quickEl("div", { class: "custom-modal" });
+    const $header = quickEl("div", { class: "custom-modal-header" }, [
+      quickEl("h4", { id: titleId }, ["Alert"]),
+    ]);
+    const $body = quickEl("div", { class: "custom-modal-body" }, [
+      quickEl("p", { id: descId }, [String(message)]),
+    ]);
+    const $footer = quickEl("div", { class: "custom-modal-footer" });
+    const $ok = quickEl(
+      "button",
+      { class: "btn btn-primary", "data-testid": "alert-ok-btn" },
+      ["OK"]
+    );
+    $footer.append($ok);
+
+    $modal.append($header, $body, $footer);
+    $overlay.append($modal);
+
+    // Focus management & trap
+    const focusableSelector =
+      'a[href], area[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    function trapFocus(e) {
+      if (e.key === "Tab") {
+        const focusable = Array.from(
+          $overlay[0].querySelectorAll(focusableSelector)
+        );
+        if (focusable.length === 0) {
+          return;
+        }
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      } else if (e.key === "Escape") {
+        // Close on Escape
+        cleanup();
+        resolve();
+      }
+    }
+
+    function cleanup() {
+      $(document).off("keydown", trapFocus);
+      $overlay.remove();
+      if (prevActive && typeof prevActive.focus === "function") {
+        prevActive.focus();
+      }
+    }
+
+    // Overlay click closes
+    $overlay.on("click", (e) => {
+      if (e.target === $overlay[0]) {
+        cleanup();
+        resolve();
+      }
+    });
+
+    $ok.on("click", () => {
+      cleanup();
       resolve();
     });
 
-    // Close on overlay click
-    modal.on("click", (e) => {
-      if ($(e.target).hasClass("custom-modal-overlay")) {
-        modal.remove();
-        resolve();
-      }
-    });
+    $(document).on("keydown", trapFocus);
 
-    // Close on Escape key
-    const handleEscape = (e) => {
-      if (e.key === "Escape") {
-        modal.remove();
-        $(document).off("keydown", handleEscape);
-        resolve();
-      }
-    };
-    $(document).on("keydown", handleEscape);
+    $("body").append($overlay);
 
-    $("body").append(modal);
-    modal.find('[data-testid="alert-ok-btn"]').focus();
+    // Focus first actionable control
+    setTimeout(() => {
+      const first = $overlay[0].querySelector(focusableSelector);
+      if (first) {
+        first.focus();
+      }
+    }, 0);
   });
 }
 
@@ -73,53 +124,101 @@ export function showConfirm(message, options = {}) {
   } = options;
 
   return new Promise((resolve) => {
-    const modal = $(`
-      <div class="custom-modal-overlay" data-testid="confirm-modal">
-        <div class="custom-modal">
-          <div class="custom-modal-header">
-            <h4>${escapeHtml(title)}</h4>
-          </div>
-          <div class="custom-modal-body">
-            <p>${escapeHtml(message)}</p>
-          </div>
-          <div class="custom-modal-footer">
-            <button class="btn btn-default" data-testid="confirm-cancel-btn">${escapeHtml(cancelText)}</button>
-            <button class="btn btn-danger" data-testid="confirm-ok-btn">${escapeHtml(confirmText)}</button>
-          </div>
-        </div>
-      </div>
-    `);
+    const prevActive = document.activeElement;
+    const titleId = `modal-title-${Date.now()}`;
+    const descId = `modal-desc-${Date.now()}`;
 
-    modal.find('[data-testid="confirm-ok-btn"]').on("click", () => {
-      modal.remove();
+    const $overlay = quickEl("div", {
+      class: "custom-modal-overlay",
+      "data-testid": "confirm-modal",
+      role: "dialog",
+      "aria-modal": "true",
+      "aria-labelledby": titleId,
+      "aria-describedby": descId,
+    });
+    const $modal = quickEl("div", { class: "custom-modal" });
+    const $header = quickEl("div", { class: "custom-modal-header" }, [
+      quickEl("h4", { id: titleId }, [String(title)]),
+    ]);
+    const $body = quickEl("div", { class: "custom-modal-body" }, [
+      quickEl("p", { id: descId }, [String(message)]),
+    ]);
+    const $footer = quickEl("div", { class: "custom-modal-footer" });
+    const $cancel = quickEl(
+      "button",
+      { class: "btn btn-default", "data-testid": "confirm-cancel-btn" },
+      [String(cancelText)]
+    );
+    const $ok = quickEl(
+      "button",
+      { class: "btn btn-danger", "data-testid": "confirm-ok-btn" },
+      [String(confirmText)]
+    );
+    $footer.append($cancel, $ok);
+
+    $modal.append($header, $body, $footer);
+    $overlay.append($modal);
+
+    const focusableSelector =
+      'a[href], area[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+    function trapFocus(e) {
+      if (e.key === "Tab") {
+        const focusable = Array.from(
+          $overlay[0].querySelectorAll(focusableSelector)
+        );
+        if (focusable.length === 0) {
+          return;
+        }
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      } else if (e.key === "Escape") {
+        cleanup();
+        resolve(false);
+      }
+    }
+
+    function cleanup() {
+      $(document).off("keydown", trapFocus);
+      $overlay.remove();
+      if (prevActive && typeof prevActive.focus === "function") {
+        prevActive.focus();
+      }
+    }
+
+    $overlay.on("click", (e) => {
+      if (e.target === $overlay[0]) {
+        cleanup();
+        resolve(false);
+      }
+    });
+
+    $ok.on("click", () => {
+      cleanup();
       resolve(true);
     });
 
-    modal.find('[data-testid="confirm-cancel-btn"]').on("click", () => {
-      modal.remove();
+    $cancel.on("click", () => {
+      cleanup();
       resolve(false);
     });
 
-    // Close on overlay click (counts as cancel)
-    modal.on("click", (e) => {
-      if ($(e.target).hasClass("custom-modal-overlay")) {
-        modal.remove();
-        resolve(false);
-      }
-    });
+    $(document).on("keydown", trapFocus);
 
-    // Close on Escape key (counts as cancel)
-    const handleEscape = (e) => {
-      if (e.key === "Escape") {
-        modal.remove();
-        $(document).off("keydown", handleEscape);
-        resolve(false);
+    $("body").append($overlay);
+    setTimeout(() => {
+      const first = $overlay[0].querySelector(focusableSelector);
+      if (first) {
+        first.focus();
       }
-    };
-    $(document).on("keydown", handleEscape);
-
-    $("body").append(modal);
-    modal.find('[data-testid="confirm-ok-btn"]').focus();
+    }, 0);
   });
 }
 
@@ -136,73 +235,116 @@ export function showPrompt(message, defaultValue = "", options = {}) {
   const { title = "Input Required", placeholder = "" } = options;
 
   return new Promise((resolve) => {
-    const modal = $(`
-      <div class="custom-modal-overlay" data-testid="prompt-modal">
-        <div class="custom-modal">
-          <div class="custom-modal-header">
-            <h4>${escapeHtml(title)}</h4>
-          </div>
-          <div class="custom-modal-body">
-            <p>${escapeHtml(message)}</p>
-            <input 
-              type="text" 
-              class="form-control" 
-              data-testid="prompt-input"
-              value="${escapeHtml(defaultValue)}"
-              placeholder="${escapeHtml(placeholder)}"
-            />
-          </div>
-          <div class="custom-modal-footer">
-            <button class="btn btn-default" data-testid="prompt-cancel-btn">Cancel</button>
-            <button class="btn btn-primary" data-testid="prompt-ok-btn">OK</button>
-          </div>
-        </div>
-      </div>
-    `);
+    const prevActive = document.activeElement;
+    const titleId = `modal-title-${Date.now()}`;
+    const descId = `modal-desc-${Date.now()}`;
 
-    const input = modal.find('[data-testid="prompt-input"]');
+    const $overlay = quickEl("div", {
+      class: "custom-modal-overlay",
+      "data-testid": "prompt-modal",
+      role: "dialog",
+      "aria-modal": "true",
+      "aria-labelledby": titleId,
+      "aria-describedby": descId,
+    });
+    const $modal = quickEl("div", { class: "custom-modal" });
+    const $header = quickEl("div", { class: "custom-modal-header" }, [
+      quickEl("h4", { id: titleId }, [String(title)]),
+    ]);
+    const $body = quickEl("div", { class: "custom-modal-body" }, [
+      quickEl("p", { id: descId }, [String(message)]),
+    ]);
+    const $input = quickEl("input", {
+      type: "text",
+      class: "form-control",
+      "data-testid": "prompt-input",
+      value: String(defaultValue),
+      placeholder: String(placeholder),
+    });
+    $body.append($input);
+    const $footer = quickEl("div", { class: "custom-modal-footer" });
+    const $cancel = quickEl(
+      "button",
+      { class: "btn btn-default", "data-testid": "prompt-cancel-btn" },
+      ["Cancel"]
+    );
+    const $ok = quickEl(
+      "button",
+      { class: "btn btn-primary", "data-testid": "prompt-ok-btn" },
+      ["OK"]
+    );
+    $footer.append($cancel, $ok);
 
-    modal.find('[data-testid="prompt-ok-btn"]').on("click", () => {
-      const value = input.val().trim();
-      modal.remove();
+    $modal.append($header, $body, $footer);
+    $overlay.append($modal);
+
+    const focusableSelector =
+      'a[href], area[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+    function trapFocus(e) {
+      if (e.key === "Tab") {
+        const focusable = Array.from(
+          $overlay[0].querySelectorAll(focusableSelector)
+        );
+        if (focusable.length === 0) {
+          return;
+        }
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      } else if (e.key === "Escape") {
+        cleanup();
+        resolve(null);
+      }
+    }
+
+    function cleanup() {
+      $(document).off("keydown", trapFocus);
+      $overlay.remove();
+      if (prevActive && typeof prevActive.focus === "function") {
+        prevActive.focus();
+      }
+    }
+
+    $overlay.on("click", (e) => {
+      if (e.target === $overlay[0]) {
+        cleanup();
+        resolve(null);
+      }
+    });
+
+    $ok.on("click", () => {
+      const value = $input.val().trim();
+      cleanup();
       resolve(value || null);
     });
 
-    modal.find('[data-testid="prompt-cancel-btn"]').on("click", () => {
-      modal.remove();
+    $cancel.on("click", () => {
+      cleanup();
       resolve(null);
     });
 
-    // Submit on Enter key
-    input.on("keydown", (e) => {
+    $input.on("keydown", (e) => {
       if (e.key === "Enter") {
-        const value = input.val().trim();
-        modal.remove();
+        const value = $input.val().trim();
+        cleanup();
         resolve(value || null);
       }
     });
 
-    // Close on overlay click (counts as cancel)
-    modal.on("click", (e) => {
-      if ($(e.target).hasClass("custom-modal-overlay")) {
-        modal.remove();
-        resolve(null);
-      }
-    });
+    $(document).on("keydown", trapFocus);
 
-    // Close on Escape key (counts as cancel)
-    const handleEscape = (e) => {
-      if (e.key === "Escape") {
-        modal.remove();
-        $(document).off("keydown", handleEscape);
-        resolve(null);
-      }
-    };
-    $(document).on("keydown", handleEscape);
-
-    $("body").append(modal);
-    input.focus();
-    input.select();
+    $("body").append($overlay);
+    setTimeout(() => {
+      $input.focus();
+      $input.select();
+    }, 0);
   });
 }
 

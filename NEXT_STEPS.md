@@ -200,19 +200,22 @@ These are higher value but can be done incrementally after the release-critical 
 
 ## Practical next actions I recommend now (pick 1 to start):
 
-1) Finish security hardening pass (HIGH priority — ~1–2 hours):
-  - Replace remaining native `alert()` / `confirm()` / `prompt()` usages.
-  - Convert any remaining risky `.html()` / `innerHTML` occurrences.
-  - Add targeted unit/e2e tests for the fixed paths.
+1. Finish security hardening pass (HIGH priority — ~1–2 hours):
 
-2) Small, fast refactor to start: extract and apply `sanitizeForTestId()` (LOW risk, high payoff, ~30–60 minutes):
-  - Add `dom-utils.js` with `sanitizeForTestId` and replace repeated regex occurrences.
-  - Improves readability and reduces duplication across many files.
+- Replace remaining native `alert()` / `confirm()` / `prompt()` usages.
+- Convert any remaining risky `.html()` / `innerHTML` occurrences.
+- Add targeted unit/e2e tests for the fixed paths.
 
-3) Run Dataverse integration tests and fix issues (HIGH, depending on availability of a test instance):
-  - If you have a local Dataverse instance available, I can run these and fix problems found.
+2. Small, fast refactor to start: extract and apply `sanitizeForTestId()` (LOW risk, high payoff, ~30–60 minutes):
 
-4) Accessibility & modal refinement: add ARIA roles and focus management to modal helpers and verify with e2e tests.
+- Add `dom-utils.js` with `sanitizeForTestId` and replace repeated regex occurrences.
+- Improves readability and reduces duplication across many files.
+
+3. Run Dataverse integration tests and fix issues (HIGH, depending on availability of a test instance):
+
+- If you have a local Dataverse instance available, I can run these and fix problems found.
+
+4. Accessibility & modal refinement: add ARIA roles and focus management to modal helpers and verify with e2e tests.
 
 If you’d like, I can start with option 1 (finish the security hardening pass) immediately and roll the small refactor (option 2) in the same session — both are safe and keep tests green.
 
@@ -431,6 +434,7 @@ Fixed validation status persistence after shape switching - all 6 validation tes
 After a focused final review (lint, formatting, build and full unit tests) a security/quality audit was performed across the codebase. Below are the findings and prioritized action items to finish cleanup and harden the project for v1.0.
 
 ### Key findings
+
 - ✅ Lint, Prettier, build and unit tests: all green (70/70 passing)
 - ✅ Scroll behavior: search highlighting and jump-to links now respect the sticky toolbar offset — `scroll-margin-top: 300px` was applied to `.node-card` to match `.search-highlight`.
 - ⚠️ Native alerts: a handful of small `alert()` calls remain (e.g. `event-handlers.js`, `cdi-shacl-loader.js`, `unified-add-component.js`) — inconsistent with the modal `showAlert()` UX and harder to test.
@@ -439,6 +443,7 @@ After a focused final review (lint, formatting, build and full unit tests) a sec
 - 🧭 Maintenance opportunities: several large files are good candidates for refactor to improve maintainability and testability: `render.js` (~1,071 lines), `event-handlers.js` (~654 lines), `cdi-shacl-helpers.js` (~505 lines).
 
 ### Priority action items
+
 1. High: Replace native `alert()` calls with `showAlert()` for consistent UX and testability.
 2. High: Harden all `.html()` / string-based DOM insertion where external data is interpolated — use `escapeHtml()` or inject text nodes instead.
 3. Medium: Move the 300px toolbar offset into a CSS variable `--toolbar-scroll-offset` and apply to `.search-highlight`, `.node-card`, and optionally `.property-row`.
@@ -447,6 +452,7 @@ After a focused final review (lint, formatting, build and full unit tests) a sec
 6. Low: Consider refactoring very large files into smaller modules for readability and better unit-test coverage.
 
 ### Suggested short-term plan (I can implement these next):
+
 - Fix remaining `alert()` calls → replace with `showAlert()` in `event-handlers.js`, `cdi-shacl-loader.js`, and `unified-add-component.js`.
 - Harden the highest-risk `.html()`/template injection sites using `escapeHtml()` or safe DOM API calls.
 - Convert the toolbar offset into a CSS variable and apply to target selectors.
