@@ -100,8 +100,8 @@ Parent (should be visible - has matching child)
         // Hide everything first
         $(".node-card").addClass("hidden-by-filter");
 
-        // Show only matching child
-        $("#MatchingChild").removeClass("hidden-by-filter");
+        // Show only matching child (select by data attribute)
+        $("[data-node-id='#MatchingChild']").removeClass("hidden-by-filter");
         console.log("✅ #MatchingChild shown (matches search)");
 
         // Bottom-up: show parents of visible children
@@ -133,33 +133,73 @@ Parent (should be visible - has matching child)
         console.log(`📊 Bottom-up iterations: ${iterations}`);
 
         // Check results
-        const parentVisible = !$("#Parent").hasClass("hidden-by-filter");
-        const sibling1Visible = !$("#Sibling1").hasClass("hidden-by-filter");
-        const sibling2Visible = !$("#Sibling2").hasClass("hidden-by-filter");
-        const matchingVisible =
-          !$("#MatchingChild").hasClass("hidden-by-filter");
+        const parentVisible = !$("[data-node-id='#Parent']").hasClass(
+          "hidden-by-filter"
+        );
+        const sibling1Visible = !$("[data-node-id='#Sibling1']").hasClass(
+          "hidden-by-filter"
+        );
+        const sibling2Visible = !$("[data-node-id='#Sibling2']").hasClass(
+          "hidden-by-filter"
+        );
+        const matchingVisible = !$("[data-node-id='#MatchingChild']").hasClass(
+          "hidden-by-filter"
+        );
 
-        let html = "<h3>Results:</h3><ul>";
-        html += `<li>Parent: ${parentVisible ? "✅ VISIBLE (correct)" : "❌ HIDDEN (wrong)"}</li>`;
-        html += `<li>Sibling1: ${sibling1Visible ? "❌ VISIBLE (wrong - should be hidden!)" : "✅ HIDDEN (correct)"}</li>`;
-        html += `<li>Sibling2: ${sibling2Visible ? "❌ VISIBLE (wrong - should be hidden!)" : "✅ HIDDEN (correct)"}</li>`;
-        html += `<li>MatchingChild: ${matchingVisible ? "✅ VISIBLE (correct)" : "❌ HIDDEN (wrong)"}</li>`;
-        html += "</ul>";
+        // Build result DOM elements safely (avoid injecting HTML strings)
+        const $result = $("#result");
+        $result.empty();
+
+        const $title = $("<h3>").text("Results:");
+        $result.append($title);
+
+        const $list = $("<ul>");
+        $list.append(
+          $("<li>").text(
+            `Parent: ${parentVisible ? "✅ VISIBLE (correct)" : "❌ HIDDEN (wrong)"}`
+          )
+        );
+        $list.append(
+          $("<li>").text(
+            `Sibling1: ${
+              sibling1Visible
+                ? "❌ VISIBLE (wrong - should be hidden!)"
+                : "✅ HIDDEN (correct)"
+            }`
+          )
+        );
+        $list.append(
+          $("<li>").text(
+            `Sibling2: ${
+              sibling2Visible
+                ? "❌ VISIBLE (wrong - should be hidden!)"
+                : "✅ HIDDEN (correct)"
+            }`
+          )
+        );
+        $list.append(
+          $("<li>").text(
+            `MatchingChild: ${
+              matchingVisible ? "✅ VISIBLE (correct)" : "❌ HIDDEN (wrong)"
+            }`
+          )
+        );
+
+        $result.append($list);
 
         const success =
-          parentVisible &&
-          !sibling1Visible &&
-          !sibling2Visible &&
-          matchingVisible;
-        html += `<h3>${success ? "✅ TEST PASSED" : "❌ TEST FAILED"}</h3>`;
+          parentVisible && !sibling1Visible && !sibling2Visible && matchingVisible;
 
-        $("#result").html(html);
+        const $status = $("<h3>").text(success ? "✅ TEST PASSED" : "❌ TEST FAILED");
+        $result.append($status);
         console.log("=== TEST COMPLETE ===");
       });
 
       $("#clearBtn").click(function () {
         $(".node-card").removeClass("hidden-by-filter");
-        $("#result").html("<p>Filters cleared. All nodes visible.</p>");
+        const $result = $("#result");
+        $result.empty();
+        $result.append($("<p>").text("Filters cleared. All nodes visible."));
       });
     </script>
   </body>
