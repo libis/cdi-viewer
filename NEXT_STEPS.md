@@ -27,40 +27,40 @@ Status summary (most important facts)
 Goal: remove remaining risk vectors (native dialogs, innerHTML hotspots) and add small tests.
 
 - [ ] Replace any remaining native `alert()` / `confirm()` / `prompt()` with `showAlert()`/`showConfirm()`/`showPrompt()` (files: `event-handlers.js`, `cdi-shacl-loader.js`, `unified-add-component.js`).  
-      Owner: frontend / test author — Est: 30–90 min
+       Owner: frontend / test author — Est: 30–90 min
 - [ ] Harden DOM insertions: audit and replace `.html()`/`innerHTML` that interpolate variables with `escapeHtml()` or safe DOM APIs. Produce a short report of hotspots and apply fixes.  
-      Owner: frontend — Est: 60–180 min
+       Owner: frontend — Est: 60–180 min
 - [ ] Add focused unit or e2e tests that exercise the most sensitive paths (modal flows + server-provided string paths).  
-      Owner: test owner — Est: 30–60 min
+       Owner: test owner — Est: 30–60 min
 
 ### Priority B — Test stability & Dataverse verification (HIGH) — 2–6 hrs
 
 Goal: make e2e deterministic, triage failing tests and re-enable Dataverse suites once local harness is available.
 
 - [ ] Triage the remaining failing e2e tests (now reduced after recent fixes) and fix any outstanding infra issues (selectors / waits / expectations).  
-      Owner: test engineer — Est: 2–4 hrs
+       Owner: test engineer — Est: 2–4 hrs
 - [ ] Run Dataverse integration tests against a local test instance and re-enable skipped Dataverse tests.  
-      Owner: integrator — Est: 1–2 hrs (plus test environment)
+       Owner: integrator — Est: 1–2 hrs (plus test environment)
 
 ### Priority C — Accessibility & UX polish (MEDIUM) — 1–2 hrs
 
 Goal: ensure modals and keyboard flows are robust and aria-friendly across browsers.
 
 - [ ] Finalize and audit ARIA usage for modals: role/aria-modal/aria-labelledby/aria-describedby, focus trapping and restoration. Add test coverage.  
-      Owner: accessibility / frontend — Est: 30–90 min
+       Owner: accessibility / frontend — Est: 30–90 min
 - [ ] Add `data-testid` attributes where tests currently rely on fragile selectors.  
-      Owner: test engineer — Est: 30–60 min
+       Owner: test engineer — Est: 30–60 min
 
 ---
 
 ## Release polish & documentation (short checklist)
 
 - [ ] Convert toolbar offset into a CSS variable (`--toolbar-scroll-offset`) and apply to `.node-card` / `.search-highlight` (tiny cosmetic fix).  
-      Owner: frontend — Est: 15–30 min
+       Owner: frontend — Est: 15–30 min
 - [ ] Replace stray `console.log` in `src/index.js` with project logger (`logInfo()`), remove leftover debug prints.  
-      Owner: maintainer — Est: 10–30 min
+       Owner: maintainer — Est: 10–30 min
 - [ ] Final README / CHANGELOG / release notes and GitHub Pages smoke test.  
-      Owner: release mgr — Est: 30–60 min
+       Owner: release mgr — Est: 30–60 min
 
 ---
 
