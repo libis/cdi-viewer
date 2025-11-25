@@ -11,6 +11,7 @@
  */
 
 import { highlightText } from "./render.js";
+import { logWarn } from "./state.js";
 
 // Search state
 let searchMatches = [];
@@ -375,7 +376,9 @@ export function setupAdvancedSearchHandlers() {
     autoJump = $(this).is(":checked");
     try {
       localStorage.setItem(AUTO_JUMP_KEY, autoJump ? "true" : "false");
-    } catch (e) {}
+    } catch (e) {
+      logWarn("Could not persist search auto-jump preference:", e);
+    }
   });
 
   // When the search input loses focus, if autoJump is enabled, jump to first match
