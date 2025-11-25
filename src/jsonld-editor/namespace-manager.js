@@ -18,7 +18,8 @@ import {
   logError,
 } from "./state.js";
 import { showAlert, showConfirm } from "./modal-dialogs.js";
-import { createTestId } from "./dom-utils.js";
+import { createTestId, quickEl } from "./dom-utils.js";
+import { iconSpan } from "./render-utils.js";
 
 // Built-in namespaces that should not be deletable
 const PROTECTED_NAMESPACES = new Set([
@@ -200,7 +201,8 @@ export function renderNamespaceTable() {
       const deleteBtn = $("<button>")
         .addClass("btn btn-xs btn-danger")
         .attr("data-testid", createTestId("delete-namespace-btn", prefix))
-        .html('<span class="glyphicon glyphicon-trash"></span>')
+        .empty()
+        .append(iconSpan("glyphicon glyphicon-trash"))
         .attr("title", "Delete namespace")
         .click(async function () {
           if (
@@ -225,7 +227,7 @@ export function renderNamespaceTable() {
         });
       actionsCell.append(deleteBtn);
     } else {
-      actionsCell.html('<span style="color: #999;">—</span>');
+      actionsCell.empty().append(quickEl('span', { style: 'color: #999;' }, ['—']));
     }
     row.append(actionsCell);
 
@@ -251,7 +253,7 @@ export function updateNamespaceSectionVisibility() {
         .find(".glyphicon")
         .removeClass("glyphicon-chevron-up")
         .addClass("glyphicon-chevron-down");
-      btn.html('<span class="glyphicon glyphicon-chevron-down"></span> Expand');
+      btn.empty().append(iconSpan('glyphicon glyphicon-chevron-down')).append(document.createTextNode(' Expand'));
     }
   } else {
     $("#namespace-section").hide();
@@ -275,17 +277,13 @@ export function setupNamespaceHandlers() {
       icon
         .removeClass("glyphicon-chevron-up")
         .addClass("glyphicon-chevron-down");
-      $(this).html(
-        '<span class="glyphicon glyphicon-chevron-down"></span> Expand'
-      );
+      $(this).empty().append(iconSpan('glyphicon glyphicon-chevron-down')).append(document.createTextNode(' Expand'));
     } else {
       content.slideDown();
       icon
         .removeClass("glyphicon-chevron-down")
         .addClass("glyphicon-chevron-up");
-      $(this).html(
-        '<span class="glyphicon glyphicon-chevron-up"></span> Collapse'
-      );
+      $(this).empty().append(iconSpan('glyphicon glyphicon-chevron-up')).append(document.createTextNode(' Collapse'));
     }
   });
 
@@ -293,7 +291,7 @@ export function setupNamespaceHandlers() {
   $("#add-namespace-btn").click(function () {
     $("#namespacePrefixInput").val("");
     $("#namespaceUriInput").val("");
-    $("#namespaceValidationFeedback").html("");
+    $("#namespaceValidationFeedback").empty();
     $("#namespaceModal").modal("show");
   });
 
@@ -401,7 +399,7 @@ function validateNamespaceInputs() {
   const feedback = $("#namespaceValidationFeedback");
 
   if (!prefix && !uri) {
-    feedback.html("");
+    feedback.empty();
     return;
   }
 

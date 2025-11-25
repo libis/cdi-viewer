@@ -53,7 +53,7 @@ export function renderData() {
   buildGraphStructure();
 
   if (!jsonData || !jsonData["@graph"]) {
-    content.html('<div class="alert alert-warning">No data to display</div>');
+    content.empty().append(quickEl("div", { class: "alert alert-warning" }, ["No data to display"]));
     return;
   }
 
@@ -210,7 +210,8 @@ export function renderNodeTree(node, index, depth, ancestors = new Set()) {
         "data-testid",
         createTestId("delete-node-btn", id)
       )
-      .html('<span class="glyphicon glyphicon-trash"></span>')
+      .empty()
+      .append(iconSpan("glyphicon glyphicon-trash"))
       .css("margin-left", "10px")
       .click(async function (e) {
         e.stopPropagation(); // Prevent header collapse toggle
@@ -486,7 +487,8 @@ function renderProperty(key, value, nodeId, nodeTypes) {
         const deleteBtn = $("<button>")
           .addClass("btn btn-xs delete-btn")
           .attr("data-testid", `delete-array-value-btn-${idx}`)
-          .html('<span class="glyphicon glyphicon-trash"></span>')
+          .empty()
+          .append(iconSpan("glyphicon glyphicon-trash"))
           .click(async function () {
             if (
               await showConfirm("Delete this value?", {
@@ -514,7 +516,9 @@ function renderProperty(key, value, nodeId, nodeTypes) {
           "data-testid",
           createTestId("add-value-btn", key)
         )
-        .html('<span class="glyphicon glyphicon-plus"></span> Add Value')
+        .empty()
+        .append(iconSpan("glyphicon glyphicon-plus"))
+        .append(document.createTextNode(" Add Value"))
         .click(function () {
           const newValDiv = $("<div>").addClass("array-value");
           newValDiv.append(createValueInput("", classification));
@@ -522,7 +526,8 @@ function renderProperty(key, value, nodeId, nodeTypes) {
           // Add delete button for the new value
           const deleteBtn = $("<button>")
             .addClass("btn btn-xs delete-btn")
-            .html('<span class="glyphicon glyphicon-trash"></span>')
+            .empty()
+            .append(iconSpan("glyphicon glyphicon-trash"))
             .css({ "margin-left": "10px" })
             .click(function () {
               newValDiv.addClass("deleted").fadeOut(300, function () {
@@ -542,9 +547,9 @@ function renderProperty(key, value, nodeId, nodeTypes) {
           "data-testid",
           createTestId("add-reference-btn", key)
         )
-        .html(
-          '<span class="glyphicon glyphicon-link"></span> Add Reference/Object'
-        )
+        .empty()
+        .append(iconSpan("glyphicon glyphicon-link"))
+        .append(document.createTextNode(" Add Reference/Object"))
         .css({ "margin-left": "5px" })
         .click(function () {
           showAddReferenceModal(nodeId, key, true);
@@ -560,9 +565,9 @@ function renderProperty(key, value, nodeId, nodeTypes) {
           "data-testid",
           createTestId("convert-to-single-btn", key)
         )
-        .html(
-          '<span class="glyphicon glyphicon-resize-small"></span> Convert to Single'
-        )
+        .empty()
+        .append(iconSpan("glyphicon glyphicon-resize-small"))
+        .append(document.createTextNode(" Convert to Single"))
         .css({ "margin-left": "10px" })
         .click(async function () {
           if (
@@ -601,7 +606,9 @@ function renderProperty(key, value, nodeId, nodeTypes) {
             "data-testid",
             createTestId("delete-property-btn", key)
           )
-          .html('<span class="glyphicon glyphicon-trash"></span> Delete')
+          .empty()
+          .append(iconSpan("glyphicon glyphicon-trash"))
+          .append(document.createTextNode(" Delete"))
           .click(async function () {
             if (
               await showConfirm("Delete this property?", {
@@ -624,9 +631,9 @@ function renderProperty(key, value, nodeId, nodeTypes) {
           "data-testid",
           createTestId("convert-to-array-btn", key)
         )
-        .html(
-          '<span class="glyphicon glyphicon-resize-full"></span> Convert to Array'
-        )
+        .empty()
+        .append(iconSpan("glyphicon glyphicon-resize-full"))
+        .append(document.createTextNode(" Convert to Array"))
         .css({ "margin-left": "5px" })
         .click(function () {
           collectChangesFromDOM();
@@ -638,9 +645,9 @@ function renderProperty(key, value, nodeId, nodeTypes) {
       // Add Object/Reference button
       const addComplexBtn = $("<button>")
         .addClass("btn btn-xs btn-info")
-        .html(
-          '<span class="glyphicon glyphicon-link"></span> Add Reference/Object'
-        )
+        .empty()
+        .append(iconSpan("glyphicon glyphicon-link"))
+        .append(document.createTextNode(" Add Reference/Object"))
         .css({ "margin-left": "5px" })
         .click(function () {
           showAddReferenceModal(nodeId, key, false);
@@ -793,7 +800,9 @@ export function createValueInput(value, classification) {
         "data-testid",
         createTestId("jump-to-node-btn", refId)
       )
-      .html('<span class="glyphicon glyphicon-arrow-right"></span> ')
+      .empty()
+      .append(iconSpan("glyphicon glyphicon-arrow-right"))
+      .append(document.createTextNode(" "))
       .append(document.createTextNode(String(refId)))
       .attr("title", "Click to jump to this node")
       .click(function (e) {

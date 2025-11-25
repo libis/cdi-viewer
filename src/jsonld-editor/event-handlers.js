@@ -41,6 +41,7 @@ import {
   exportData,
 } from "./data-extraction.js";
 import { renderAddRootNodeComponent } from "./cdi-graph-helpers.js";
+import { iconSpan, labelSpan } from "./render-utils.js";
 import { parseDataverseUrl } from "./dataverse-url-parser.js";
 import {
   setupNamespaceHandlers,
@@ -156,7 +157,7 @@ export function setupEventHandlers() {
       // Clear previous inputs
       $("#loadDataverseUrlInput").val("");
       $("#loadApiTokenInput").val("");
-      $("#loadUrlValidationFeedback").html("");
+      $("#loadUrlValidationFeedback").empty();
       $("#confirmLoadBtn").prop("disabled", true);
 
       $("#loadDataverseModal").modal("show");
@@ -168,7 +169,7 @@ export function setupEventHandlers() {
     const feedbackDiv = $("#loadUrlValidationFeedback");
 
     if (!url) {
-      feedbackDiv.html("");
+      feedbackDiv.empty();
       $("#confirmLoadBtn").prop("disabled", true);
       return;
     }
@@ -365,7 +366,9 @@ export function setupEventHandlers() {
 
     if (isEditMode) {
       $(this)
-        .html('<span class="glyphicon glyphicon-eye-open"></span> View Mode')
+        .empty()
+        .append(iconSpan("glyphicon glyphicon-eye-open"))
+        .append(document.createTextNode(" View Mode"))
         .removeClass("btn-primary")
         .addClass("btn-warning");
       $("#add-root-node-container").removeClass("hidden");
@@ -379,7 +382,9 @@ export function setupEventHandlers() {
       await validateDataImmediate();
     } else {
       $(this)
-        .html('<span class="glyphicon glyphicon-edit"></span> Enable Editing')
+        .empty()
+        .append(iconSpan("glyphicon glyphicon-edit"))
+        .append(document.createTextNode(" Enable Editing"))
         .removeClass("btn-warning")
         .addClass("btn-primary");
       $("#add-root-node-container").addClass("hidden");
@@ -437,7 +442,7 @@ export function setupEventHandlers() {
     const feedbackDiv = $("#urlValidationFeedback");
 
     if (!url) {
-      feedbackDiv.html("");
+      feedbackDiv.empty();
       updateSaveButtonState();
       return;
     }
@@ -555,11 +560,9 @@ export function setupEventHandlers() {
         renderData();
       }
 
-      $("#validation-status").html(
-        '<span class="label label-warning">No shapes loaded - generic mode</span>'
-      );
+      $("#validation-status").empty().append(labelSpan("No shapes loaded - generic mode", "warning"));
       setTimeout(() => {
-        $("#validation-status").html("");
+        $("#validation-status").empty();
       }, 2000);
       return;
     } else {
@@ -568,9 +571,7 @@ export function setupEventHandlers() {
 
       // Load the selected shape
       try {
-        $("#validation-status").html(
-          '<span class="label label-info">Loading shapes...</span>'
-        );
+        $("#validation-status").empty().append(labelSpan("Loading shapes...", "info"));
         await loadShapes(selectedSource);
 
         // Re-render Add Root Node component with new node types
@@ -588,16 +589,11 @@ export function setupEventHandlers() {
           await validateDataImmediate();
         } else {
           // No data loaded yet, just show shapes loaded message
-          setValidationStatus(
-            '<span class="label label-success">Shapes loaded</span>',
-            0 // Don't auto-clear
-          );
+          setValidationStatus(labelSpan("Shapes loaded", "success")[0].outerHTML, 0);
         }
       } catch (error) {
         logError("Error loading custom shape:", error);
-        $("#validation-status").html(
-          '<span class="validation-badge invalid">Shape load failed</span>'
-        );
+        $("#validation-status").empty().append($('<span>').addClass('validation-badge invalid').text('Shape load failed'));
       }
     }
   });
@@ -615,9 +611,7 @@ export function setupEventHandlers() {
       }
 
       try {
-        $("#validation-status").html(
-          '<span class="label label-info">Loading custom shapes...</span>'
-        );
+        $("#validation-status").empty().append(labelSpan("Loading custom shapes...", "info"));
         await loadShapes("custom", customUrl);
 
         // Re-render Add Root Node component with new node types
@@ -635,16 +629,11 @@ export function setupEventHandlers() {
           await validateDataImmediate();
         } else {
           // No data loaded yet, just show shapes loaded message
-          setValidationStatus(
-            '<span class="label label-success">Shapes loaded</span>',
-            0 // Don't auto-clear
-          );
+          setValidationStatus(labelSpan("Shapes loaded", "success")[0].outerHTML, 0);
         }
       } catch (error) {
         logError("Error loading custom shape:", error);
-        $("#validation-status").html(
-          '<span class="validation-badge invalid">Custom shape load failed</span>'
-        );
+        $("#validation-status").empty().append($('<span>').addClass('validation-badge invalid').text('Custom shape load failed'));
         await showAlert(
           `Failed to load custom SHACL shapes from:\n${customUrl}\n\nError: ${error.message}\n\nPlease check:\n• The URL is accessible\n• The file is valid Turtle (.ttl) format\n• CORS is enabled on the server`
         );

@@ -16,6 +16,7 @@ import {
   LOG_LEVEL,
 } from "./state.js";
 import { createTestId } from "./dom-utils.js";
+import { iconSpan, labelSpan } from "./render-utils.js";
 import { jsonLdToN3Store } from "./cdi-shacl-loader.js";
 import { getCompactNodeId } from "./uri-utils.js";
 
@@ -130,17 +131,13 @@ export async function validateData() {
   // Clear any pending timeout from previous messages (e.g., "Shapes loaded")
   clearStatusTimeout();
 
-  $("#validation-status").html(
-    '<span class="label label-info">Validating...</span>'
-  );
+  $("#validation-status").empty().append(labelSpan("Validating...", "info"));
 
   try {
     // Check if SHACL shapes are loaded
     const shaclShapesStore = getShaclShapesStore();
     if (!shaclShapesStore) {
-      $("#validation-status").html(
-        '<span class="label label-warning">No SHACL shapes loaded - cannot validate</span>'
-      );
+      $("#validation-status").empty().append(labelSpan("No SHACL shapes loaded - cannot validate", "warning"));
       const $validationDetails = $("#validation-details");
       $validationDetails.empty();
       $validationDetails.css("margin-top", "0"); // Remove margin when empty
@@ -219,11 +216,10 @@ export async function validateData() {
 
     // Update UI
     if (report.conforms) {
-      $("#validation-status").html(
-        '<span class="validation-badge valid">' +
-          '<span class="glyphicon glyphicon-ok-circle"></span> Valid' +
-          "</span>"
-      );
+      const $validBadge = $("<span>").addClass("validation-badge valid");
+      $validBadge.append($("<span>").addClass("glyphicon glyphicon-ok-circle"));
+      $validBadge.append(document.createTextNode(" Valid"));
+      $("#validation-status").empty().append($validBadge);
       const $validationDetails = $("#validation-details");
       $validationDetails.empty();
       $validationDetails.css("margin-top", "0");
@@ -260,7 +256,9 @@ export async function validateData() {
         const $nodeBtn = $("<button>")
           .addClass("btn btn-sm btn-info reference-btn")
           .css({ marginRight: "8px" })
-          .html('<span class="glyphicon glyphicon-arrow-right"></span> ')
+          .empty()
+          .append(iconSpan("glyphicon glyphicon-arrow-right"))
+          .append(document.createTextNode(" "))
           .append(document.createTextNode(String(nodeId)))
           .attr("title", "Click to jump to this node")
           .click(function (e) {
@@ -285,7 +283,7 @@ export async function validateData() {
       });
 
       const $validationDetails = $("#validation-details");
-      $validationDetails.html($violationsContainer);
+      $validationDetails.empty().append($violationsContainer);
       $validationDetails.css("margin-top", "15px"); // Add margin when content is present
 
       // Add toggle handler
@@ -299,17 +297,13 @@ export async function validateData() {
           $icon
             .removeClass("glyphicon-chevron-up")
             .addClass("glyphicon-chevron-down");
-          $btn.html(
-            '<span class="glyphicon glyphicon-chevron-down"></span> Show Details'
-          );
+          $btn.empty().append(iconSpan("glyphicon glyphicon-chevron-down")).append(document.createTextNode(" Show Details"));
         } else {
           $details.slideDown(200);
           $icon
             .removeClass("glyphicon-chevron-down")
             .addClass("glyphicon-chevron-up");
-          $btn.html(
-            '<span class="glyphicon glyphicon-chevron-up"></span> Hide Details'
-          );
+          $btn.empty().append(iconSpan("glyphicon glyphicon-chevron-up")).append(document.createTextNode(" Hide Details"));
         }
       });
     }

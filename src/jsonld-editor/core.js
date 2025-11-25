@@ -30,6 +30,7 @@ import { loadShapes } from "./cdi-shacl-loader.js";
 import { renderData } from "./render.js";
 import { setupEventHandlers } from "./event-handlers.js";
 import { updateNamespaceSectionVisibility } from "./namespace-manager.js";
+import { quickEl } from "./dom-utils.js";
 
 // Initialize
 $(document).ready(async function () {
@@ -113,11 +114,14 @@ $(document).ready(async function () {
       $("#load-local-btn").show();
       $("#load-dataverse-btn").show();
       // In standalone mode, save button visibility handled by event-handlers
-      $("#content").html(`
-                        <div class="alert alert-info">
-                            <strong>No Dataverse parameters detected.</strong> Use the "Load Local File" button in the top left to select a CDI JSON-LD file from your computer.
-                        </div>
-                    `);
+      $("#content").empty().append(
+        quickEl("div", { class: "alert alert-info" }, [
+          quickEl("strong", {}, ["No Dataverse parameters detected."]),
+          document.createTextNode(
+            ' Use the "Load Local File" button in the top left to select a CDI JSON-LD file from your computer.'
+          ),
+        ])
+      );
       setupEventHandlers();
       return;
     }
@@ -270,7 +274,7 @@ $(document).ready(async function () {
     const $err = $("<div>").addClass("alert alert-danger");
     $err.append($("<strong>").text("Error:"));
     $err.append(document.createTextNode(" Failed to load CDI data. " + String(error.message)));
-    $("#content").html($err);
+    $("#content").empty().append($err);
     setupEventHandlers();
   }
 });

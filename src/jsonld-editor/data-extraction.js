@@ -17,6 +17,7 @@ import {
 import { parseDataverseUrl } from "./dataverse-url-parser.js";
 import { showAlert } from "./modal-dialogs.js";
 import { getNodeById } from "./graph-structure.js";
+import { iconSpan } from "./render-utils.js";
 
 export function collectChangesFromDOM() {
   logDebug("collectChangesFromDOM: Starting data collection from DOM");
@@ -178,7 +179,7 @@ export function saveChanges() {
   $("#apiTokenInput").val("");
 
   // Reset validation feedback
-  $("#urlValidationFeedback").html("");
+  $("#urlValidationFeedback").empty();
 
   // Disable button initially in standalone mode
   if (!isIntegratedMode) {
@@ -325,11 +326,7 @@ export async function saveToDataverse() {
     const blob = new Blob([jsonldString], { type: mimeType });
 
     // Show saving indicator
-    $("#save-btn")
-      .prop("disabled", true)
-      .html(
-        '<span class="glyphicon glyphicon-refresh spinning"></span> Saving...'
-      );
+    $("#save-btn").prop("disabled", true).empty().append(iconSpan("glyphicon glyphicon-refresh spinning")).append(document.createTextNode(" Saving..."));
 
     let result;
     if (operationType === "replace") {
@@ -365,11 +362,7 @@ export async function saveToDataverse() {
     );
   } finally {
     // Reset button
-    $("#save-btn")
-      .prop("disabled", false)
-      .html(
-        '<span class="glyphicon glyphicon-floppy-disk"></span> Save to Dataverse'
-      );
+    $("#save-btn").prop("disabled", false).empty().append(iconSpan("glyphicon glyphicon-floppy-disk")).append(document.createTextNode(" Save to Dataverse"));
   }
 }
 
