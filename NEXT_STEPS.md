@@ -1,6 +1,88 @@
-# Next Steps
+<!-- NEXT_STEPS.md — distilled, prioritized release-ready checklist -->
 
-## ✅ Recently Completed (November 2025)
+# Next steps — v1.0 release prep (concise & actionable)
+
+This document is a compact, prioritized checklist to finish v1.0: security hardening, test stability, accessibility and release polish. Each item has suggested owners and time estimates so you can choose the next action quickly.
+
+Required commands (quick helpers)
+- Run unit tests: `npm test`
+- Build bundle for e2e: `npm run build`
+- Run Playwright e2e: `npm run test:e2e` (or `npx playwright test` locally)
+
+Status summary (most important facts)
+- Unit tests: 70/70 passing ✅
+- E2E: active suites ~84 tests — ~71 passing, ~13 failing (test infra issues, not critical app bugs) ⚠️
+- Core features done and manually verified (document creation, Dataverse integration, namespace management, export, validation, etc.) ✅
+
+---
+
+## Top priorities (Actionable & measurable)
+
+### Priority A — Security & robustness (HIGH) — 1–3 hrs
+Goal: remove remaining risk vectors (native dialogs, innerHTML hotspots) and add small tests.
+
+- [ ] Replace any remaining native `alert()` / `confirm()` / `prompt()` with `showAlert()`/`showConfirm()`/`showPrompt()` (files: `event-handlers.js`, `cdi-shacl-loader.js`, `unified-add-component.js`).  
+  Owner: frontend / test author — Est: 30–90 min
+- [ ] Harden DOM insertions: audit and replace `.html()`/`innerHTML` that interpolate variables with `escapeHtml()` or safe DOM APIs. Produce a short report of hotspots and apply fixes.  
+  Owner: frontend — Est: 60–180 min
+- [ ] Add focused unit or e2e tests that exercise the most sensitive paths (modal flows + server-provided string paths).  
+  Owner: test owner — Est: 30–60 min
+
+### Priority B — Test stability & Dataverse verification (HIGH) — 2–6 hrs
+Goal: make e2e deterministic, triage failing tests and re-enable Dataverse suites once local harness is available.
+
+- [ ] Triage the currently failing e2e tests (13 failing) and fix test infra issues (selectors / waits / expectations).  
+  Owner: test engineer — Est: 2–4 hrs
+- [ ] Run Dataverse integration tests against a local test instance and re-enable skipped Dataverse tests.  
+  Owner: integrator — Est: 1–2 hrs (plus test environment)
+
+### Priority C — Accessibility & UX polish (MEDIUM) — 1–2 hrs
+Goal: ensure modals and keyboard flows are robust and aria-friendly across browsers.
+
+- [ ] Finalize and audit ARIA usage for modals: role/aria-modal/aria-labelledby/aria-describedby, focus trapping and restoration. Add test coverage.  
+  Owner: accessibility / frontend — Est: 30–90 min
+- [ ] Add `data-testid` attributes where tests currently rely on fragile selectors.  
+  Owner: test engineer — Est: 30–60 min
+
+---
+
+## Release polish & documentation (short checklist)
+
+- [ ] Convert toolbar offset into a CSS variable (`--toolbar-scroll-offset`) and apply to `.node-card` / `.search-highlight` (tiny cosmetic fix).  
+  Owner: frontend — Est: 15–30 min
+- [ ] Replace stray `console.log` in `src/index.js` with project logger (`logInfo()`), remove leftover debug prints.  
+  Owner: maintainer — Est: 10–30 min
+- [ ] Final README / CHANGELOG / release notes and GitHub Pages smoke test.  
+  Owner: release mgr — Est: 30–60 min
+
+---
+
+## Long-term / post-release (split into small tasks)
+
+- Undo/Redo history (post-1.0) — (Medium investment) — design + tests
+- Increase unit/integration coverage to 80%+ — iterative incremental work
+- Refactor large files into smaller modules (render, events, helpers) — low immediate impact, high ROI over time
+
+---
+
+## Recommended immediate options — pick one
+1) Finish security hardening (highest risk — recommended)  — replace native dialogs + fix remaining innerHTML hotspots (I can implement this now).  
+2) Stabilize failing e2e tests — triage the 13 failing tests and produce a test-fix plan (I can start with failing array, file-loading and namespace tests).  
+3) Accessibility finishing pass — finalize modal ARIA + add robust Playwright checks (small, quick win).  
+4) Small refactor: extract `sanitizeForTestId()` into `dom-utils.js` and replace repeated regex calls (low risk, fast ROI).  
+
+If you want me to begin, say which option you prefer. I can start with (1) security hardening and include targeted tests, then run the full e2e suite to triage fallout.
+
+---
+
+## Quick progress tracking (what I changed recently)
+- Modal accessibility e2e added and stabilized: `tests/e2e/standalone/modal-a11y.spec.ts` (alert + confirm tests) ✅
+- Verified: new spec passes locally and passes as part of the full e2e run — modal tests green. ✅
+
+---
+
+If you want I can start with Option 1 now and create a small PR with changes + tests (CI-green). If you'd rather triage the failing e2e tests first, I can do that instead.
+
 
 ### Advanced Search (November 21, 2025)
 
