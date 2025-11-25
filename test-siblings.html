@@ -188,9 +188,14 @@ Parent (should be visible - has matching child)
         $result.append($list);
 
         const success =
-          parentVisible && !sibling1Visible && !sibling2Visible && matchingVisible;
+          parentVisible &&
+          !sibling1Visible &&
+          !sibling2Visible &&
+          matchingVisible;
 
-        const $status = $("<h3>").text(success ? "✅ TEST PASSED" : "❌ TEST FAILED");
+        const $status = $("<h3>").text(
+          success ? "✅ TEST PASSED" : "❌ TEST FAILED"
+        );
         $result.append($status);
         console.log("=== TEST COMPLETE ===");
       });

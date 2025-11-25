@@ -263,12 +263,12 @@ export function renderNodeTree(node, index, depth, ancestors = new Set()) {
     }
   });
 
-    card.append(body);
+  card.append(body);
 
-    // If any property rows are marked changed, mark the node card too
-    if (body.find('.property-row.changed').length > 0) {
-      card.addClass('changed');
-    }
+  // If any property rows are marked changed, mark the node card too
+  if (body.find(".property-row.changed").length > 0) {
+    card.addClass("changed");
+  }
 
   // Add property suggestions in edit mode (with or without SHACL shapes)
   if (isEditMode) {
