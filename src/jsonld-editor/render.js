@@ -263,7 +263,12 @@ export function renderNodeTree(node, index, depth, ancestors = new Set()) {
     }
   });
 
-  card.append(body);
+    card.append(body);
+
+    // If any property rows are marked changed, mark the node card too
+    if (body.find('.property-row.changed').length > 0) {
+      card.addClass('changed');
+    }
 
   // Add property suggestions in edit mode (with or without SHACL shapes)
   if (isEditMode) {
@@ -524,6 +529,7 @@ function renderProperty(key, value, nodeId, nodeTypes) {
           // Add delete button for the new value
           const deleteBtn = $("<button>")
             .addClass("btn btn-xs delete-btn")
+            .attr("data-testid", createTestId("delete-array-value-btn", key))
             .empty()
             .append(iconSpan("glyphicon glyphicon-trash"))
             .css({ "margin-left": "10px" })

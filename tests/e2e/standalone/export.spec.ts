@@ -53,8 +53,10 @@ test.describe('Export', () => {
     const filename = download.suggestedFilename();
     expect(filename).toMatch(/\.jsonld$|\.json$/);
     
-    // 3. Save the file to verify contents
-    const downloadPath = path.join(__dirname, '../../temp', filename);
+    // 3. Ensure temp directory exists and save the file to verify contents
+    const tempDir = path.join(__dirname, '../../temp');
+    fs.mkdirSync(tempDir, { recursive: true });
+    const downloadPath = path.join(tempDir, filename);
     await download.saveAs(downloadPath);
     
     // 4. Verify file exists
@@ -72,7 +74,7 @@ test.describe('Export', () => {
     expect(jsonData).toHaveProperty('@graph');
     
     // Cleanup
-    fs.unlinkSync(downloadPath);
+    if (fs.existsSync(downloadPath)) fs.unlinkSync(downloadPath);
   });
 
   test('should export with pretty-print formatting', async ({ page }) => {
@@ -85,7 +87,9 @@ test.describe('Export', () => {
     // ============= EXPECTED RESULTS =============
     
     // Save and read file
-    const downloadPath = path.join(__dirname, '../../temp', download.suggestedFilename());
+    const tempDir = path.join(__dirname, '../../temp');
+    fs.mkdirSync(tempDir, { recursive: true });
+    const downloadPath = path.join(tempDir, download.suggestedFilename());
     await download.saveAs(downloadPath);
     
     const fileContent = fs.readFileSync(downloadPath, 'utf-8');
@@ -100,7 +104,7 @@ test.describe('Export', () => {
     expect(fileContent).toBe(prettyJson);
     
     // Cleanup
-    fs.unlinkSync(downloadPath);
+    if (fs.existsSync(downloadPath)) fs.unlinkSync(downloadPath);
   });
 
   test('should preserve user changes in export', async ({ page }) => {
@@ -111,7 +115,8 @@ test.describe('Export', () => {
     await page.waitForTimeout(500);
     
     // Edit a property value
-    const nameProperty = page.locator('[data-testid="property-name"]');
+    // Scope to the dataset node to avoid strict-mode collisions with multiple "name" fields
+    const nameProperty = page.locator('.node-card[data-node-id="#dataset1"] [data-testid="property-name"]');
     const nameInput = nameProperty.locator('input');
     await nameInput.fill('Modified Test Dataset');
     await page.waitForTimeout(500);
@@ -127,7 +132,9 @@ test.describe('Export', () => {
     
     // ============= EXPECTED RESULTS =============
     
-    const downloadPath = path.join(__dirname, '../../temp', download.suggestedFilename());
+    const tempDir = path.join(__dirname, '../../temp');
+    fs.mkdirSync(tempDir, { recursive: true });
+    const downloadPath = path.join(tempDir, download.suggestedFilename());
     await download.saveAs(downloadPath);
     
     const fileContent = fs.readFileSync(downloadPath, 'utf-8');
@@ -143,7 +150,7 @@ test.describe('Export', () => {
     expect(datasetNode['@type']).toBe('ddi:DataSet');
     
     // Cleanup
-    fs.unlinkSync(downloadPath);
+    if (fs.existsSync(downloadPath)) fs.unlinkSync(downloadPath);
   });
 
   test('should include all namespaces in exported data', async ({ page }) => {
@@ -169,7 +176,9 @@ test.describe('Export', () => {
     
     // ============= EXPECTED RESULTS =============
     
-    const downloadPath = path.join(__dirname, '../../temp', download.suggestedFilename());
+    const tempDir = path.join(__dirname, '../../temp');
+    fs.mkdirSync(tempDir, { recursive: true });
+    const downloadPath = path.join(tempDir, download.suggestedFilename());
     await download.saveAs(downloadPath);
     
     const fileContent = fs.readFileSync(downloadPath, 'utf-8');
@@ -185,7 +194,7 @@ test.describe('Export', () => {
     expect(jsonData['@context'].foaf).toBe('http://xmlns.com/foaf/0.1/');
     
     // Cleanup
-    fs.unlinkSync(downloadPath);
+    if (fs.existsSync(downloadPath)) fs.unlinkSync(downloadPath);
   });
 
   test('should export without requiring edit mode', async ({ page }) => {
@@ -205,7 +214,9 @@ test.describe('Export', () => {
     expect(download).toBeTruthy();
     
     // 2. Downloaded file is valid
-    const downloadPath = path.join(__dirname, '../../temp', download.suggestedFilename());
+    const tempDir = path.join(__dirname, '../../temp');
+    fs.mkdirSync(tempDir, { recursive: true });
+    const downloadPath = path.join(tempDir, download.suggestedFilename());
     await download.saveAs(downloadPath);
     
     const fileContent = fs.readFileSync(downloadPath, 'utf-8');
@@ -215,7 +226,7 @@ test.describe('Export', () => {
     expect(jsonData).toHaveProperty('@graph');
     
     // Cleanup
-    fs.unlinkSync(downloadPath);
+    if (fs.existsSync(downloadPath)) fs.unlinkSync(downloadPath);
   });
 
   test('should use correct MIME type for export', async ({ page }) => {
@@ -294,7 +305,8 @@ test.describe('Export', () => {
     await page.waitForTimeout(500);
     
     // Delete a required field to create validation error
-    const identifierProperty = page.locator('[data-testid="property-identifier"]');
+    // Scope to dataset node so we target the correct identifier property
+    const identifierProperty = page.locator('.node-card[data-node-id="#dataset1"] [data-testid="property-identifier"]');
     const identifierExists = await identifierProperty.count();
     
     if (identifierExists > 0) {

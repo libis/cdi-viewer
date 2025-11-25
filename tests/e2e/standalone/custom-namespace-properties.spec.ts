@@ -37,7 +37,7 @@ test.describe("Custom Namespace Property Addition", () => {
     await expect(page.locator(".node-card")).toHaveCount(2, { timeout: 5000 });
     
     // Enter edit mode
-    await page.getByRole('button', { name: 'Enable Editing' }).click();
+    await page.click('#toggle-edit-btn');
     await page.waitForTimeout(500);
   });
 
@@ -226,21 +226,23 @@ test.describe("Custom Namespace Property Addition", () => {
     // Verify it's visible using data-property attribute
     await expect(nodeCard.locator(".property-row[data-property='myns:testProp']")).toBeVisible();
     
-    // Disable edit mode
-    await page.getByRole('button', { name: 'Disable Editing' }).click();
+    // Disable edit mode (stable selector instead of button label)
+    await page.click('#toggle-edit-btn');
     await page.waitForTimeout(300);
     
-    // Property should still be visible (but not editable)
-    await expect(nodeCard.locator(".property-name").filter({ hasText: "myns:testProp" })).toBeVisible();
+    // Property should still be visible (but not editable) — use data-property selector
+    await expect(nodeCard.locator(".property-row[data-property='myns:testProp']")).toBeVisible();
     
     // Re-enable edit mode
-    await page.getByRole('button', { name: 'Enable Editing' }).click();
+    await page.click('#toggle-edit-btn');
     await page.waitForTimeout(300);
     
-    // Property should still be there and editable
-    await expect(nodeCard.locator(".property-name").filter({ hasText: "myns:testProp" })).toBeVisible();
+    // Property should still be there and editable (data-property remains)
+    await expect(nodeCard.locator(".property-row[data-property='myns:testProp']")).toBeVisible();
     const propRow = nodeCard.locator(".property-row").filter({ hasText: "myns:testProp" });
-    await expect(propRow.locator("[data-testid='edit-value-btn']")).toBeVisible();
+    // In edit mode the property should be editable — check for an input/select/textarea
+    const editControl = propRow.locator('input, textarea, select').first();
+    await expect(editControl).toBeVisible();
   });
 
   test("should validate that custom property input is inline, not a popup", async ({ page }) => {
