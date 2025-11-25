@@ -15,6 +15,7 @@ import {
   getCurrentLogLevel,
   LOG_LEVEL,
 } from "./state.js";
+import { createTestId } from "./dom-utils.js";
 import { jsonLdToN3Store } from "./cdi-shacl-loader.js";
 import { getCompactNodeId } from "./uri-utils.js";
 
@@ -409,7 +410,7 @@ function updatePropertyValidation(violations) {
           )
           .attr(
             "data-testid",
-            `validation-error-${path.replace(/[^a-zA-Z0-9]/g, "_")}`
+            createTestId("validation-error", path)
           )
           .attr("title", message)
           .attr("data-toggle", "tooltip")
@@ -444,7 +445,7 @@ function updatePropertyValidation(violations) {
           .addClass("glyphicon glyphicon-exclamation-sign node-validation-icon")
           .attr(
             "data-testid",
-            `node-validation-error-${nodeId.replace(/[^a-zA-Z0-9]/g, "_")}`
+            createTestId("node-validation-error", nodeId)
           )
           .attr("title", message)
           .attr("data-toggle", "tooltip")

@@ -13,6 +13,7 @@ import {
 } from "./state.js";
 import { escapeHtml } from "./modal-dialogs.js";
 import { collectChangesFromDOM } from "./data-extraction.js";
+import { sanitizeForTestId, createTestId } from "./dom-utils.js";
 import { classifyProperty } from "./cdi-shacl-helpers.js";
 import { scheduleValidation } from "./validation.js";
 import { humanizeKey } from "./text-utils.js";
@@ -166,7 +167,7 @@ export function renderNodeTree(node, index, depth, ancestors = new Set()) {
   const card = $("<div>")
     .addClass("node-card tree-node")
     .attr("data-node-id", id)
-    .attr("data-testid", `node-card-${id.replace(/[^a-zA-Z0-9]/g, "_")}`);
+    .attr("data-testid", createTestId("node-card", id));
   if (depth > 0) {
     card.css("margin-left", "8px");
   }
@@ -174,7 +175,7 @@ export function renderNodeTree(node, index, depth, ancestors = new Set()) {
   // Header with collapse functionality
   const header = $("<div>")
     .addClass("node-header")
-    .attr("data-testid", `node-header-${id.replace(/[^a-zA-Z0-9]/g, "_")}`);
+    .attr("data-testid", createTestId("node-header", id));
   const leftSide = $("<div>")
     .css("display", "flex")
     .css("align-items", "center");
@@ -186,7 +187,7 @@ export function renderNodeTree(node, index, depth, ancestors = new Set()) {
   leftSide.append(
     $("<span>")
       .addClass("node-id")
-      .attr("data-testid", `node-id-${id.replace(/[^a-zA-Z0-9]/g, "_")}`)
+      .attr("data-testid", createTestId("node-id", id))
       .text(id)
   );
   types.forEach((type, idx) => {
@@ -207,7 +208,7 @@ export function renderNodeTree(node, index, depth, ancestors = new Set()) {
       .addClass("btn btn-xs btn-danger delete-node-btn")
       .attr(
         "data-testid",
-        `delete-node-btn-${id.replace(/[^a-zA-Z0-9]/g, "_")}`
+        createTestId("delete-node-btn", id)
       )
       .html('<span class="glyphicon glyphicon-trash"></span>')
       .css("margin-left", "10px")
@@ -240,7 +241,7 @@ export function renderNodeTree(node, index, depth, ancestors = new Set()) {
   // Body with properties
   const body = $("<div>")
     .addClass("node-body")
-    .attr("data-testid", `node-body-${id.replace(/[^a-zA-Z0-9]/g, "_")}`);
+    .attr("data-testid", createTestId("node-body", id));
   if (!isEditMode) {
     body.addClass("view-mode");
   }
@@ -335,7 +336,7 @@ function renderProperty(key, value, nodeId, nodeTypes) {
     .addClass("property-row")
     .attr("data-property", key)
     .attr("data-node-id", nodeId)
-    .attr("data-testid", `property-${key.replace(/[^a-zA-Z0-9]/g, "_")}`);
+    .attr("data-testid", createTestId("property", key));
 
   // Check if this property has been changed (persistent tracking)
   const compositeId = `${nodeId}.${key}`;
@@ -360,7 +361,7 @@ function renderProperty(key, value, nodeId, nodeTypes) {
   // Add property badge
   const badge = $("<span>")
     .addClass("property-badge")
-    .attr("data-testid", `badge-${key.replace(/[^a-zA-Z0-9]/g, "_")}`);
+    .attr("data-testid", createTestId("badge", key));
   if (classification.isRequired) {
     badge.addClass("required").text("REQUIRED");
   } else if (classification.isInShape) {
@@ -511,7 +512,7 @@ function renderProperty(key, value, nodeId, nodeTypes) {
         .addClass("btn btn-sm btn-default add-value-btn")
         .attr(
           "data-testid",
-          `add-value-btn-${key.replace(/[^a-zA-Z0-9]/g, "_")}`
+          createTestId("add-value-btn", key)
         )
         .html('<span class="glyphicon glyphicon-plus"></span> Add Value')
         .click(function () {
@@ -539,7 +540,7 @@ function renderProperty(key, value, nodeId, nodeTypes) {
         .addClass("btn btn-sm btn-info add-reference-btn")
         .attr(
           "data-testid",
-          `add-reference-btn-${key.replace(/[^a-zA-Z0-9]/g, "_")}`
+          createTestId("add-reference-btn", key)
         )
         .html(
           '<span class="glyphicon glyphicon-link"></span> Add Reference/Object'
@@ -557,7 +558,7 @@ function renderProperty(key, value, nodeId, nodeTypes) {
         .addClass("btn btn-xs btn-default convert-btn")
         .attr(
           "data-testid",
-          `convert-to-single-btn-${key.replace(/[^a-zA-Z0-9]/g, "_")}`
+          createTestId("convert-to-single-btn", key)
         )
         .html(
           '<span class="glyphicon glyphicon-resize-small"></span> Convert to Single'
@@ -598,7 +599,7 @@ function renderProperty(key, value, nodeId, nodeTypes) {
           .addClass("btn btn-xs btn-danger")
           .attr(
             "data-testid",
-            `delete-property-btn-${key.replace(/[^a-zA-Z0-9]/g, "_")}`
+            createTestId("delete-property-btn", key)
           )
           .html('<span class="glyphicon glyphicon-trash"></span> Delete')
           .click(async function () {
@@ -621,7 +622,7 @@ function renderProperty(key, value, nodeId, nodeTypes) {
         .addClass("btn btn-xs btn-default")
         .attr(
           "data-testid",
-          `convert-to-array-btn-${key.replace(/[^a-zA-Z0-9]/g, "_")}`
+          createTestId("convert-to-array-btn", key)
         )
         .html(
           '<span class="glyphicon glyphicon-resize-full"></span> Convert to Array'
@@ -784,7 +785,7 @@ export function createValueInput(value, classification) {
       .addClass("btn btn-sm btn-info reference-btn")
       .attr(
         "data-testid",
-        `jump-to-node-btn-${refId.replace(/[^a-zA-Z0-9]/g, "_")}`
+        createTestId("jump-to-node-btn", refId)
       )
       .html('<span class="glyphicon glyphicon-arrow-right"></span> ')
       .append(document.createTextNode(String(refId)))

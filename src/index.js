@@ -18,7 +18,7 @@ if (typeof window !== "undefined") {
 }
 
 // Import state module first (provides centralized state management)
-import "./jsonld-editor/state.js";
+import { logInfo } from "./jsonld-editor/state.js";
 
 // Import validation module (ES6 with proper imports)
 import { validateData } from "./jsonld-editor/validation.js";
@@ -61,7 +61,7 @@ if (typeof window !== "undefined") {
   window.validateData = validateData;
 }
 
-console.log("CDI Viewer application loaded");
+logInfo("CDI Viewer application loaded");
 
 // Export for potential Node.js use
 export { validateData };

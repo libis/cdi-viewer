@@ -18,6 +18,7 @@ import {
   logError,
 } from "./state.js";
 import { showAlert, showConfirm } from "./modal-dialogs.js";
+import { createTestId } from "./dom-utils.js";
 
 // Built-in namespaces that should not be deletable
 const PROTECTED_NAMESPACES = new Set([
@@ -177,7 +178,7 @@ export function renderNamespaceTable() {
     const isProtected = isProtectedNamespace(prefix);
     const row = $("<tr>").attr(
       "data-testid",
-      `namespace-row-${prefix.replace(/[^a-zA-Z0-9]/g, "_")}`
+      createTestId("namespace-row", prefix)
     );
 
     // Prefix column
@@ -198,10 +199,7 @@ export function renderNamespaceTable() {
     if (!isProtected) {
       const deleteBtn = $("<button>")
         .addClass("btn btn-xs btn-danger")
-        .attr(
-          "data-testid",
-          `delete-namespace-btn-${prefix.replace(/[^a-zA-Z0-9]/g, "_")}`
-        )
+        .attr("data-testid", createTestId("delete-namespace-btn", prefix))
         .html('<span class="glyphicon glyphicon-trash"></span>')
         .attr("title", "Delete namespace")
         .click(async function () {

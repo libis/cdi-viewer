@@ -146,51 +146,79 @@ All planned features for v1.0 release have been implemented. Focus now on:
 - Comprehensive testing
 - Bug fixes only (no new features)
 
-## 🎯 Next Steps After Feature Freeze
+## 🎯 Release prep — trimmed checklist and priorities
 
-### 1. Dataverse Integration Testing (HIGH PRIORITY) 🎯
+You've reached feature freeze and implemented the core functionality for v1.0. This section focuses on the critical work that remains to finish release prep: finish security hardening and testing, polish accessibility, consolidate small maintenance items, run final validation, and prepare release artifacts.
 
-**Goal:** Validate Dataverse integration with local instance before v1.0 release
+Priority ordering reflects the combination of risk (security & data safety), testing confidence, and release-readiness work.
 
-**Status: ONLY REMAINING TESTING NEEDED**
+### Priority A — Security hardening & sanity (HIGH)
 
-**All Standalone Features Fully Tested & Working (Nov 23, 2025):** ✅
+- Finish replacing any remaining native dialogs (alert/confirm/prompt) with `showAlert()`/`showConfirm()`/`showPrompt()` so UX & tests are consistent.
+- Harden all DOM insertions: replace any `.html()` (or `.innerHTML`) uses that include variable content with either `escapeHtml()` or build nodes/text with `textContent`. Convert any call sites that pass untrusted data to `setValidationStatusText()` or an escape function.
+- Audit `.html()` / innerHTML / template string usage repository-wide and create a short report of remaining hotspots.
+- Add tests (unit + e2e) that exercise these flows (modal behavior, error messages, server-provided strings) to prevent regression.
 
-- ✅ Document creation (with and without SHACL shapes)
-- ✅ Generic mode (custom types, properties, namespaces)
-- ✅ Namespace management (add, use in properties, export)
-- ✅ Custom properties (with/without namespace prefixes)
-- ✅ Mode toggling (data preservation)
-- ✅ Export functionality (correct JSON-LD structure)
-- ✅ Advanced search (case-sensitive, regex, navigation)
-- ✅ Node operations (add, delete, edit)
-- ✅ Array operations (convert, add/remove values)
-- ✅ SHACL validation and property suggestions
+### Priority B — Dataverse integration & end-to-end test pass (HIGH)
 
-**Dataverse Integration Testing (To Do Tomorrow):**
+- Run full Dataverse integration tests (embedded mode) against a local instance and fix any issues found.
+- Re-enable skipped Dataverse-related e2e tests once a verified local Dataverse test harness is available.
 
-**Embedded Mode (callback parameter present):**
+### Priority C — Accessibility & UX polish (MEDIUM)
 
-- Load viewer with fileId and siteUrl parameters
-- Verify URL field hidden in save modal
-- Verify filename pre-filled from metadata
-- Test file replacement with API token
-- Test error handling
+- Improve accessibility of modals (aria attributes, role="dialog", focus trapping, return focus) and add tests to validate keyboard flows.
+- Add ARIA and data-testid attributes where lacking to improve test reliability.
 
-**Standalone Dataverse Features:**
+### Priority D — Small maintenance & release mechanics (MEDIUM)
 
-- Load from Dataverse button functionality
-- URL parser (6 different Dataverse URL formats)
-- API token support for unpublished files
-- Save to Dataverse (replace existing file)
-- Save to Dataverse (add new file to dataset)
+- Replace remaining `console.log` in `src/index.js` with `logInfo()` and keep logging consistent (state.js logger). Remove any accidental debug prints remaining in examples or vendor code (non-critical items can be left as notes).
+- Final documentation cleanup (README, release notes, CHANGELOG) and ensure `NEXT_STEPS.md` is current.
+- Ensure GitHub Actions includes the new e2e tests (modal + scroll) as part of release candidate validation.
 
-**End-to-End Dataverse Workflows:**
+### Priority E — Refactoring & maintainability (LOW → MEDIUM)
 
-- Load from Dataverse → enable edit → modify → save back
-- Load from Dataverse → validate → fix violations → save
-- Create new document → save to Dataverse dataset
-- Test with unpublished files (API token required)
+These are higher value but can be done incrementally after the release-critical items above. Recommend shippable pieces with tests:
+
+- Extract and centralize repeated utilities
+  - Create `src/jsonld-editor/dom-utils.js` with helpers such as `sanitizeForTestId` and a small `el()` DOM builder, then replace repeated `s.replace(/[^a-zA-Z0-9]/g, '_')` and common jQuery chains.
+- Split large modules into smaller responsibilities (iterative):
+  - `render.js` → `render/node-card.js`, `render/value-renderer.js`, `render/references.js`
+  - `event-handlers.js` → `events/ui.js`, `events/data.js`
+  - `cdi-shacl-helpers.js` → smaller helpers grouped by functionality
+- Centralize configuration/constants (timeouts, UI offsets, class names) in `src/jsonld-editor/constants.js`.
+
+### Final pre-release checklist (one pass)
+
+1. All critical security hardening tests pass (Priority A) ✅
+2. Re-run full unit + e2e suite, fix regressions (Priority B) ✅
+3. Accessibility checks and quick fixes (Priority C) ✅
+4. Documentation / release notes / CHANGELOG updated (Priority D) ✅
+5. Final smoke-test with Dataverse integrated flows (embedded + standalone) (Priority B) ✅
+6. Tag release candidate, publish to GitHub Pages, and prepare PR to `dataverse-previewers` (if desired) ✅
+
+---
+
+## Practical next actions I recommend now (pick 1 to start):
+
+1) Finish security hardening pass (HIGH priority — ~1–2 hours):
+  - Replace remaining native `alert()` / `confirm()` / `prompt()` usages.
+  - Convert any remaining risky `.html()` / `innerHTML` occurrences.
+  - Add targeted unit/e2e tests for the fixed paths.
+
+2) Small, fast refactor to start: extract and apply `sanitizeForTestId()` (LOW risk, high payoff, ~30–60 minutes):
+  - Add `dom-utils.js` with `sanitizeForTestId` and replace repeated regex occurrences.
+  - Improves readability and reduces duplication across many files.
+
+3) Run Dataverse integration tests and fix issues (HIGH, depending on availability of a test instance):
+  - If you have a local Dataverse instance available, I can run these and fix problems found.
+
+4) Accessibility & modal refinement: add ARIA roles and focus management to modal helpers and verify with e2e tests.
+
+If you’d like, I can start with option 1 (finish the security hardening pass) immediately and roll the small refactor (option 2) in the same session — both are safe and keep tests green.
+
+---
+
+If you'd like me to begin, pick which option you'd prefer (or ask me to sequence them) and I'll open a small PR with CI-green edits and tests.
 
 ### 2. Bug Fixes (HIGH PRIORITY)
 
