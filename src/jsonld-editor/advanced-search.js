@@ -193,10 +193,10 @@ export function performSearch() {
   updateSearchCounter();
   updateNavigationButtons();
 
-  // If there are matches, navigate to first one
-  if (searchMatches.length > 0) {
-    navigateToMatch("next");
-  }
+  // Don't auto-navigate when matches are found — this was causing the UI to
+  // jump away from the active input while the user was typing (very disruptive).
+  // Users can navigate matches explicitly using Enter / F3 or the navigation
+  // buttons. Keep currentMatchIndex at -1 so no automatic focus/scroll happens.
 }
 
 /**

@@ -170,4 +170,33 @@ test.describe('Search Edge Cases', () => {
     const highlights = page.locator('.search-highlight');
     await expect(highlights).toHaveCount(0);
   });
+
+  test('typing should not auto-jump to first result; Enter should navigate', async ({ page }) => {
+    // ============= SETUP =============
+    const testFilePath = path.join(__dirname, '../../../examples/cdi/SimpleSample.jsonld');
+    await page.click('#load-local-btn');
+    await page.setInputFiles('#local-file-input', testFilePath);
+    await expect(page.locator('[data-testid^="node-card-"]')).toHaveCount(26);
+
+    // Focus somewhere lower on the page to simulate typing while working
+    // Select a node near the end and ensure scroll is away from the first match
+    const lastNode = page.locator('[data-testid^="node-card-"]').nth(24);
+    await lastNode.scrollIntoViewIfNeeded();
+
+    // ============= ACTIONS =============
+    const searchInput = page.locator('#search-input');
+    await searchInput.fill('Sample');
+    await page.waitForTimeout(500);
+
+    // ============= EXPECTED RESULTS =============
+    // Typing should not automatically mark a current match (no jump)
+    const currentMatch = page.locator('.current-search-match');
+    await expect(currentMatch).toHaveCount(0);
+
+    // Press Enter to navigate to the first match — this should create a current match
+    await searchInput.press('Enter');
+    await page.waitForTimeout(200);
+    const currentCount = await page.locator('.current-search-match').count();
+    expect(currentCount).toBeGreaterThan(0);
+  });
 });
