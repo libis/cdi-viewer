@@ -220,11 +220,24 @@ export function getRootNodeIds() {
 
   // Root nodes are those not referenced by any other node
   // Blank nodes (_:xxx) should never be root nodes
-  return jsonData["@graph"]
+  const rootNodes = jsonData["@graph"]
     .filter(
       (n) => !referencedNodeIds.has(n["@id"]) && !n["@id"].startsWith("_:")
     )
     .map((n) => n["@id"]);
+
+  // If no root nodes exist, we likely have a cycle or all nodes are referenced
+  // Pick the first non-blank node as an arbitrary starting point
+  if (rootNodes.length === 0) {
+    console.log("No root nodes found - possible cycle detected. Using first non-blank node as root.");
+    const firstNonBlank = jsonData["@graph"].find((n) => !n["@id"].startsWith("_:"));
+    if (firstNonBlank) {
+      return [firstNonBlank["@id"]];
+    }
+    return [];
+  }
+
+  return rootNodes;
 }
 
 /**

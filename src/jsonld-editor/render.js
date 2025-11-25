@@ -64,6 +64,23 @@ export function renderData() {
     const nodeCard = renderNodeTree(node, index, 0);
     content.append(nodeCard);
   });
+
+  // After rendering the main tree, check for any unreachable nodes
+  // (can happen with disconnected components or cycles)
+  const allNonBlankNodes = jsonData["@graph"]
+    .filter((n) => !n["@id"].startsWith("_:"))
+    .map((n) => n["@id"]);
+  
+  allNonBlankNodes.forEach((nodeId) => {
+    if (!isNodeRendered(nodeId)) {
+      const node = getNodeById(nodeId);
+      if (node) {
+        console.log(`Rendering unreachable node: ${nodeId}`);
+        const nodeCard = renderNodeTree(node, 0, 0);
+        content.append(nodeCard);
+      }
+    }
+  });
 }
 
 // Helper: Check if a value is a pure reference (no properties other than @id, @type, @context)
@@ -132,7 +149,7 @@ export function isNodeReference(str) {
   return false;
 }
 
-export function renderNodeTree(node, index, depth) {
+export function renderNodeTree(node, index, depth, ancestors = new Set()) {
   const isEditMode = getIsEditMode();
   const shaclShapesStore = getShaclShapesStore();
 
@@ -228,7 +245,7 @@ export function renderNodeTree(node, index, depth) {
   // Render all properties except @id and @type
   Object.keys(node).forEach((key) => {
     if (key !== "@id" && key !== "@type" && key !== "@context") {
-      const propertyRow = renderPropertyTree(key, node[key], id, types, depth);
+      const propertyRow = renderPropertyTree(key, node[key], id, types, depth, ancestors);
       body.append(propertyRow);
     }
   });
@@ -254,7 +271,7 @@ export function renderNodeTree(node, index, depth) {
   return card;
 }
 
-export function renderPropertyTree(key, value, nodeId, nodeTypes, depth) {
+export function renderPropertyTree(key, value, nodeId, nodeTypes, depth, ancestors = new Set()) {
   const container = $("<div>");
 
   // First render the property itself
@@ -267,12 +284,23 @@ export function renderPropertyTree(key, value, nodeId, nodeTypes, depth) {
     refs.forEach((refId) => {
       const refNode = getNodeById(refId);
       if (refNode) {
-        // Only render inline if this node hasn't been rendered yet
+        // Detect cycles: if refId is in our ancestor chain, don't inline it
+        // (it will be rendered as a clickable reference button instead)
+        if (ancestors.has(refId)) {
+          console.log(`Cycle detected: ${nodeId} → ${refId}. Reference will be shown as clickable link.`);
+          return; // Don't inline - the reference button in the property value is sufficient
+        }
+
+        // Only render inline if this node hasn't been rendered yet in the current tree
         if (!isNodeRendered(refId)) {
           // Track parent-child relationship: refId is a child of nodeId
           setParentRelationship(refId, nodeId);
 
-          const childCard = renderNodeTree(refNode, 0, depth + 1);
+          // Pass ancestors down to detect deeper cycles
+          const newAncestors = new Set(ancestors);
+          newAncestors.add(nodeId);
+
+          const childCard = renderNodeTree(refNode, 0, depth + 1, newAncestors);
           container.append(childCard);
         }
         // else: Node already rendered elsewhere - the inline box already provides navigation
