@@ -11,8 +11,8 @@ import {
   log,
   getShaclShapesStore,
   getJsonData,
-  getCurrentLogLevel,
   getDefaultTypeNamespace,
+  logDebug,
 } from "./state.js";
 import { getExpandedPropertyUri } from "./uri-utils.js";
 import { expandCompactIri } from "./cdi-json-ld-helpers.js";
