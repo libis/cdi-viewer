@@ -42,7 +42,7 @@
  * - Sibling discovery
  */
 
-import { getJsonData } from "./state.js";
+import { getJsonData, logDebug } from "./state.js";
 
 // Track logical parent-child relationships
 // Maps child node ID -> parent node ID
@@ -76,7 +76,7 @@ export function buildGraphStructure() {
     return;
   }
 
-  console.log("🔗 Building graph structure...");
+  logDebug("Building graph structure...");
 
   // First pass: identify all referenced nodes
   jsonData["@graph"].forEach((node) => {
@@ -89,7 +89,7 @@ export function buildGraphStructure() {
     });
   });
 
-  console.log(`  Found ${referencedNodeIds.size} referenced nodes`);
+  logDebug(`Found ${referencedNodeIds.size} referenced nodes`);
 }
 
 /**
@@ -229,7 +229,7 @@ export function getRootNodeIds() {
   // If no root nodes exist, we likely have a cycle or all nodes are referenced
   // Pick the first non-blank node as an arbitrary starting point
   if (rootNodes.length === 0) {
-    console.log("No root nodes found - possible cycle detected. Using first non-blank node as root.");
+    logDebug("No root nodes found - possible cycle detected. Using first non-blank node as root.");
     const firstNonBlank = jsonData["@graph"].find((n) => !n["@id"].startsWith("_:"));
     if (firstNonBlank) {
       return [firstNonBlank["@id"]];

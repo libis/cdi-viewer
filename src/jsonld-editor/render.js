@@ -8,6 +8,7 @@ import {
   getShaclShapesStore,
   addChangedElement,
   hasChangedElement,
+  logDebug,
 } from "./state.js";
 import { collectChangesFromDOM } from "./data-extraction.js";
 import { classifyProperty } from "./cdi-shacl-helpers.js";
@@ -75,7 +76,7 @@ export function renderData() {
     if (!isNodeRendered(nodeId)) {
       const node = getNodeById(nodeId);
       if (node) {
-        console.log(`Rendering unreachable node: ${nodeId}`);
+        logDebug(`Rendering unreachable node: ${nodeId}`);
         const nodeCard = renderNodeTree(node, 0, 0);
         content.append(nodeCard);
       }

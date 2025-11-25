@@ -10,6 +10,9 @@ import {
   getShaclShapesStore,
   getJsonData,
   setValidationReport,
+  logDebug,
+  getCurrentLogLevel,
+  LOG_LEVEL,
 } from "./state.js";
 import { jsonLdToN3Store } from "./cdi-shacl-loader.js";
 import { getCompactNodeId } from "./uri-utils.js";
@@ -139,15 +142,13 @@ export async function validateData() {
       validations: sparqlValidations, // Enable SPARQL constraints
     });
 
-    // Debug: Log what shapes and targets are loaded
-    console.log("SHACL shapes loaded:", shapesDataset.size, "triples");
-    console.log("Data to validate:", dataDataset.size, "triples");
-
     // Run the validation process
     const report = await validator.validate({ dataset: dataDataset });
 
-    console.log("Validation report - conforms:", report.conforms);
-    console.log("Validation report - results count:", report.results.length);
+    logDebug("SHACL shapes loaded:", shapesDataset.size, "triples");
+    logDebug("Data to validate:", dataDataset.size, "triples");
+    logDebug("Validation report - conforms:", report.conforms);
+    logDebug("Validation report - results count:", report.results.length);
 
     setValidationReport(report);
 
@@ -187,13 +188,13 @@ export async function validateData() {
       });
     }
 
-    // Log violations to console for debugging
-    if (violations.length > 0) {
-      console.log("Validation violations:");
+    // Log violations to console in debug mode
+    if (violations.length > 0 && getCurrentLogLevel() >= LOG_LEVEL.DEBUG) {
+      logDebug("Validation violations:");
       violations.forEach((v, i) => {
-        console.log(`  ${i + 1}. ${v.focusNode}`);
-        console.log(`     Property: ${v.path}`);
-        console.log(`     Message: ${v.message}`);
+        logDebug(`  ${i + 1}. ${v.focusNode}`);
+        logDebug(`     Property: ${v.path}`);
+        logDebug(`     Message: ${v.message}`);
       });
     }
 

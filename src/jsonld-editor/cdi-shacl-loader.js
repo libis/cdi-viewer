@@ -5,6 +5,9 @@
 import {
   LOG_LEVEL,
   log,
+  logInfo,
+  logWarn,
+  logError,
   SHAPE_URLS,
   setShaclShapes,
   setShaclShapesStore,

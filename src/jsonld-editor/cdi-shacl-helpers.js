@@ -274,16 +274,6 @@ export function classifyProperty(nodeTypes, propertyKey, nodeId = null) {
         null
       );
 
-      if (
-        getCurrentLogLevel() >= LOG_LEVEL.DEBUG &&
-        nodeId === "xas:485749" &&
-        propertyKey === "name"
-      ) {
-        console.log(
-          `  Shape ${shapeSubject} has ${propertyQuads.length} property definition(s)`
-        );
-      }
-
       propertyQuads.forEach((propQuad) => {
         const propertyShapeRef = propQuad.object;
 
@@ -302,8 +292,8 @@ export function classifyProperty(nodeTypes, propertyKey, nodeId = null) {
           pathQuads.length === 0 &&
           propertyShapeRef.termType === "NamedNode"
         ) {
-          console.log(
-            `  Resolving property shape reference: ${propertyShapeRef.value}`
+          logDebug(
+            `Resolving property shape reference: ${propertyShapeRef.value}`
           );
           // This is a reference like cdifd:nameProperty
           // The referenced shape should have the actual sh:path
@@ -314,9 +304,9 @@ export function classifyProperty(nodeTypes, propertyKey, nodeId = null) {
             null
           );
           if (pathQuads.length > 0) {
-            console.log(`    → Found path: ${pathQuads[0].object.value}`);
+            logDebug(`  → Found path: ${pathQuads[0].object.value}`);
           } else {
-            console.log(`    → No path found for reference`);
+            logDebug(`  → No path found for reference`);
           }
         }
 

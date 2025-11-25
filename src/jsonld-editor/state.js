@@ -43,6 +43,23 @@ export function log(level, ...args) {
   }
 }
 
+// Convenience logging functions
+export function logError(...args) {
+  log(LOG_LEVEL.ERROR, ...args);
+}
+
+export function logWarn(...args) {
+  log(LOG_LEVEL.WARN, ...args);
+}
+
+export function logInfo(...args) {
+  log(LOG_LEVEL.INFO, ...args);
+}
+
+export function logDebug(...args) {
+  log(LOG_LEVEL.DEBUG, ...args);
+}
+
 /**
  * Application state
  *

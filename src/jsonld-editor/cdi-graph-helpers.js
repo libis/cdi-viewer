@@ -17,6 +17,7 @@ import {
   setOriginalData,
   setOriginalFileName,
   addChangedElement,
+  logDebug,
 } from "./state.js";
 import { humanizeKey } from "./text-utils.js";
 import { updateNamespaceSectionVisibility } from "./namespace-manager.js";
@@ -127,7 +128,7 @@ export function initializeNewDocument() {
   setOriginalData(JSON.parse(JSON.stringify(newDocument)));
   setOriginalFileName(config.filename);
 
-  console.log(
+  logDebug(
     `Initialized new ${selectedShape || "generic"} document:`,
     config.filename
   );
@@ -225,7 +226,7 @@ export function createAndAddRootNode(nodeType) {
     }
   }, 100);
 
-  console.log("Added new root node:", newNode);
+  logDebug("Added new root node:", newNode);
 }
 
 export function deleteNode(nodeId) {

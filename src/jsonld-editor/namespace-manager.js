@@ -10,7 +10,7 @@
  * - Update @context when namespaces change
  */
 
-import { getJsonData, setJsonData } from "./state.js";
+import { getJsonData, setJsonData, logDebug, logWarn } from "./state.js";
 import { showAlert, showConfirm } from "./modal-dialogs.js";
 
 // Built-in namespaces that should not be deletable
@@ -97,7 +97,7 @@ export function addNamespace(prefix, uri) {
   }
 
   setJsonData(jsonData);
-  console.log(`Added namespace: ${prefix} -> ${uri}`);
+  logDebug(`Added namespace: ${prefix} -> ${uri}`);
   return true;
 }
 
@@ -112,7 +112,7 @@ export function removeNamespace(prefix) {
 
   // Don't allow removing protected namespaces
   if (PROTECTED_NAMESPACES.has(prefix)) {
-    console.warn(`Cannot remove protected namespace: ${prefix}`);
+    logWarn(`Cannot remove protected namespace: ${prefix}`);
     return false;
   }
 
@@ -131,7 +131,7 @@ export function removeNamespace(prefix) {
   }
 
   setJsonData(jsonData);
-  console.log(`Removed namespace: ${prefix}`);
+  logDebug(`Removed namespace: ${prefix}`);
   return true;
 }
 
