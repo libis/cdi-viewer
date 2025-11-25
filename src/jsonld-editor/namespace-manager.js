@@ -10,7 +10,13 @@
  * - Update @context when namespaces change
  */
 
-import { getJsonData, setJsonData, logDebug, logWarn } from "./state.js";
+import {
+  getJsonData,
+  setJsonData,
+  logDebug,
+  logWarn,
+  logError,
+} from "./state.js";
 import { showAlert, showConfirm } from "./modal-dialogs.js";
 
 // Built-in namespaces that should not be deletable
@@ -64,7 +70,7 @@ export function extractNamespaces() {
 export function addNamespace(prefix, uri) {
   const jsonData = getJsonData();
   if (!jsonData) {
-    console.error("No JSON-LD data loaded");
+    logError("No JSON-LD data loaded");
     return false;
   }
 

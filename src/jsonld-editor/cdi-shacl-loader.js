@@ -5,6 +5,9 @@
 import {
   LOG_LEVEL,
   log,
+  logInfo,
+  logWarn,
+  logError,
   SHAPE_URLS,
   setShaclShapes,
   setShaclShapesStore,
@@ -23,12 +26,12 @@ export async function loadShapes(shapeSource, customUrl = null) {
   } else if (SHAPE_URLS[shapeSource]) {
     shapeUrl = SHAPE_URLS[shapeSource];
   } else {
-    console.error("Unknown shape source:", shapeSource);
+    logError("Unknown shape source:", shapeSource);
     shapeUrl = SHAPE_URLS["local-fallback"];
     fallbackUrl = null; // Already using fallback
   }
 
-  console.log(`Loading SHACL shapes from: ${shapeUrl}`);
+  logInfo(`Loading SHACL shapes from: ${shapeUrl}`);
 
   try {
     // Try loading from the specified URL
@@ -48,11 +51,11 @@ export async function loadShapes(shapeSource, customUrl = null) {
 
     return true;
   } catch (error) {
-    console.warn(`Failed to load SHACL shapes from ${shapeUrl}:`, error);
+    logWarn(`Failed to load SHACL shapes from ${shapeUrl}:`, error);
 
     // Try fallback if not already using local
     if (fallbackUrl && shapeSource !== "local-fallback") {
-      console.log(`Falling back to local shapes: ${fallbackUrl}`);
+      logInfo(`Falling back to local shapes: ${fallbackUrl}`);
 
       try {
         const fallbackResponse = await fetch(fallbackUrl);
@@ -64,7 +67,7 @@ export async function loadShapes(shapeSource, customUrl = null) {
         const fallbackShapesText = await fallbackResponse.text();
         await parseShapes(fallbackShapesText);
 
-        console.log(`Successfully loaded fallback SHACL shapes`);
+        logInfo(`Successfully loaded fallback SHACL shapes`);
         setCurrentShapeSource("local-fallback");
 
         // Update dropdown to reflect fallback
@@ -77,7 +80,7 @@ export async function loadShapes(shapeSource, customUrl = null) {
 
         return true;
       } catch (fallbackError) {
-        console.error("Fallback also failed:", fallbackError);
+        logError("Fallback also failed:", fallbackError);
         throw new Error(
           `Failed to load both primary and fallback shapes: ${error.message}`
         );
@@ -168,7 +171,7 @@ export async function jsonLdToN3Store(jsonLdData) {
             };
           }
         } catch (error) {
-          console.warn(
+          logWarn(
             `Failed to load from ${WORKING_URL}, trying local fallback:`,
             error
           );
@@ -190,10 +193,7 @@ export async function jsonLdToN3Store(jsonLdData) {
             };
           }
         } catch (error) {
-          console.error(
-            `Failed to load local fallback ${LOCAL_FALLBACK}:`,
-            error
-          );
+          logError(`Failed to load local fallback ${LOCAL_FALLBACK}:`, error);
           throw new Error(
             `Could not load DDI-CDI context from network or local fallback`
           );
@@ -223,7 +223,7 @@ export async function jsonLdToN3Store(jsonLdData) {
           documentUrl: url,
         };
       } catch (error) {
-        console.warn(`Failed to load context from ${url}:`, error);
+        logWarn(`Failed to load context from ${url}:`, error);
         // Return empty context rather than failing completely
         return {
           contextUrl: null,
@@ -259,7 +259,7 @@ export async function jsonLdToN3Store(jsonLdData) {
       });
     });
   } catch (error) {
-    console.error("Error converting JSON-LD to N3 Store:", error);
+    logError("Error converting JSON-LD to N3 Store:", error);
     throw error;
   }
 }

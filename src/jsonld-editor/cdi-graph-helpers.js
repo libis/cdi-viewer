@@ -18,6 +18,7 @@ import {
   setOriginalFileName,
   addChangedElement,
   logDebug,
+  logError,
 } from "./state.js";
 import { humanizeKey } from "./text-utils.js";
 import { updateNamespaceSectionVisibility } from "./namespace-manager.js";
@@ -64,7 +65,7 @@ export function getAvailableNodeTypes() {
       });
     });
   } catch (error) {
-    console.error("Error getting node types:", error);
+    logError("Error getting node types:", error);
   }
 
   // Convert Set to Array and sort by label

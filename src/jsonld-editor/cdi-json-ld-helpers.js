@@ -6,7 +6,13 @@
 // Used for internal viewer behavior (expansion, suggestions, SHACL classification).
 // Does NOT modify the original data when exporting.
 
-import { LOG_LEVEL, log, setHadOriginalGraph } from "./state.js";
+import {
+  LOG_LEVEL,
+  log,
+  logError,
+  logInfo,
+  setHadOriginalGraph,
+} from "./state.js";
 
 // Legacy/external context URLs that we want to handle via local copies
 // Add entries here if you have local cached versions of external contexts
@@ -241,7 +247,7 @@ export async function normalizeToGraphFormat(data) {
 
     return flattened;
   } catch (error) {
-    console.error("Failed to normalize JSON-LD:", error);
+    logError("Failed to normalize JSON-LD:", error);
 
     // Fallback: manually wrap in @graph if it's a single object
     if (data["@id"] || data["@type"]) {
@@ -293,7 +299,7 @@ export function migrateContextFormat(jsonData) {
 
       // Check if @vocab is actually a context URL (not just a vocabulary namespace)
       if (vocabValue.includes(".jsonld") || vocabValue.includes("json-ld")) {
-        console.log(
+        logInfo(
           "⚠️  Migrating @context from incorrect @vocab format to proper array format"
         );
 

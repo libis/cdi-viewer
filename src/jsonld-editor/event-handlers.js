@@ -7,6 +7,8 @@
 import {
   LOG_LEVEL,
   log,
+  logWarn,
+  logError,
   setOriginalFileName,
   setJsonData,
   setOriginalData,
@@ -91,7 +93,7 @@ export function setupEventHandlers() {
           const expanded = await jsonld.expand(jsonData);
           setExpandedJsonLd(expanded);
         } catch (expandError) {
-          console.warn("Could not expand JSON-LD:", expandError);
+          logWarn("Could not expand JSON-LD:", expandError);
           setExpandedJsonLd(null);
         }
 
@@ -103,7 +105,7 @@ export function setupEventHandlers() {
               await loadShapes(selectedShape);
               log(LOG_LEVEL.INFO, "SHACL shapes loaded for validation");
             } catch (shapeError) {
-              console.error("Failed to load SHACL shapes:", shapeError);
+              logError("Failed to load SHACL shapes:", shapeError);
               alert(
                 "Warning: Failed to load SHACL shapes. Continuing in generic mode.\n\n" +
                   shapeError.message
@@ -139,7 +141,7 @@ export function setupEventHandlers() {
                         </div>
                     `);
       } catch (error) {
-        console.error("Error loading local file:", error);
+        logError("Error loading local file:", error);
         alert("Failed to load file: " + error.message);
       }
 
@@ -270,10 +272,7 @@ export function setupEventHandlers() {
             }
           }
         } catch (e) {
-          console.warn(
-            "Could not fetch filename from metadata, using default:",
-            e
-          );
+          logWarn("Could not fetch filename from metadata, using default:", e);
         }
 
         // Set filename and IDs for export and future saves
@@ -301,7 +300,7 @@ export function setupEventHandlers() {
           const expanded = await jsonld.expand(jsonData);
           setExpandedJsonLd(expanded);
         } catch (expandError) {
-          console.warn("Could not expand JSON-LD:", expandError);
+          logWarn("Could not expand JSON-LD:", expandError);
           setExpandedJsonLd(null);
         }
 
@@ -313,7 +312,7 @@ export function setupEventHandlers() {
               await loadShapes(selectedShape);
               log(LOG_LEVEL.INFO, "SHACL shapes loaded for validation");
             } catch (shapeError) {
-              console.error("Failed to load SHACL shapes:", shapeError);
+              logError("Failed to load SHACL shapes:", shapeError);
               alert(
                 "Warning: Failed to load SHACL shapes. Continuing in generic mode.\\n\\n" +
                   shapeError.message
@@ -339,7 +338,7 @@ export function setupEventHandlers() {
           </div>
         `);
       } catch (error) {
-        console.error("Error loading file from Dataverse:", error);
+        logError("Error loading file from Dataverse:", error);
         alert(
           "Error loading file from Dataverse:\\n\\n" +
             error.message +
@@ -589,7 +588,7 @@ export function setupEventHandlers() {
           );
         }
       } catch (error) {
-        console.error("Error loading custom shape:", error);
+        logError("Error loading custom shape:", error);
         $("#validation-status").html(
           '<span class="validation-badge invalid">Shape load failed</span>'
         );
@@ -636,7 +635,7 @@ export function setupEventHandlers() {
           );
         }
       } catch (error) {
-        console.error("Error loading custom shape:", error);
+        logError("Error loading custom shape:", error);
         $("#validation-status").html(
           '<span class="validation-badge invalid">Custom shape load failed</span>'
         );

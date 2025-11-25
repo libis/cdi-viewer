@@ -11,6 +11,7 @@ import {
   getJsonData,
   setValidationReport,
   logDebug,
+  logError,
   getCurrentLogLevel,
   LOG_LEVEL,
 } from "./state.js";
@@ -293,7 +294,7 @@ export async function validateData() {
     // Update property rows with validation results
     updatePropertyValidation(violations);
   } catch (error) {
-    console.error("Validation error:", error);
+    logError("Validation error:", error);
 
     let errorMsg = error.message;
 

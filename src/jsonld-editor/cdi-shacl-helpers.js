@@ -13,6 +13,7 @@ import {
   getJsonData,
   getDefaultTypeNamespace,
   logDebug,
+  logError,
 } from "./state.js";
 import { getExpandedPropertyUri } from "./uri-utils.js";
 import { expandCompactIri } from "./cdi-json-ld-helpers.js";
@@ -497,7 +498,7 @@ export function classifyProperty(nodeTypes, propertyKey, nodeId = null) {
       }); // end propertyQuads.forEach
     }); // end applicableShapes.forEach
   } catch (err) {
-    console.error("Error classifying property:", err);
+    logError("Error classifying property:", err);
   }
 
   return result;

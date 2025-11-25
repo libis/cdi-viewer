@@ -12,6 +12,7 @@ import {
   clearChangedElements,
   getIsEditMode,
   logDebug,
+  logError,
 } from "./state.js";
 import { parseDataverseUrl } from "./dataverse-url-parser.js";
 import { showAlert } from "./modal-dialogs.js";
@@ -356,7 +357,7 @@ export async function saveToDataverse() {
       throw new Error("Unexpected response: " + JSON.stringify(result));
     }
   } catch (error) {
-    console.error("Save error:", error);
+    logError("Save error:", error);
     await showAlert(
       "Failed to save to Dataverse:\n\n" +
         error.message +

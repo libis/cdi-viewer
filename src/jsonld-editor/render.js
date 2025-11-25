@@ -9,6 +9,7 @@ import {
   addChangedElement,
   hasChangedElement,
   logDebug,
+  logInfo,
 } from "./state.js";
 import { collectChangesFromDOM } from "./data-extraction.js";
 import { classifyProperty } from "./cdi-shacl-helpers.js";
@@ -302,7 +303,7 @@ export function renderPropertyTree(
         // Detect cycles: if refId is in our ancestor chain, don't inline it
         // (it will be rendered as a clickable reference button instead)
         if (ancestors.has(refId)) {
-          console.log(
+          logInfo(
             `Cycle detected: ${nodeId} → ${refId}. Reference will be shown as clickable link.`
           );
           return; // Don't inline - the reference button in the property value is sufficient

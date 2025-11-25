@@ -7,6 +7,9 @@
 import {
   LOG_LEVEL,
   log,
+  logInfo,
+  logWarn,
+  logError,
   SHAPE_URLS,
   setJsonData,
   setOriginalData,
@@ -48,7 +51,7 @@ $(document).ready(async function () {
         await loadShapes(shaclParam);
         log(LOG_LEVEL.INFO, `Loaded shapes from URL parameter: ${shaclParam}`);
       } catch (error) {
-        console.error("Failed to load shapes from URL parameter:", error);
+        logError("Failed to load shapes from URL parameter:", error);
       }
     } else if (!shaclParam) {
       // Default mode: Load ddi-cdi-official automatically
@@ -60,7 +63,7 @@ $(document).ready(async function () {
           "Default mode: Loaded DDI-CDI official shapes (use ?shacl=generic for no preloading)"
         );
       } catch (error) {
-        console.error("Failed to load default DDI-CDI shapes:", error);
+        logError("Failed to load default DDI-CDI shapes:", error);
       }
     }
 
@@ -150,7 +153,7 @@ $(document).ready(async function () {
         }
       }
     } catch (e) {
-      console.warn("Could not fetch filename, using default:", e);
+      logWarn("Could not fetch filename, using default:", e);
     }
 
     // Load from Dataverse API
@@ -213,9 +216,9 @@ $(document).ready(async function () {
     try {
       const expanded = await jsonld.expand(jsonData);
       setExpandedJsonLd(expanded);
-      console.log("Expanded JSON-LD for property URI mapping");
+      logInfo("Expanded JSON-LD for property URI mapping");
     } catch (expandError) {
-      console.warn("Could not expand JSON-LD:", expandError);
+      logWarn("Could not expand JSON-LD:", expandError);
       setExpandedJsonLd(null);
     }
 
@@ -226,8 +229,8 @@ $(document).ready(async function () {
         await loadShapes(selectedShape);
         log(LOG_LEVEL.INFO, "SHACL shapes loaded for validation");
       } catch (shapeError) {
-        console.error("Failed to load SHACL shapes:", shapeError);
-        console.warn("Continuing without SHACL validation");
+        logError("Failed to load SHACL shapes:", shapeError);
+        logWarn("Continuing without SHACL validation");
       }
     } else {
       log(
@@ -260,7 +263,7 @@ $(document).ready(async function () {
       });
     }
   } catch (error) {
-    console.error("Error loading data:", error);
+    logError("Error loading data:", error);
     $("#load-local-btn").show();
     $("#load-dataverse-btn").show();
     // Save button visibility handled by event-handlers
