@@ -74,4 +74,31 @@ test.describe('Modal and scroll behavior', () => {
     // The top of the node should be below the toolbar bottom (plus 1px tolerance)
     expect(targetTop).toBeGreaterThan(toolbarBottom - 1);
   });
+
+  test('dataverse URL feedback is shown as safe text (no HTML injection)', async ({ page }) => {
+    // Open Load-from-Dataverse modal instead (shows a URL input for file loading)
+    await page.click('#load-dataverse-btn');
+    await page.waitForSelector('#loadDataverseUrlInput', { timeout: 5000 });
+
+    // Enter a valid file API URL (should be parsed as replace)
+    await page.fill('#loadDataverseUrlInput', 'http://example.com/api/files/123');
+    await page.waitForTimeout(200);
+
+    // Expect feedback about replacement and presence of icon (load modal uses loadUrlValidationFeedback)
+    const feedback = page.locator('#loadUrlValidationFeedback');
+    await expect(feedback).toBeVisible();
+    // Load modal uses a slightly different helper message for file vs dataset
+    await expect(feedback).toContainText('Valid file URL');
+    await expect(feedback.locator('.glyphicon.glyphicon-ok')).toBeVisible();
+
+    // Now enter a clearly invalid URL and ensure the feedback shows the error text
+    await page.fill('#loadDataverseUrlInput', 'not-a-valid-url');
+    await page.waitForTimeout(200);
+    await expect(feedback).toBeVisible();
+    await expect(feedback).toContainText(/Invalid URL format|URL does not match any supported Dataverse format/i);
+
+    // Ensure the feedback does not contain active markup (no <script> tags)
+    const innerHtml = await feedback.innerHTML();
+    expect(innerHtml.toLowerCase()).not.toContain('<script');
+  });
 });

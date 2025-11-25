@@ -449,13 +449,20 @@ export function setupEventHandlers() {
         parseResult.type === "replace"
           ? "replace existing file"
           : "add new file to dataset";
-      feedbackDiv.html(
-        `<span style="color: #5cb85c;"><span class="glyphicon glyphicon-ok"></span> Valid URL - will ${actionText}</span>`
-      );
+      // Build safe DOM nodes instead of injecting an interpolated HTML string
+      feedbackDiv.empty();
+      const okSpan = $("<span>")
+        .css("color", "#5cb85c")
+        .append($("<span>").addClass("glyphicon glyphicon-ok"));
+      okSpan.append(document.createTextNode(" Valid URL - will " + actionText));
+      feedbackDiv.append(okSpan);
     } else {
-      feedbackDiv.html(
-        `<span style="color: #d9534f;"><span class="glyphicon glyphicon-remove"></span> ${parseResult.error}</span>`
-      );
+      // Error message is user/server-derived; ensure we add it as text to avoid HTML injection
+      feedbackDiv.empty();
+      const errSpan = $("<span>").css("color", "#d9534f");
+      errSpan.append($("<span>").addClass("glyphicon glyphicon-remove"));
+      errSpan.append(document.createTextNode(" " + String(parseResult.error)));
+      feedbackDiv.append(errSpan);
     }
 
     updateSaveButtonState();

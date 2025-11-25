@@ -322,11 +322,11 @@ export async function validateData() {
         "Please use Core SHACL-compatible shapes (e.g., 'DDI-CDI 1.0 (Official)' or 'CDIF Discovery Core').";
     }
 
-    $("#validation-status").html(
-      '<span class="validation-badge invalid">Validation Error: ' +
-        errorMsg +
-        "</span>"
+    // Use safe DOM/text insertion for validation error messages
+    const statusSpan = $("<span>").addClass("validation-badge invalid").text(
+      "Validation Error: " + String(errorMsg)
     );
+    $("#validation-status").empty().append(statusSpan);
     $("#validation-details").empty();
   } finally {
     // Always release the lock
