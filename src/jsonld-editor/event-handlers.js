@@ -24,7 +24,7 @@ import {
   getChangedElementsCount,
   getIsEmbeddedMode,
 } from "./state.js";
-import { normalizeToGraphFormat } from "./cdi-json-ld-helpers.js";
+import { normalizeToGraphFormat, migrateContextFormat } from "./cdi-json-ld-helpers.js";
 import { loadShapes } from "./cdi-shacl-loader.js";
 import { renderData } from "./render.js";
 import { validateDataImmediate, setValidationStatus } from "./validation.js";
@@ -72,7 +72,11 @@ export function setupEventHandlers() {
         const normalizedData = await normalizeToGraphFormat(parsedData);
         setJsonData(normalizedData);
 
-        const jsonData = getJsonData();
+        // Migrate @context if needed (fix old @vocab issue)
+        let jsonData = migrateContextFormat(getJsonData());
+        setJsonData(jsonData);
+
+        jsonData = getJsonData();
         if (!jsonData["@graph"]) {
           throw new Error("Failed to normalize JSON-LD structure.");
         }
@@ -272,7 +276,11 @@ export function setupEventHandlers() {
         const normalizedData = await normalizeToGraphFormat(parsedData);
         setJsonData(normalizedData);
 
-        const jsonData = getJsonData();
+        // Migrate @context if needed (fix old @vocab issue)
+        let jsonData = migrateContextFormat(getJsonData());
+        setJsonData(jsonData);
+
+        jsonData = getJsonData();
         if (!jsonData["@graph"]) {
           throw new Error("Failed to normalize JSON-LD structure.");
         }

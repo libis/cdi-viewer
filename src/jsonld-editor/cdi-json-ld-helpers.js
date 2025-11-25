@@ -262,3 +262,55 @@ export async function normalizeToGraphFormat(data) {
     );
   }
 }
+
+/**
+ * Migrate @context from incorrect @vocab format to proper array format.
+ * 
+ * Old format: { "@vocab": "https://.../ddi-cdi.jsonld", "schema": "..." }
+ * New format: ["https://.../ddi-cdi.jsonld", { "schema": "..." }]
+ * 
+ * The @vocab keyword sets a default vocabulary namespace but does NOT load
+ * the context document. To properly load term definitions, the URL must be
+ * in the context array or used directly as a string.
+ * 
+ * @param {Object} jsonData - The JSON-LD document to migrate
+ * @returns {Object} - The migrated JSON-LD document
+ */
+export function migrateContextFormat(jsonData) {
+  if (!jsonData || !jsonData["@context"]) {
+    return jsonData;
+  }
+  
+  // Only process object contexts (not arrays or strings)
+  if (typeof jsonData["@context"] === "object" && !Array.isArray(jsonData["@context"])) {
+    const context = jsonData["@context"];
+    
+    if (context["@vocab"] && typeof context["@vocab"] === "string") {
+      const vocabValue = context["@vocab"];
+      
+      // Check if @vocab is actually a context URL (not just a vocabulary namespace)
+      if (vocabValue.includes(".jsonld") || vocabValue.includes("json-ld")) {
+        console.log("⚠️  Migrating @context from incorrect @vocab format to proper array format");
+        
+        const contextUrl = vocabValue;
+        const otherMappings = {};
+        
+        // Copy all other mappings (except @vocab)
+        Object.entries(context).forEach(([key, value]) => {
+          if (key !== "@vocab") {
+            otherMappings[key] = value;
+          }
+        });
+        
+        // Create array format: [contextUrl, {other mappings}]
+        if (Object.keys(otherMappings).length > 0) {
+          jsonData["@context"] = [contextUrl, otherMappings];
+        } else {
+          jsonData["@context"] = contextUrl;
+        }
+      }
+    }
+  }
+  
+  return jsonData;
+}

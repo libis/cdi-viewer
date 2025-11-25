@@ -75,9 +75,10 @@ export function addNamespace(prefix, uri) {
 
   let context = jsonData["@context"];
 
-  // If context is a string URL, convert to object
+  // If context is a string URL, convert to array with URL + object for new prefix
   if (typeof context === "string") {
-    context = jsonData["@context"] = { "@vocab": context };
+    const contextUrl = context;
+    context = jsonData["@context"] = [contextUrl, {}];
   }
 
   // If context is an array, add to the first object or create one

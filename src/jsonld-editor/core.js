@@ -19,7 +19,7 @@ import {
   getSiteUrl,
   getJsonData,
 } from "./state.js";
-import { normalizeToGraphFormat } from "./cdi-json-ld-helpers.js";
+import { normalizeToGraphFormat, migrateContextFormat } from "./cdi-json-ld-helpers.js";
 import { loadShapes } from "./cdi-shacl-loader.js";
 import { renderData } from "./render.js";
 import { setupEventHandlers } from "./event-handlers.js";
@@ -191,8 +191,12 @@ $(document).ready(async function () {
       );
     }
 
+    // Migrate @context if needed (fix old @vocab issue)
+    let jsonData = migrateContextFormat(getJsonData());
+    setJsonData(jsonData);
+
     // Verify we now have @graph (should always be true after normalization)
-    const jsonData = getJsonData();
+    jsonData = getJsonData();
     if (!jsonData["@graph"]) {
       throw new Error(
         "Internal error: Normalization did not produce @graph structure."
