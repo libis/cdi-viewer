@@ -925,9 +925,9 @@ export function highlightText(element, searchTerm, options = {}) {
     .find("input.search-highlight, textarea.search-highlight")
     .removeClass("search-highlight");
 
-  // Highlight matching text in regular elements
+  // Highlight matching text in regular elements (including badges)
   element
-    .find(".property-label, .property-path, .value-display, .node-id")
+    .find(".property-label, .property-path, .value-display, .node-id, .property-badge")
     .each(function () {
       const $this = $(this);
       const text = $this.text();
@@ -1003,7 +1003,7 @@ export function highlightText(element, searchTerm, options = {}) {
       }
     });
 
-  // Handle input/textarea elements (can't highlight their internal text, so add class to the element)
+  // Handle input/textarea elements with lighter background highlighting
   element.find("input, textarea").each(function () {
     const $this = $(this);
     const value = $this.val();
@@ -1024,6 +1024,7 @@ export function highlightText(element, searchTerm, options = {}) {
     }
 
     if (matches) {
+      // Use lighter yellow background for input fields
       $this.addClass("search-highlight");
     }
   });

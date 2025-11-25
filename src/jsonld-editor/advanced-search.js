@@ -18,6 +18,7 @@ let currentMatchIndex = -1;
 let caseSensitive = false;
 let useRegex = false;
 let lastSearchTerm = "";
+let searchRefreshTimeout = null;
 
 /**
  * Check if text matches search term with current settings
@@ -86,6 +87,9 @@ export function performSearch() {
   const searchInTypes = $(".search-scope-checkbox[value='types']").is(
     ":checked"
   );
+  const searchInBadges = $(".search-scope-checkbox[value='badges']").is(
+    ":checked"
+  );
 
   // Create search predicate function
   const predicate = (card) => {
@@ -101,6 +105,22 @@ export function performSearch() {
     if (searchInTypes) {
       const nodeType = card.find("> .node-header .node-type").text();
       if (matchesSearch(nodeType, searchTerm)) {
+        return true;
+      }
+    }
+
+    // Check property badges (required, optional, extra)
+    if (searchInBadges) {
+      const badges = card.find(".node-body .property-row .property-badge");
+      let badgeMatch = false;
+      badges.each(function () {
+        const badgeText = $(this).text();
+        if (matchesSearch(badgeText, searchTerm)) {
+          badgeMatch = true;
+          return false; // Break loop
+        }
+      });
+      if (badgeMatch) {
         return true;
       }
     }
@@ -242,7 +262,8 @@ export function navigateToMatch(direction) {
   parentCard.removeClass("collapsed");
 
   // Scroll to the highlight
-  highlight[0].scrollIntoView({ behavior: "smooth", block: "center" });
+  // CSS scroll-margin-top will automatically account for the sticky toolbar
+  highlight[0].scrollIntoView({ behavior: "smooth", block: "start" });
 
   // Update counter
   updateSearchCounter();
@@ -284,6 +305,26 @@ export function toggleRegex() {
   if ($("#search-input").val()) {
     performSearch();
   }
+}
+
+/**
+ * Refresh search after content changes (debounced)
+ */
+export function refreshSearchAfterEdit() {
+  // Only refresh if there's an active search
+  if (lastSearchTerm === "") {
+    return;
+  }
+
+  // Debounce to avoid excessive searches while typing
+  if (searchRefreshTimeout) {
+    clearTimeout(searchRefreshTimeout);
+  }
+
+  searchRefreshTimeout = setTimeout(() => {
+    performSearch();
+    searchRefreshTimeout = null;
+  }, 300); // Wait 300ms after last change
 }
 
 /**
@@ -357,4 +398,10 @@ export function setupAdvancedSearchHandlers() {
       '<span id="search-error" class="search-error" style="display: none;"></span>'
     );
   }
+
+  // Auto-refresh search when content changes (in edit mode)
+  // Use event delegation to handle dynamically added inputs
+  $(document).on("input change", ".property-row input, .property-row textarea", function() {
+    refreshSearchAfterEdit();
+  });
 }

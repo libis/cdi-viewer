@@ -119,7 +119,9 @@ export async function validateData() {
       $("#validation-status").html(
         '<span class="label label-warning">No SHACL shapes loaded - cannot validate</span>'
       );
-      $("#validation-details").empty();
+      const $validationDetails = $("#validation-details");
+      $validationDetails.empty();
+      $validationDetails.css("margin-top", "0"); // Remove margin when empty
       return;
     }
 
@@ -202,7 +204,9 @@ export async function validateData() {
           '<span class="glyphicon glyphicon-ok-circle"></span> Valid' +
           "</span>"
       );
-      $("#validation-details").empty();
+      const $validationDetails = $("#validation-details");
+      $validationDetails.empty();
+      $validationDetails.css("margin-top", "0");
     } else {
       $("#validation-status").html(
         '<span class="validation-badge invalid">' +
@@ -255,7 +259,9 @@ export async function validateData() {
         $list.append($listItem);
       });
 
-      $("#validation-details").html($violationsContainer);
+      const $validationDetails = $("#validation-details");
+      $validationDetails.html($violationsContainer);
+      $validationDetails.css("margin-top", "15px"); // Add margin when content is present
 
       // Add toggle handler
       $("#toggle-violations-btn").click(function () {

@@ -25,7 +25,7 @@
         flex-wrap: wrap;
         justify-content: space-between;
         align-items: flex-start;
-        gap: 20px;
+        gap: 0px;
       "
     >
       <!-- Fragment wrapper to group toolbar sections -->
@@ -244,6 +244,15 @@
                 />
                 Types
               </label>
+              <label style="font-size: 12px; margin: 0; white-space: nowrap">
+                <input
+                  type="checkbox"
+                  class="search-scope-checkbox"
+                  value="badges"
+                  checked
+                />
+                Badges
+              </label>
             </div>
           </div>
         </div>
@@ -251,7 +260,7 @@
       <!-- Validation Details Panel (at bottom of toolbar) -->
       <div
         id="validation-details"
-        style="margin-top: 15px; max-height: 150px; overflow-y: auto; flex-basis: 100%; width: 100%"
+        style="max-height: 150px; overflow-y: auto; flex-basis: 100%; width: 100%"
       ></div>
     </div>
 

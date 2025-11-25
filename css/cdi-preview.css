@@ -81,6 +81,17 @@ body {
 .search-highlight {
     background-color: yellow;
     font-weight: bold;
+    /* Add scroll margin to account for sticky toolbar height
+       Toolbar is ~190px base + validation panel when expanded (~150px)
+       Using 300px to ensure content appears below toolbar with some buffer */
+    scroll-margin-top: 300px;
+}
+
+/* Lighter background for input/textarea fields */
+input.search-highlight,
+textarea.search-highlight {
+    background-color: #ffffe0 !important;
+    font-weight: normal;
 }
 
 .node-id {
