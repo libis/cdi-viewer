@@ -50,13 +50,27 @@ function clearStatusTimeout() {
 /**
  * Sets a status message with optional auto-clear
  */
-export function setValidationStatus(html, autoClearMs = 0) {
+export function setValidationStatus(content, autoClearMs = 0) {
   clearStatusTimeout();
-  $("#validation-status").html(html);
+  const $el = $("#validation-status");
+  // Clear and append content safely. Accepts jQuery, DOM node, or HTML string.
+  $el.empty();
+  if (content === null || content === undefined || content === "") {
+    // nothing to append
+  } else if (content && content.jquery) {
+    $el.append(content);
+  } else if (content && typeof content === "object" && content.nodeType) {
+    $el.append(content);
+  } else if (typeof content === "string") {
+    // Append HTML string (should come from trusted internal sources)
+    $el.append($(content));
+  } else {
+    $el.text(String(content));
+  }
 
   if (autoClearMs > 0) {
-    statusClearTimeout = setTimeout(() => {
-      $("#validation-status").html("");
+      statusClearTimeout = setTimeout(() => {
+      $("#validation-status").empty();
       statusClearTimeout = null;
     }, autoClearMs);
   }

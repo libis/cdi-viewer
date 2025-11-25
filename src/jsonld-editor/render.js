@@ -1001,16 +1001,18 @@ export function highlightText(element, searchTerm, options = {}) {
 
           // Use a new regex for each match to reset lastIndex
           const searchRegex = new RegExp(searchTerm, flags);
+          // Build a safe DocumentFragment from text nodes and spans
+          const frag = document.createDocumentFragment();
           while ((match = searchRegex.exec(text)) !== null) {
-            // Add text before match
-            html += document.createTextNode(
-              text.substring(lastIndex, match.index)
-            ).textContent;
-            // Add highlighted match
-            html +=
-              '<span class="search-highlight">' +
-              document.createTextNode(match[0]).textContent +
-              "</span>";
+            // Add text before match as text node
+            if (match.index > lastIndex) {
+              frag.appendChild(document.createTextNode(text.substring(lastIndex, match.index)));
+            }
+            // Add highlighted match as a span node
+            const span = document.createElement("span");
+            span.className = "search-highlight";
+            span.appendChild(document.createTextNode(match[0]));
+            frag.appendChild(span);
             lastIndex = match.index + match[0].length;
             // Prevent infinite loop on zero-length matches
             if (match.index === searchRegex.lastIndex) {
@@ -1018,19 +1020,14 @@ export function highlightText(element, searchTerm, options = {}) {
             }
           }
           // Add remaining text
-          html += document.createTextNode(
-            text.substring(lastIndex)
-          ).textContent;
+          if (lastIndex < text.length) {
+            frag.appendChild(document.createTextNode(text.substring(lastIndex)));
+          }
 
           if (lastIndex > 0) {
-            // html was assembled from textContent values, so it contains escaped data
-            // Parse it into nodes then append (avoid inserting external strings directly)
+            // Append the built fragment (composed of safe text nodes and spans)
             $this.empty();
-            const tmp = document.createElement("div");
-            tmp.innerHTML = html;
-            while (tmp.firstChild) {
-              $this.append(tmp.firstChild);
-            }
+            $this.append(frag);
           }
         } catch (e) {
           // Invalid regex - skip highlighting
@@ -1044,35 +1041,30 @@ export function highlightText(element, searchTerm, options = {}) {
         let index = compareText.indexOf(compareTerm);
 
         if (index >= 0) {
-          let html = "";
+          const frag = document.createDocumentFragment();
           let lastIndex = 0;
 
-          // Find all occurrences
+          // Find all occurrences and build nodes for each segment
           while (index >= 0) {
-            html += document.createTextNode(
-              text.substring(lastIndex, index)
-            ).textContent;
-            html +=
-              '<span class="search-highlight">' +
-              document.createTextNode(
-                text.substring(index, index + compareTerm.length)
-              ).textContent +
-              "</span>";
+            if (index > lastIndex) {
+              frag.appendChild(document.createTextNode(text.substring(lastIndex, index)));
+            }
+            const span = document.createElement("span");
+            span.className = "search-highlight";
+            span.appendChild(document.createTextNode(text.substring(index, index + compareTerm.length)));
+            frag.appendChild(span);
             lastIndex = index + compareTerm.length;
             index = compareText.indexOf(compareTerm, lastIndex);
           }
-          html += document.createTextNode(
-            text.substring(lastIndex)
-          ).textContent;
 
-          // Replace raw html string with safe DOM nodes built from textContent
-          $this.empty();
-          const tempSimple = document.createElement("div");
-          // html is composed using textContent above so it's safe to parse here
-          tempSimple.innerHTML = html;
-          while (tempSimple.firstChild) {
-            $this.append(tempSimple.firstChild);
+          // Append remaining text
+          if (lastIndex < text.length) {
+            frag.appendChild(document.createTextNode(text.substring(lastIndex)));
           }
+
+          // Replace content with composed fragment
+          $this.empty();
+          $this.append(frag);
         }
       }
     });

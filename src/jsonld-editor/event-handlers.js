@@ -589,7 +589,7 @@ export function setupEventHandlers() {
           await validateDataImmediate();
         } else {
           // No data loaded yet, just show shapes loaded message
-          setValidationStatus(labelSpan("Shapes loaded", "success")[0].outerHTML, 0);
+          setValidationStatus(labelSpan("Shapes loaded", "success"), 0);
         }
       } catch (error) {
         logError("Error loading custom shape:", error);
@@ -629,7 +629,7 @@ export function setupEventHandlers() {
           await validateDataImmediate();
         } else {
           // No data loaded yet, just show shapes loaded message
-          setValidationStatus(labelSpan("Shapes loaded", "success")[0].outerHTML, 0);
+          setValidationStatus(labelSpan("Shapes loaded", "success"), 0);
         }
       } catch (error) {
         logError("Error loading custom shape:", error);
