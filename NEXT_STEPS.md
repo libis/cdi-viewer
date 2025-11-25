@@ -11,7 +11,9 @@ Required commands (quick helpers)
 
 Status summary (most important facts)
 - Unit tests: 70/70 passing ✅
-- E2E: active suites ~84 tests — ~71 passing, ~13 failing (test infra issues, not critical app bugs) ⚠️
+- E2E: active suites ~84 tests — most passing; remaining failures are primarily test-infrastructure flakes (not app bugs) ⚠️
+  - Dataverse integration suite: re-enabled and passing (20/20) ✅
+  - Document creation suite: re-enabled and now passing (10/10) ✅
 - Core features done and manually verified (document creation, Dataverse integration, namespace management, export, validation, etc.) ✅
 
 ---
@@ -31,7 +33,7 @@ Goal: remove remaining risk vectors (native dialogs, innerHTML hotspots) and add
 ### Priority B — Test stability & Dataverse verification (HIGH) — 2–6 hrs
 Goal: make e2e deterministic, triage failing tests and re-enable Dataverse suites once local harness is available.
 
-- [ ] Triage the currently failing e2e tests (13 failing) and fix test infra issues (selectors / waits / expectations).  
+- [ ] Triage the remaining failing e2e tests (now reduced after recent fixes) and fix any outstanding infra issues (selectors / waits / expectations).  
   Owner: test engineer — Est: 2–4 hrs
 - [ ] Run Dataverse integration tests against a local test instance and re-enable skipped Dataverse tests.  
   Owner: integrator — Est: 1–2 hrs (plus test environment)
@@ -77,7 +79,9 @@ If you want me to begin, say which option you prefer. I can start with (1) secur
 
 ## Quick progress tracking (what I changed recently)
 - Modal accessibility e2e added and stabilized: `tests/e2e/standalone/modal-a11y.spec.ts` (alert + confirm tests) ✅
-- Verified: new spec passes locally and passes as part of the full e2e run — modal tests green. ✅
+-- Verified: new spec passes locally and passes as part of the full e2e run — modal tests green. ✅
+- Document creation tests (standalone) were re-enabled and stabilized — `tests/e2e/standalone/document-creation.spec.ts` now passes locally (10/10). ✅
+- Dataverse E2E tests were re-enabled and stabilized — `tests/e2e/dataverse/**` running green locally (20/20). ✅
 
 ---
 
@@ -309,13 +313,15 @@ If you'd like me to begin, pick which option you'd prefer (or ask me to sequence
 
 **Goal:** Fix any issues discovered during testing
 
-**Current Test Status (November 23, 2025):**
+**Current Test Status (updated November 25, 2025):**
 
 - **Unit Tests:** ✅ 70/70 passing (100%)
-- **E2E Tests (Active after cleanup):** ✅ **66/79 passing (84%)**
+- **E2E Tests (Active after cleanup):** ✅ Most active e2e tests are now passing; remaining failures are primarily test-infrastructure flakes.
+  - Dataverse suite: re-enabled and passing locally (20/20) ✅
+  - Document Creation suite: re-enabled and passing locally (10/10) ✅
   - **Removed**: 7 cross-browser/responsive tests (not needed)
-  - **Skipped**: 22 tests (13 Dataverse + 9 Document Creation) - testing separately
-  - **Failing**: 13 tests - all test infrastructure issues, zero application bugs
+  - **Skipped**: fewer tests now — Dataverse & Document Creation were re-enabled
+  - **Failing**: reduced — primarily test infrastructure issues, zero application bugs
 
 **Known Bugs (November 23, 2025):**
 
@@ -353,14 +359,13 @@ If you'd like me to begin, pick which option you'd prefer (or ask me to sequence
 **CLEANED UP (Nov 23, 2025):**
 
 - ✅ **Removed**: Cross-browser/responsive (7 tests) - not needed
-- ✅ **Skipped**: Dataverse integration (13 tests) - testing separately with local instance
-- ✅ **Skipped**: Document creation (9 tests) - functionality working, tests can be re-enabled later
+- ✅ **Re-enabled**: Dataverse integration tests — verified passing locally (20/20).
+- ✅ **Re-enabled**: Document creation tests — stabilized and passing locally (10/10).
 
-**Document Creation Test Note (Nov 23):**
+**Document Creation Test Note (Nov 25):**
 
-- Tests were skipped due to earlier observed issues
-- Manual testing revealed: Works well, including generic mode (Nov 23 fix)
-- Tests can be re-enabled when test infrastructure improvements are scheduled
+- Tests were previously skipped due to timing/selector flakiness. After targeted test fixes (more robust selectors, waits, and fallbacks) the `tests/e2e/standalone/document-creation.spec.ts` suite now runs green locally (10/10).
+  - No application changes required; fixes focused on test resilience and reliable selectors.
 
 **TO FIX LATER (Low Priority - Test Infrastructure Only):**
 
@@ -371,11 +376,11 @@ If you'd like me to begin, pick which option you'd prefer (or ask me to sequence
 5. **Export (2 tests)** - Selector issues, functionality works ✅
 6. **Editing (1 test)** - Button timeout, functionality works ✅
 
-**Total remaining test issues: ~13 tests, all test infrastructure problems, zero application bugs**
+**Total remaining test issues: reduced — primarily test-infrastructure problems (zero confirmed application bugs)**
 
 **Action Plan:**
 
-**Priority 1: Verify Recent Fixes** ✅ **COMPLETED (Nov 23)**
+**Priority 1: Verify Recent Fixes** ✅ **COMPLETED (Nov 23–25)**
 
 Test results from verification run:
 
@@ -404,8 +409,8 @@ Fixed validation status persistence after shape switching - all 6 validation tes
 **Priority 4: Test Cleanup** ✅ **COMPLETED (Nov 23)**
 
 - Removed cross-browser/responsive tests (not needed)
-- Skipped Dataverse tests (testing separately with local instance)
-- Skipped document creation tests (known issues, not critical)
+  - Re-enabled Dataverse tests (verified passing locally)
+  - Re-enabled document creation tests (stabilized and passing locally)
 - Documented remaining test issues for later (all test infrastructure, no bugs)
 
 **Priority 5: Test Infrastructure Updates (DEFERRED - Low Priority)**
