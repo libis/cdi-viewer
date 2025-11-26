@@ -228,6 +228,92 @@ test.describe('File Loading - Critical Path', () => {
     await expect(clockText.first()).toBeVisible({ timeout: 5000 });
   });
 
+  test('should convert nested schema:identifier to array, add value and export it', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForSelector('#load-local-btn', { timeout: 10000 });
+
+    const testFilePath = path.join(__dirname, '../../../examples/cdi/FeXAS_Fe_c3d.001-NEXUS-HDF5-cdi-CDIF.jsonld');
+    await page.click('#load-local-btn');
+    await page.setInputFiles('#local-file-input', testFilePath);
+
+    // Wait for file to be processed
+    await expect(page.locator('.alert-success')).toBeVisible({ timeout: 10000 });
+
+    // Enter edit mode and ensure edit mode is active
+    await page.click('#toggle-edit-btn');
+    await page.waitForSelector('#toggle-edit-btn:has-text("View Mode")', { timeout: 2000 });
+
+    // Locate the nested property row for the Organization with @id https://ror.org/aps
+    const propSelector = '[data-testid="property-schema_identifier"][data-node-id="https://ror.org/aps"]';
+    const propRow = page.locator(propSelector).first();
+    await expect(propRow).toBeVisible({ timeout: 5000 });
+
+    // Convert to array (no confirmation required for this action)
+    const convertBtn = propRow.locator('button[data-testid="convert-to-array-btn-schema_identifier"]');
+    await expect(convertBtn).toBeVisible({ timeout: 3000 });
+    await convertBtn.click();
+
+    // Wait for the in-memory conversion + re-render
+    await page.waitForTimeout(300);
+
+    // Add new array value and fill it with 'test'
+    const addBtn = propRow.locator('button[data-testid="add-value-btn-schema_identifier"]');
+    await expect(addBtn).toBeVisible({ timeout: 5000 });
+    await addBtn.click();
+
+    // Fill the newly created input/textarea (take last input within the row)
+    // Re-query inputs under the property row (re-render may have replaced nodes)
+    const lastInput = propRow.locator('.array-value').locator('input, textarea').last();
+    await expect(lastInput).toBeVisible({ timeout: 3000 });
+    await lastInput.fill('test');
+
+    // Export and capture download
+    const downloadPromise = page.waitForEvent('download');
+    await page.click('#export-btn');
+    const download = await downloadPromise;
+
+    // Save to temp and inspect output
+    const tempDir = path.join(__dirname, '../../temp');
+    fs.mkdirSync(tempDir, { recursive: true });
+    const savePath = path.join(tempDir, download.suggestedFilename());
+    await download.saveAs(savePath);
+
+    const fileContent = fs.readFileSync(savePath, 'utf-8');
+    let jsonData;
+    expect(() => { jsonData = JSON.parse(fileContent); }).not.toThrow();
+
+    // Find the object with @id === "https://ror.org/aps" anywhere in the export
+    function findObjectById(obj: any, id: string): any {
+      if (!obj || typeof obj !== 'object') return null;
+      if (Array.isArray(obj)) {
+        for (const el of obj) {
+          const found: any = findObjectById(el, id);
+          if (found) return found;
+        }
+        return null;
+      }
+      if (obj['@id'] === id) return obj;
+      for (const k of Object.keys(obj)) {
+        const found: any = findObjectById(obj[k], id);
+        if (found) return found;
+      }
+      return null;
+    }
+
+    const found = findObjectById(jsonData, 'https://ror.org/aps');
+    expect(found).toBeTruthy();
+
+    // The identifier must now be an array containing both values
+    const idVal = found['schema:identifier'];
+    expect(Array.isArray(idVal)).toBe(true);
+    // Expect exact order: original identifier first, new value appended
+    expect(idVal).toEqual(['https://ror.org/aps', 'test']);
+
+    // Cleanup
+    if (fs.existsSync(savePath)) fs.unlinkSync(savePath);
+  });
+
   test('should load file without @context', async ({ page }) => {
     // ============= SETUP =============
     await page.goto('/');

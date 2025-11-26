@@ -24,6 +24,7 @@ import {
   getAllNodesForReference,
   addReferenceToProperty,
   createAndReferenceNewNode,
+  createNewNode,
   deleteNode,
 } from "./cdi-graph-helpers.js";
 import { showAlert, showConfirm } from "./modal-dialogs.js";
@@ -148,6 +149,118 @@ export function isNodeReference(str) {
   if (str.startsWith("#") || str.startsWith("_:")) {
     // Verify this ID actually exists in the graph
     return nodeExists(str);
+  }
+  return false;
+}
+
+// --- Nested property helpers ------------------------------------------------
+// These helpers modify properties that live inside inline objects (which
+// themselves may be single objects or elements of arrays). They operate on
+// the parent node's in-memory data structure and mark the parent property
+// changed so it will be saved.
+function convertNestedPropertyToArray(parentNodeId, parentPropertyKey, parentArrayIndex, nestedKey) {
+  const parentNode = getNodeById(parentNodeId);
+  if (!parentNode) { return false; }
+
+  const parentVal = parentNode[parentPropertyKey];
+
+  if (Array.isArray(parentVal)) {
+    const index = parentArrayIndex !== null ? parseInt(parentArrayIndex, 10) : NaN;
+    if (isNaN(index) || index < 0 || index >= parentVal.length) { return false; }
+    const nestedObj = parentVal[index];
+    if (nestedObj && typeof nestedObj === "object") {
+      const current = nestedObj[nestedKey];
+      if (!Array.isArray(current)) {
+        nestedObj[nestedKey] = current ? [current] : [];
+        addChangedElement(`${parentNodeId}.${parentPropertyKey}`);
+      }
+      return true;
+    }
+    return false;
+  } else if (parentVal && typeof parentVal === "object") {
+    const nestedObj = parentVal;
+    const current = nestedObj[nestedKey];
+    if (!Array.isArray(current)) {
+      nestedObj[nestedKey] = current ? [current] : [];
+      addChangedElement(`${parentNodeId}.${parentPropertyKey}`);
+    }
+    return true;
+  }
+  return false;
+}
+
+function convertNestedPropertyToSingle(parentNodeId, parentPropertyKey, parentArrayIndex, nestedKey) {
+  const parentNode = getNodeById(parentNodeId);
+  if (!parentNode) { return false; }
+
+  const parentVal = parentNode[parentPropertyKey];
+
+  if (Array.isArray(parentVal)) {
+    const index = parentArrayIndex !== null ? parseInt(parentArrayIndex, 10) : NaN;
+    if (isNaN(index) || index < 0 || index >= parentVal.length) { return false; }
+    const nestedObj = parentVal[index];
+    if (nestedObj && typeof nestedObj === "object") {
+      const current = nestedObj[nestedKey];
+      if (Array.isArray(current)) {
+        nestedObj[nestedKey] = current.length > 0 ? current[0] : "";
+        addChangedElement(`${parentNodeId}.${parentPropertyKey}`);
+      }
+      return true;
+    }
+    return false;
+  } else if (parentVal && typeof parentVal === "object") {
+    const nestedObj = parentVal;
+    const current = nestedObj[nestedKey];
+    if (Array.isArray(current)) {
+      nestedObj[nestedKey] = current.length > 0 ? current[0] : "";
+      addChangedElement(`${parentNodeId}.${parentPropertyKey}`);
+    }
+    return true;
+  }
+  return false;
+}
+
+function addReferenceToNestedProperty(parentNodeId, parentPropertyKey, parentArrayIndex, targetPropertyKey, referenceId, forArray = false, replaceMode = false) {
+  const parentNode = getNodeById(parentNodeId);
+  if (!parentNode) { return false; }
+
+  const parentVal = parentNode[parentPropertyKey];
+  const reference = { "@id": referenceId };
+
+  const applyToNested = (nestedObj) => {
+    if (!nestedObj || typeof nestedObj !== "object") return false;
+    const current = nestedObj[targetPropertyKey];
+    if (replaceMode) {
+      nestedObj[targetPropertyKey] = reference;
+    } else if (forArray || Array.isArray(current)) {
+      if (Array.isArray(current)) {
+        current.push(reference);
+      } else if (current) {
+        nestedObj[targetPropertyKey] = [current, reference];
+      } else {
+        nestedObj[targetPropertyKey] = [reference];
+      }
+    } else {
+      nestedObj[targetPropertyKey] = reference;
+    }
+    return true;
+  };
+
+  if (Array.isArray(parentVal)) {
+    const index = parentArrayIndex !== null ? parseInt(parentArrayIndex, 10) : NaN;
+    if (isNaN(index) || index < 0 || index >= parentVal.length) { return false; }
+    const nestedObj = parentVal[index];
+    if (applyToNested(nestedObj)) {
+      addChangedElement(`${parentNodeId}.${parentPropertyKey}`);
+      return true;
+    }
+    return false;
+  } else if (parentVal && typeof parentVal === "object") {
+    if (applyToNested(parentVal)) {
+      addChangedElement(`${parentNodeId}.${parentPropertyKey}`);
+      return true;
+    }
+    return false;
   }
   return false;
 }
@@ -299,7 +412,12 @@ export function renderPropertyTree(
   container.append(row);
 
   // Then check if this property references other nodes
-  const refs = extractNodeReferences(value);
+  // Defensive: ensure extractNodeReferences always yields an array so
+  // subsequent length checks and iteration won't throw if something
+  // unexpected is passed in at runtime.
+  const refs = Array.isArray(extractNodeReferences(value))
+    ? extractNodeReferences(value)
+    : [];
   if (refs.length > 0) {
     refs.forEach((refId) => {
       const refNode = getNodeById(refId);
@@ -361,7 +479,7 @@ export function renderPropertyTree(
           // Track parent-child relationship using the inline object's @id
           setParentRelationship(refId, nodeId);
 
-          const inlineCard = renderInlineObject(inlineObj, nodeId);
+          const inlineCard = renderInlineObject(inlineObj, nodeId, key, null);
           if (inlineCard) {
             // Append inline node view at same depth
             container.append(inlineCard);
@@ -378,7 +496,7 @@ export function renderPropertyTree(
 
 // Top-level helper: render a nested inline object as a small inline node card.
 // Accepts optional parent node id for context when rendering nested properties.
-function renderInlineObject(val, parentNodeId) {
+function renderInlineObject(val, parentNodeId, parentPropertyKey = null, parentArrayIndex = null) {
   if (!val || typeof val !== "object" || Array.isArray(val)) {
     return null;
   }
@@ -440,8 +558,19 @@ function renderInlineObject(val, parentNodeId) {
       k,
       val[k],
       nestedId || parentNodeId,
-      nestedTypes
+      nestedTypes,
+      parentPropertyKey,
+      parentArrayIndex
     );
+
+    // Keep a reference to the original parent node id (the node that 'owns' this
+    // inline object) so event handlers can correctly modify the parent's data
+    // structure when nested operations are requested. This is required because
+    // the per-property `nodeId` used for nested rows is often the inline
+    // object's @id (if present) and not the parent node id.
+    if (parentNodeId) {
+      nestedRow.attr('data-parent-node-id', parentNodeId);
+    }
     body.append(nestedRow);
   });
 
@@ -449,12 +578,21 @@ function renderInlineObject(val, parentNodeId) {
   return inlineCard;
 }
 
-function renderProperty(key, value, nodeId, nodeTypes) {
+function renderProperty(key, value, nodeId, nodeTypes, parentPropertyKey = null, parentArrayIndex = null) {
   const row = $("<div>")
     .addClass("property-row")
     .attr("data-property", key)
     .attr("data-node-id", nodeId)
     .attr("data-testid", createTestId("property", key));
+
+  // If this property is actually nested inside an inline object, store
+  // the parent context so action buttons can modify the right object.
+  if (parentPropertyKey) {
+    row.attr("data-parent-property", parentPropertyKey);
+  }
+  if (parentArrayIndex !== null && parentArrayIndex !== undefined) {
+    row.attr("data-parent-array-index", String(parentArrayIndex));
+  }
 
   // Check if this property has been changed (persistent tracking)
   const compositeId = `${nodeId}.${key}`;
@@ -522,7 +660,7 @@ function renderProperty(key, value, nodeId, nodeTypes) {
       const valDiv = $("<div>").addClass("array-value");
 
       // Try to render nested objects (like schema:Role) as inline node cards
-      const inlineCard = renderInlineObject(val, nodeId);
+      const inlineCard = renderInlineObject(val, nodeId, key, idx);
       if (inlineCard) {
         valDiv.append(inlineCard);
       } else {
@@ -594,7 +732,15 @@ function renderProperty(key, value, nodeId, nodeTypes) {
         .append(document.createTextNode(" Add Reference/Object"))
         .css({ "margin-left": "5px" })
         .click(function () {
-          showAddReferenceModal(nodeId, key, true);
+          // Pass nested context if this property row is itself nested
+          const nestedCtx = parentPropertyKey
+            ? {
+                parentPropertyKey,
+                parentArrayIndex: parentArrayIndex,
+                parentNodeId: row.attr('data-parent-node-id'),
+              }
+            : null;
+          showAddReferenceModal(nodeId, key, true, false, nestedCtx);
         });
       valueContainer.append(addRefBtn);
     }
@@ -616,7 +762,12 @@ function renderProperty(key, value, nodeId, nodeTypes) {
             )
           ) {
             collectChangesFromDOM();
-            convertPropertyToSingle(nodeId, key);
+            const effectiveParentId = row.attr('data-parent-node-id') || nodeId;
+            if (parentPropertyKey) {
+              convertNestedPropertyToSingle(effectiveParentId, parentPropertyKey, parentArrayIndex, key);
+            } else {
+              convertPropertyToSingle(nodeId, key);
+            }
             renderData();
           }
         });
@@ -624,7 +775,7 @@ function renderProperty(key, value, nodeId, nodeTypes) {
     }
   } else {
     // Single value
-    const inlineCard = renderInlineObject(value, nodeId);
+    const inlineCard = renderInlineObject(value, nodeId, key, null);
     if (inlineCard) {
       valueContainer.append(inlineCard);
     } else {
@@ -669,8 +820,20 @@ function renderProperty(key, value, nodeId, nodeTypes) {
         .append(document.createTextNode(" Convert to Array"))
         .css({ "margin-left": "5px" })
         .click(function () {
+          const row = $(this).closest('.property-row');
+          const parentKey = row.attr('data-parent-property');
+          const parentIndex = row.attr('data-parent-array-index');
+          const parentNodeAttr = row.attr('data-parent-node-id');
+
           collectChangesFromDOM();
-          convertPropertyToArray(nodeId, key);
+          if (parentKey) {
+            // Use the explicit parent node id if set on the row; otherwise
+            // fall back to the current nodeId from the closure (older behavior).
+            const effectiveParentId = parentNodeAttr || nodeId;
+            convertNestedPropertyToArray(effectiveParentId, parentKey, parentIndex, key);
+          } else {
+            convertPropertyToArray(nodeId, key);
+          }
           renderData();
         });
       actionsRow.append(convertToArrayBtn);
@@ -683,7 +846,14 @@ function renderProperty(key, value, nodeId, nodeTypes) {
         .append(document.createTextNode(" Add Reference/Object"))
         .css({ "margin-left": "5px" })
         .click(function () {
-          showAddReferenceModal(nodeId, key, false);
+          const row = $(this).closest('.property-row');
+          const parentKey = row.attr('data-parent-property');
+          const parentIndex = row.attr('data-parent-array-index');
+          const parentNode = row.attr('data-parent-node-id');
+          const nestedCtx = parentKey
+            ? { parentPropertyKey: parentKey, parentArrayIndex: parentIndex, parentNodeId: parentNode }
+            : null;
+          showAddReferenceModal(nodeId, key, false, false, nestedCtx);
         });
       actionsRow.append(addComplexBtn);
 
@@ -707,7 +877,8 @@ function showAddReferenceModal(
   nodeId,
   propertyKey,
   forArray,
-  replaceMode = false
+  replaceMode = false,
+  nestedContext = null
 ) {
   const availableNodes = getAllNodesForReference();
 
@@ -820,16 +991,28 @@ function showAddReferenceModal(
       const existingNodeId = $("#existingNodeSelect").val();
       const newNodeType = $("#newNodeType").val().trim();
 
-      if (existingNodeId) {
+        if (existingNodeId) {
         // Add reference to existing node
         collectChangesFromDOM();
-        addReferenceToProperty(
-          nodeId,
-          propertyKey,
-          existingNodeId,
-          forArray,
-          replaceMode
-        );
+        if (nestedContext && nestedContext.parentPropertyKey) {
+          addReferenceToNestedProperty(
+            nestedContext.parentNodeId || nodeId,
+            nestedContext.parentPropertyKey,
+            nestedContext.parentArrayIndex,
+            propertyKey,
+            existingNodeId,
+            forArray,
+            replaceMode
+          );
+        } else {
+          addReferenceToProperty(
+            nodeId,
+            propertyKey,
+            existingNodeId,
+            forArray,
+            replaceMode
+          );
+        }
         $("#addReferenceModal").modal("hide");
         renderData();
       } else if (
@@ -841,13 +1024,27 @@ function showAddReferenceModal(
         // Create new node
         const type = newNodeType || "Object";
         collectChangesFromDOM();
-        createAndReferenceNewNode(
-          nodeId,
-          propertyKey,
-          type,
-          forArray,
-          replaceMode
-        );
+        if (nestedContext && nestedContext.parentPropertyKey) {
+          // Create a new top-level node, then attach a reference into the nested object
+          const newId = createNewNode(type);
+          addReferenceToNestedProperty(
+            nestedContext.parentNodeId || nodeId,
+            nestedContext.parentPropertyKey,
+            nestedContext.parentArrayIndex,
+            propertyKey,
+            newId,
+            forArray,
+            replaceMode
+          );
+        } else {
+          createAndReferenceNewNode(
+            nodeId,
+            propertyKey,
+            type,
+            forArray,
+            replaceMode
+          );
+        }
         $("#addReferenceModal").modal("hide");
         renderData();
       } else {

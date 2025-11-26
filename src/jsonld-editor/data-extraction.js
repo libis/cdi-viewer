@@ -51,6 +51,125 @@ export function collectChangesFromDOM() {
         return $(this).attr("data-node-id") === nodeId;
       });
 
+    // Helper: collect value for a single property-row element. This handles
+    // arrays, reference containers, inline-node-cards (nested objects), and
+    // simple inputs. currentValue is the existing value in jsonData for this
+    // property (may be used to preserve references).
+    const collectValueFromPropertyRow = ($propertyRow, currentValue) => {
+      // Check if this is an array property by looking at the DOM structure
+      const $arrayValues = $propertyRow
+        .children(".property-value")
+        .children(".array-value");
+
+      if ($arrayValues.length > 0) {
+        const values = [];
+        $arrayValues.each(function (arrayIndex) {
+          const $arrayValue = $(this);
+
+          // Inline nested object (rendered as a small inline node card)
+          const $inlineCard = $arrayValue.children(".inline-node-card");
+          if ($inlineCard.length > 0) {
+            // Build an object from the nested property's rows
+            const inlineObj = {};
+
+            // Preserve @id if present in the inline header
+            const idText = $inlineCard.find('.node-id').first().text();
+            if (idText) {
+              inlineObj['@id'] = idText;
+            }
+
+            // Read nested property rows which live inside this inline card
+            $inlineCard.find('.node-body > .property-row').each(function () {
+              const $nestedRow = $(this);
+              const nestedKey = $nestedRow.attr('data-property');
+              if (!nestedKey) { return; }
+
+              // Recurse using current value if available
+              const nestedCurrent = Array.isArray(currentValue) && currentValue[arrayIndex] && typeof currentValue[arrayIndex] === 'object' ? currentValue[arrayIndex][nestedKey] : undefined;
+              inlineObj[nestedKey] = collectValueFromPropertyRow($nestedRow, nestedCurrent);
+            });
+
+            values.push(inlineObj);
+            return; // next arrayIndex
+          }
+
+          // Reference-style (jump link) - preserve via original value if present
+          const $refContainer = $arrayValue.children('.reference-container');
+          if ($refContainer.length > 0) {
+            if (Array.isArray(currentValue) && arrayIndex < currentValue.length) {
+              values.push(currentValue[arrayIndex]);
+            }
+            return;
+          }
+
+          // Simple scalar input
+          const $input = $arrayValue.find('input, textarea, select').first();
+          if ($input.length > 0) {
+            let val = $input.val();
+            try {
+              val = JSON.parse(val);
+            } catch (e) {
+              // keep as string
+            }
+            values.push(val);
+            return;
+          }
+
+          // If nothing matched, try to read inner text as a fallback
+          const txt = $arrayValue.text().trim();
+          values.push(txt);
+        });
+
+        return values;
+      }
+
+      // Single value - first check for inline-node-card (nested object)
+      const $inlineSingle = $propertyRow.children('.property-value').children('.inline-node-card').first();
+      if ($inlineSingle.length > 0) {
+        const inlineObj = {};
+        const idText = $inlineSingle.find('.node-id').first().text();
+        if (idText) { inlineObj['@id'] = idText; }
+
+        $inlineSingle.find('.node-body > .property-row').each(function () {
+          const $nestedRow = $(this);
+              const nestedKey = $nestedRow.attr('data-property');
+              if (!nestedKey) { return; }
+          const nestedCurrent = currentValue && typeof currentValue === 'object' ? currentValue[nestedKey] : undefined;
+          inlineObj[nestedKey] = collectValueFromPropertyRow($nestedRow, nestedCurrent);
+        });
+
+        return inlineObj;
+      }
+
+      // Reference container (single) - preserve current value
+      const $refContainer = $propertyRow
+        .children('.property-value')
+        .children('.reference-container')
+        .first();
+      if ($refContainer.length > 0) {
+        return currentValue; // preserve as-is
+      }
+
+      // Input field (single)
+      const $input = $propertyRow
+        .children('.property-value')
+        .children('input, textarea, select')
+        .first();
+
+      if ($input.length > 0) {
+        let val = $input.val();
+        try {
+          val = JSON.parse(val);
+        } catch (e) {
+          // keep as string
+        }
+        return val;
+      }
+
+      // Fallback - try to read textual content
+      return $propertyRow.children('.property-value').text().trim();
+    };
+
     $propertyRows.each(function () {
       const $propertyRow = $(this);
       const key = $propertyRow.attr("data-property");
@@ -59,89 +178,12 @@ export function collectChangesFromDOM() {
         return;
       }
 
-      // Check if this is an array property by looking at the DOM structure
-      const $arrayValues = $propertyRow
-        .children(".property-value")
-        .children(".array-value");
+      // Collect the property value (handles array/single/inline/reference)
+      const currentValue = node[key];
+      const newValue = collectValueFromPropertyRow($propertyRow, currentValue);
 
-      if ($arrayValues.length > 0) {
-        // This is an array - collect all values
-        const values = [];
-        const currentValue = node[key];
-
-        $arrayValues.each(function (arrayIndex) {
-          const $arrayValue = $(this);
-
-          // Check if this array value contains an inline node card (nested object)
-          const $inlineCard = $arrayValue.children(".inline-node-card");
-          if ($inlineCard.length > 0) {
-            // This is a reference/object - get from current node data using iteration index
-            if (
-              Array.isArray(currentValue) &&
-              arrayIndex < currentValue.length
-            ) {
-              values.push(currentValue[arrayIndex]);
-            }
-          } else {
-            // Check if this is a reference-container (both styles preserved)
-            const $refContainer = $arrayValue.children(".reference-container");
-            if ($refContainer.length > 0) {
-              // This is a reference - preserve from current data using iteration index
-              if (
-                Array.isArray(currentValue) &&
-                arrayIndex < currentValue.length
-              ) {
-                values.push(currentValue[arrayIndex]);
-              }
-            } else {
-              // This is a simple value - collect from input
-              const $input = $arrayValue
-                .find("input, textarea, select")
-                .first();
-              if ($input.length > 0) {
-                let val = $input.val();
-                try {
-                  val = JSON.parse(val);
-                } catch (e) {
-                  // Keep as string
-                }
-                values.push(val);
-              }
-            }
-          }
-        });
-
-        // Update the array in jsonData
-        node[key] = values;
-      } else {
-        // Single value - check if it's a reference first
-        const $refContainer = $propertyRow
-          .children(".property-value")
-          .children(".reference-container")
-          .first();
-
-        if ($refContainer.length > 0) {
-          // This is a reference - preserve the current value (don't overwrite style)
-          // The value is already correct in node[key]
-        } else {
-          // Look for input field
-          const $input = $propertyRow
-            .children(".property-value")
-            .children("input, textarea, select")
-            .first();
-
-          if ($input.length > 0) {
-            let val = $input.val();
-
-            try {
-              val = JSON.parse(val);
-            } catch (e) {
-              // Keep as string if not valid JSON
-            }
-            node[key] = val;
-          }
-        }
-      }
+      // Update node with collected value
+      node[key] = newValue;
     });
   });
 

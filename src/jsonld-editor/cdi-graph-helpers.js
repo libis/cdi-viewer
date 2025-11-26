@@ -452,3 +452,25 @@ export function createAndReferenceNewNode(
 
   return newNodeId;
 }
+
+/**
+ * Create a new blank node in the @graph and return its @id.
+ * This does not add any references to other nodes. Useful when higher-level
+ * logic needs to create a node then manipulate references separately.
+ */
+export function createNewNode(nodeType) {
+  const jsonData = getJsonData();
+
+  const newNodeId = `_:new_${Date.now()}`;
+  const newNode = { "@id": newNodeId, "@type": nodeType || "Object" };
+
+  if (!jsonData["@graph"]) {
+    jsonData["@graph"] = [];
+  }
+  jsonData["@graph"].push(newNode);
+
+  // Persist back to state
+  setJsonData(jsonData);
+
+  return newNodeId;
+}
