@@ -158,7 +158,6 @@ export async function validateData() {
         );
       const $validationDetails = $("#validation-details");
       $validationDetails.empty();
-      $validationDetails.css("margin-top", "0"); // Remove margin when empty
       return;
     }
 
@@ -240,7 +239,6 @@ export async function validateData() {
       $("#validation-status").empty().append($validBadge);
       const $validationDetails = $("#validation-details");
       $validationDetails.empty();
-      $validationDetails.css("margin-top", "0");
     } else {
       // Build validation status using safe DOM nodes (avoid string concatenation with variables)
       const $statusContainer = $("<span>");
@@ -310,7 +308,6 @@ export async function validateData() {
 
       const $validationDetails = $("#validation-details");
       $validationDetails.empty().append($violationsContainer);
-      $validationDetails.css("margin-top", "15px"); // Add margin when content is present
 
       // Add toggle handler
       $("#toggle-violations-btn").click(function () {

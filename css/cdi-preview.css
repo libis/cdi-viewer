@@ -264,7 +264,10 @@ textarea.search-highlight {
     position: sticky;
     top: 0;
     background: white;
-    padding: 15px;
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 15px;
+    padding-bottom: 5px;
     border-bottom: 2px solid #dee2e6;
     margin: -20px -20px 20px -20px;
     z-index: 1000;
