@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -195,6 +196,36 @@ test.describe('File Loading - Critical Path', () => {
     await expect(firstNode).toHaveClass(/collapsed/);
     await firstHeader.click();
     await expect(firstNode).not.toHaveClass(/collapsed/);
+  });
+
+  test('should load FeXAS example and render inline nested object properties', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForSelector('#load-local-btn', { timeout: 10000 });
+
+    const testFilePath = path.join(__dirname, '../../../examples/cdi/FeXAS_Fe_c3d.001-NEXUS-HDF5-cdi-CDIF.jsonld');
+    await page.click('#load-local-btn');
+    await page.setInputFiles('#local-file-input', testFilePath);
+
+    // Wait for file to load and be processed
+    await expect(page.locator('.alert-success')).toBeVisible({ timeout: 10000 });
+
+    // The example contains an embedded Organization with name 'APS' under schema:contributor
+    // Verify that the nested property 'APS' appears somewhere in the rendered tree
+    // Look for the string 'APS' anywhere inside the page (embedded organization name)
+    const apsText = page.locator('text=APS');
+    await expect(apsText.first()).toBeVisible({ timeout: 5000 });
+
+    // Also verify that deeply nested component names are shown (e.g. clock_mca4)
+    const clockText = page.locator('text=clock_mca4');
+    const count = await clockText.count();
+    if (count === 0) {
+      // Save page content for diagnosis
+      const html = await page.content();
+      fs.mkdirSync('tests/e2e/debug', { recursive: true });
+      fs.writeFileSync('tests/e2e/debug/fexas_dom.html', html, 'utf8');
+    }
+    await expect(clockText.first()).toBeVisible({ timeout: 5000 });
   });
 
   test('should load file without @context', async ({ page }) => {

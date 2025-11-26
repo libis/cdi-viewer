@@ -1,7 +1,4 @@
 // Author: Eryk Kulikowski @ KU Leuven (2025). Apache 2.0 License
-
-// === CDI Previewer: Tree Rendering & Node/Property Display ===
-
 import {
   getJsonData,
   getIsEditMode,
@@ -93,11 +90,9 @@ export function renderData() {
 
 // Helper: Check if a value is a pure reference (no properties other than @id, @type, @context)
 function isPureReference(value) {
-  // String reference like "#Sample_Key"
   if (typeof value === "string" && isNodeReference(value)) {
     return true;
   }
-  // Object reference like {"@id": "#Sample_Key"}
   if (value && typeof value === "object" && !Array.isArray(value)) {
     const keys = Object.keys(value);
     const nonMetadataKeys = keys.filter(
@@ -331,11 +326,127 @@ export function renderPropertyTree(
           container.append(childCard);
         }
         // else: Node already rendered elsewhere - the inline box already provides navigation
+      } else {
+        // The referenced ID wasn't found as a top-level node in the @graph.
+        // This can happen when an object is inlined (has an @id plus nested
+        // properties) inside the parent and isn't a separate graph node. In
+        // that case we should find the inline object and render it inline so
+        // nested fields are visible (instead of only showing a jump button).
+        const tryInline = (val) => {
+          if (!val) {
+            return null;
+          }
+          if (Array.isArray(val)) {
+            return val.find(
+              (it) =>
+                it &&
+                typeof it === "object" &&
+                it["@id"] === refId &&
+                !isPureReference(it)
+            );
+          }
+          if (
+            typeof val === "object" &&
+            val !== null &&
+            val["@id"] === refId &&
+            !isPureReference(val)
+          ) {
+            return val;
+          }
+          return null;
+        };
+
+        const inlineObj = tryInline(value);
+        if (inlineObj) {
+          // Track parent-child relationship using the inline object's @id
+          setParentRelationship(refId, nodeId);
+
+          const inlineCard = renderInlineObject(inlineObj, nodeId);
+          if (inlineCard) {
+            // Append inline node view at same depth
+            container.append(inlineCard);
+            // Mark as rendered to avoid duplicate rendering
+            markNodeRendered(refId);
+          }
+        }
       }
     });
   }
 
   return container;
+}
+
+// Top-level helper: render a nested inline object as a small inline node card.
+// Accepts optional parent node id for context when rendering nested properties.
+function renderInlineObject(val, parentNodeId) {
+  if (!val || typeof val !== "object" || Array.isArray(val)) {
+    return null;
+  }
+
+  // Skip pure references - let them be rendered as clickable buttons
+  if (isPureReference(val)) {
+    return null;
+  }
+
+  const inlineCard = $("<div>").addClass("node-card inline-node-card").css({
+    "margin-top": "5px",
+    "margin-bottom": "5px",
+  });
+
+  const header = $("<div>").addClass("node-header");
+  const leftSide = $("<div>")
+    .css("display", "flex")
+    .css("align-items", "center");
+
+  leftSide.append(
+    $("<span>")
+      .addClass("glyphicon glyphicon-chevron-down collapse-icon")
+      .css("margin-right", "10px")
+  );
+
+  const nestedId = val["@id"];
+  if (nestedId) {
+    leftSide.append($("<span>").addClass("node-id").text(nestedId));
+  }
+
+  const nestedTypes = Array.isArray(val["@type"])
+    ? val["@type"]
+    : val["@type"]
+      ? [val["@type"]]
+      : [];
+  nestedTypes.forEach((t) => {
+    if (t) {
+      leftSide.append($("<span>").addClass("node-type").text(t));
+    }
+  });
+
+  header.append(leftSide);
+  header.click(function () {
+    inlineCard.toggleClass("collapsed");
+  });
+
+  inlineCard.append(header);
+
+  const body = $("<div>").addClass("node-body");
+  if (!getIsEditMode()) {
+    body.addClass("view-mode");
+  }
+
+  Object.keys(val).forEach((k) => {
+    if (k === "@id" || k === "@type" || k === "@context") {
+      return;
+    }
+    const nestedRow = renderProperty(
+      k,
+      val[k],
+      nestedId || parentNodeId,
+      nestedTypes
+    );
+    body.append(nestedRow);
+  });
+
+  inlineCard.append(body);
+  return inlineCard;
 }
 
 function renderProperty(key, value, nodeId, nodeTypes) {
@@ -403,77 +514,7 @@ function renderProperty(key, value, nodeId, nodeTypes) {
     .addClass("property-value")
     .attr("data-testid", "property-value");
 
-  // Helper: render a nested object value using a small inline node card
-  function renderInlineObject(val) {
-    if (!val || typeof val !== "object" || Array.isArray(val)) {
-      return null;
-    }
-
-    // Skip pure references - let them be rendered as clickable buttons
-    if (isPureReference(val)) {
-      return null;
-    }
-
-    const inlineCard = $("").addClass("node-card inline-node-card").css({
-      "margin-top": "5px",
-      "margin-bottom": "5px",
-    });
-
-    const header = $("<div>").addClass("node-header");
-    const leftSide = $("<div>")
-      .css("display", "flex")
-      .css("align-items", "center");
-
-    leftSide.append(
-      $("<span>")
-        .addClass("glyphicon glyphicon-chevron-down collapse-icon")
-        .css("margin-right", "10px")
-    );
-
-    const nestedId = val["@id"];
-    if (nestedId) {
-      leftSide.append($("<span>").addClass("node-id").text(nestedId));
-    }
-
-    const nestedTypes = Array.isArray(val["@type"])
-      ? val["@type"]
-      : val["@type"]
-        ? [val["@type"]]
-        : [];
-    nestedTypes.forEach((t) => {
-      if (t) {
-        leftSide.append($("<span>").addClass("node-type").text(t));
-      }
-    });
-
-    header.append(leftSide);
-    header.click(function () {
-      inlineCard.toggleClass("collapsed");
-    });
-
-    inlineCard.append(header);
-
-    const body = $("<div>").addClass("node-body");
-    if (!getIsEditMode()) {
-      body.addClass("view-mode");
-    }
-
-    Object.keys(val).forEach((k) => {
-      if (k === "@id" || k === "@type" || k === "@context") {
-        return;
-      }
-      const nestedRow = renderProperty(
-        k,
-        val[k],
-        nestedId || nodeId,
-        nestedTypes
-      );
-      body.append(nestedRow);
-    });
-
-    inlineCard.append(body);
-    return inlineCard;
-  }
+  // Note: Uses top-level renderInlineObject helper for inlined object rendering
 
   if (Array.isArray(value)) {
     // Array of values
@@ -481,7 +522,7 @@ function renderProperty(key, value, nodeId, nodeTypes) {
       const valDiv = $("<div>").addClass("array-value");
 
       // Try to render nested objects (like schema:Role) as inline node cards
-      const inlineCard = renderInlineObject(val);
+      const inlineCard = renderInlineObject(val, nodeId);
       if (inlineCard) {
         valDiv.append(inlineCard);
       } else {
@@ -583,7 +624,7 @@ function renderProperty(key, value, nodeId, nodeTypes) {
     }
   } else {
     // Single value
-    const inlineCard = renderInlineObject(value);
+    const inlineCard = renderInlineObject(value, nodeId);
     if (inlineCard) {
       valueContainer.append(inlineCard);
     } else {
@@ -820,7 +861,12 @@ function showAddReferenceModal(
 export function createValueInput(value, classification) {
   // Check if value is a reference (either format)
   const refId = extractReferenceId(value);
-  if (refId) {
+  // Only treat as a clickable "reference" if this is a pure reference
+  // (string-style '#id' or object with only @id and metadata). If the
+  // value is an object that contains @id PLUS other properties, we
+  // want to render it inline (showing its nested fields) instead of
+  // hiding it behind a jump button.
+  if (refId && isPureReference(value)) {
     const refContainer = $("<div>")
       .addClass("reference-container")
       .attr(
