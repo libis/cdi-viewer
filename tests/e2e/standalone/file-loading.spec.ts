@@ -314,6 +314,204 @@ test.describe('File Loading - Critical Path', () => {
     if (fs.existsSync(savePath)) fs.unlinkSync(savePath);
   });
 
+  test('should load se_na2so4 example and validate with CDIF Discovery Core (1 violation)', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForSelector('#load-local-btn', { timeout: 10000 });
+
+    // Select CDIF Discovery Core shapes
+    const shapeSelector = page.locator('#shape-selector');
+    await shapeSelector.selectOption('cdif-core');
+
+    // Load the se_na2so4 example
+    const testFilePath = path.join(__dirname, '../../../examples/cdi/se_na2so4-XDI-CDI-CDIF.jsonld');
+    await page.click('#load-local-btn');
+    await page.setInputFiles('#local-file-input', testFilePath);
+
+    // Wait for success + validation
+    await expect(page.locator('.alert-success')).toBeVisible({ timeout: 15000 });
+
+    // Wait until validation status reports violations (debounced + processing)
+    const validationStatus = page.locator('#validation-status');
+    await expect(validationStatus).toBeVisible({ timeout: 10000 });
+
+    // Sometimes validation takes extra time for larger CRDs — poll until text contains 'violation'
+    await page.waitForFunction(() => {
+      const el = document.querySelector('#validation-status');
+      return el && /violation/.test(el.textContent || '');
+    }, null, { timeout: 10000 });
+
+    const statusText = (await validationStatus.textContent()) || '';
+
+    // Expect exactly one violation reported
+    expect(statusText).toMatch(/1\s+violation/);
+
+    // Ensure the app didn't show a SPARQL-constraint error fallback
+    expect(statusText).not.toContain('Validation Error:');
+
+    // Expand details and assert there's exactly one detail entry
+    const showBtn = page.locator('#toggle-violations-btn');
+    if (await showBtn.isVisible()) {
+      await showBtn.click();
+      // Wait for details container
+      await page.waitForSelector('#validation-details .validation-violations ol li', { timeout: 3000 });
+      const detailItems = await page.locator('#validation-details .validation-violations ol li').count();
+      expect(detailItems).toBe(1);
+    }
+  });
+
+  test('should add nested reference inside inline Organization (FeXAS)', async ({ page }) => {
+    // Load FeXAS and set up
+    await page.goto('/');
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForSelector('#load-local-btn', { timeout: 10000 });
+
+    const testFilePath = path.join(__dirname, '../../../examples/cdi/FeXAS_Fe_c3d.001-NEXUS-HDF5-cdi-CDIF.jsonld');
+    await page.click('#load-local-btn');
+    await page.setInputFiles('#local-file-input', testFilePath);
+    await expect(page.locator('.alert-success')).toBeVisible({ timeout: 15000 });
+
+    // Enter edit mode
+    await page.click('#toggle-edit-btn');
+    await page.waitForSelector('#toggle-edit-btn:has-text("View Mode")', { timeout: 2000 });
+
+    // Ensure nodes rendered and gather node ids
+    await page.waitForSelector('[data-testid^="node-card-"]', { timeout: 5000 });
+    const nodeCards = page.locator('[data-testid^="node-card-"]');
+    const total = await nodeCards.count();
+    expect(total).toBeGreaterThan(1);
+
+    // Use dataset node (index 0) as reference target
+    const targetId = (await nodeCards.first().locator('.node-id').first().textContent())?.trim() || '';
+    expect(targetId).toBeTruthy();
+
+    // Locate nested Organization by id (the FeXAS example uses https://ror.org/aps)
+    const orgId = 'https://ror.org/aps';
+    // There may not be a top-level node-card for inline objects; find a property row that belongs
+    // to the organization and get its ancestor node-card (the inline organization card)
+    const propSelector = `[data-testid="property-schema_identifier"][data-node-id="${orgId}"]`;
+    const propRow = page.locator(propSelector).first();
+    await expect(propRow).toBeVisible({ timeout: 5000 });
+    const orgCard = propRow.locator('xpath=ancestor::div[contains(@class,"node-card")][1]');
+    await expect(orgCard).toBeVisible({ timeout: 5000 });
+
+    // For nested reference flows we operate on the existing schema:identifier property row
+    const prop = page.locator(`[data-testid="property-schema_identifier"][data-node-id="${orgId}"]`).first();
+    await expect(prop).toBeVisible({ timeout: 2000 });
+
+    // Convert to array if needed
+    const convertBtn = prop.locator('button[data-testid^="convert-to-array-btn"]').first();
+    if (await convertBtn.isVisible().catch(() => false)) {
+      await convertBtn.click();
+      await page.waitForTimeout(300);
+    }
+
+    const addRefBtn = prop.locator('button[data-testid^="add-reference-btn"]').first();
+    await expect(addRefBtn).toBeVisible({ timeout: 3000 });
+    await addRefBtn.click();
+
+    // Add Reference modal should show an existing nodes select — pick the dataset node id
+    await page.waitForSelector('#addReferenceModal #existingNodeSelect', { timeout: 3000 });
+    await page.selectOption('#existingNodeSelect', targetId);
+    await page.click('#confirmAddReference');
+    await page.waitForTimeout(300);
+
+    // Export and assert nested object now contains a reference to the dataset id
+    const [download] = await Promise.all([page.waitForEvent('download'), page.click('#export-btn')]);
+    const fs = await import('fs');
+    const tempDir = path.join(__dirname, '../../temp');
+    fs.mkdirSync(tempDir, { recursive: true });
+    const savePath = path.join(tempDir, download.suggestedFilename());
+    await download.saveAs(savePath);
+
+    const exported = JSON.parse(fs.readFileSync(savePath, 'utf-8'));
+
+    // Find the org object by @id and assert nestedRef references the dataset id (either @id object or compact id string)
+    function findById(obj: any, id: string): any {
+      if (!obj || typeof obj !== 'object') return null;
+      if (Array.isArray(obj)) {
+        for (const el of obj) {
+          const found = findById(el, id);
+          if (found) return found;
+        }
+        return null;
+      }
+      if (obj['@id'] === id) return obj;
+      for (const k of Object.keys(obj)) {
+        const found = findById(obj[k], id);
+        if (found) return found;
+      }
+      return null;
+    }
+
+    const org = findById(exported, orgId);
+    expect(org).toBeTruthy();
+
+    const val = org['schema:identifier'];
+    expect(val).toBeTruthy();
+
+    // Accept either a single object with @id or an array of objects/strings containing the target id
+    const references = Array.isArray(val) ? val : [val];
+    const matched = references.some((r) => {
+      if (!r) return false;
+      if (typeof r === 'string') return r === targetId || r.endsWith(targetId);
+      if (typeof r === 'object' && r['@id']) return r['@id'] === targetId || (typeof r['@id'] === 'string' && r['@id'].endsWith(targetId));
+      return false;
+    });
+
+    expect(matched).toBe(true);
+
+    // Cleanup
+    if (fs.existsSync(savePath)) fs.unlinkSync(savePath);
+  });
+
+  test('should export se_na2so4 example and preserve key dataset and context', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForSelector('#load-local-btn', { timeout: 10000 });
+
+    // Use CDIF core shapes to match earlier validation
+    await page.locator('#shape-selector').selectOption('cdif-core');
+
+    const testFilePath = path.join(__dirname, '../../../examples/cdi/se_na2so4-XDI-CDI-CDIF.jsonld');
+    await page.click('#load-local-btn');
+    await page.setInputFiles('#local-file-input', testFilePath);
+    await expect(page.locator('.alert-success')).toBeVisible({ timeout: 15000 });
+
+    // Export and assert exported JSON contains expected root dataset id and context
+    const [dl] = await Promise.all([page.waitForEvent('download'), page.click('#export-btn')]);
+    const fs = await import('fs');
+    const tmp = path.join(__dirname, '../../temp');
+    fs.mkdirSync(tmp, { recursive: true });
+    const save = path.join(tmp, dl.suggestedFilename());
+    await dl.saveAs(save);
+
+    const exported = JSON.parse(fs.readFileSync(save, 'utf-8'));
+
+    // Ensure it has @context and @graph
+    expect(exported['@context']).toBeTruthy();
+    expect(exported['@graph']).toBeTruthy();
+
+    // Find the dataset node by id xas:485749
+    function findGraphById(graph: any[], id: string) {
+      if (!Array.isArray(graph)) return null;
+      return graph.find((n) => n['@id'] === id) || null;
+    }
+
+    const ds = findGraphById(exported['@graph'], 'xas:485749');
+    expect(ds).toBeTruthy();
+
+    // Check that context maps 'schema' prefix (important for downstream display)
+    if (typeof exported['@context'] === 'object') {
+      const ctx = exported['@context'];
+      // either array or object: check that schema prefix exists somewhere
+      const hasSchema = (Array.isArray(ctx) ? ctx.some((c) => typeof c === 'object' && c['schema']) : !!ctx['schema']);
+      expect(hasSchema).toBe(true);
+    }
+
+    if (fs.existsSync(save)) fs.unlinkSync(save);
+  });
+
   test('should load file without @context', async ({ page }) => {
     // ============= SETUP =============
     await page.goto('/');
