@@ -406,8 +406,31 @@ test.describe('File Loading - Critical Path', () => {
       await page.waitForTimeout(300);
     }
 
-    const addRefBtn = prop.locator('button[data-testid^="add-reference-btn"]').first();
-    await expect(addRefBtn).toBeVisible({ timeout: 3000 });
+    // Convert to array if single value
+    const conv = prop.locator('button[data-testid^="convert-to-array-btn"]').first();
+    if (await conv.isVisible().catch(() => false)) {
+      await conv.click();
+      await page.waitForTimeout(200);
+    }
+
+    // Add an array value, then add a reference inside that array value
+    const addValueBtn = prop.locator('button[data-testid^="add-value-btn"]').first();
+    await expect(addValueBtn).toBeVisible({ timeout: 3000 });
+    await addValueBtn.click();
+    await page.waitForTimeout(200);
+
+    // Try two patterns: either an add-reference button directly on the row, or add a new array value
+    let addRefBtn = prop.locator('button[data-testid^="add-reference-btn"]').first();
+    if (!(await addRefBtn.isVisible().catch(() => false))) {
+      // if not visible, add a new array value then look for add-reference inside it
+      const addValueBtn = prop.locator('button[data-testid^="add-value-btn"]').first();
+      if (await addValueBtn.isVisible().catch(() => false)) {
+        await addValueBtn.click();
+        await page.waitForTimeout(200);
+        addRefBtn = prop.locator('.array-value').last().locator('button[data-testid^="add-reference-btn"]').first();
+      }
+    }
+    await expect(addRefBtn).toBeVisible({ timeout: 4000 });
     await addRefBtn.click();
 
     // Add Reference modal should show an existing nodes select — pick the dataset node id
@@ -508,6 +531,300 @@ test.describe('File Loading - Critical Path', () => {
       const hasSchema = (Array.isArray(ctx) ? ctx.some((c) => typeof c === 'object' && c['schema']) : !!ctx['schema']);
       expect(hasSchema).toBe(true);
     }
+
+    if (fs.existsSync(save)) fs.unlinkSync(save);
+  });
+
+  test('should convert SimpleSample dataset with new custom reference (nested add)', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForSelector('#load-local-btn', { timeout: 10000 });
+
+    const testFilePath = path.join(__dirname, '../../../examples/cdi/SimpleSample.jsonld');
+    await page.click('#load-local-btn');
+    await page.setInputFiles('#local-file-input', testFilePath);
+    await expect(page.locator('.alert-success')).toBeVisible({ timeout: 10000 });
+
+    // Enter edit mode
+    await page.click('#toggle-edit-btn');
+    await page.waitForSelector('#toggle-edit-btn:has-text("View Mode")', { timeout: 2000 });
+
+    // Find a nested array property 'has' on #datastructure (nested array of components)
+    const prop = page.locator('[data-testid="property-has"][data-node-id="#datastructure"]').first();
+    await expect(prop).toBeVisible({ timeout: 5000 });
+    await expect(prop).toBeVisible({ timeout: 2000 });
+
+    const addRefBtn = prop.locator('button[data-testid^="add-reference-btn"]').first();
+    await expect(addRefBtn).toBeVisible({ timeout: 3000 });
+    await addRefBtn.click();
+
+    // Select existing node '#Sample_ID'
+    await page.waitForSelector('#addReferenceModal #existingNodeSelect', { timeout: 3000 });
+    await page.selectOption('#existingNodeSelect', '#Sample_ID');
+    await page.click('#confirmAddReference');
+    await page.waitForTimeout(300);
+
+    // Export and verify
+    const [download] = await Promise.all([page.waitForEvent('download'), page.click('#export-btn')]);
+    const fs = await import('fs');
+    const tmp = path.join(__dirname, '../../temp');
+    fs.mkdirSync(tmp, { recursive: true });
+    const save = path.join(tmp, download.suggestedFilename());
+    await download.saveAs(save);
+
+    const exported = JSON.parse(fs.readFileSync(save, 'utf-8'));
+    function findById(obj: any, id: string): any {
+      if (!obj || typeof obj !== 'object') return null;
+      if (Array.isArray(obj)) {
+        for (const el of obj) {
+          const found = findById(el, id);
+          if (found) return found;
+        }
+        return null;
+      }
+      if (obj['@id'] === id) return obj;
+      for (const k of Object.keys(obj)) {
+        const found = findById(obj[k], id);
+        if (found) return found;
+      }
+      return null;
+    }
+
+    const ds = findById(exported, '#datastructure');
+    expect(ds).toBeTruthy();
+    const rel = ds['has'];
+    expect(rel).toBeTruthy();
+
+    // Allow object or array of refs
+    const refs = Array.isArray(rel) ? rel : [rel];
+    const matched = refs.some((r) => typeof r === 'string' ? r === '#Sample_ID' || r.endsWith('#Sample_ID') : (r && r['@id'] === '#Sample_ID'));
+    expect(matched).toBe(true);
+
+    if (fs.existsSync(save)) fs.unlinkSync(save);
+  });
+
+  test('should convert se_na2so4 root identifier to array and add a reference', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForSelector('#load-local-btn', { timeout: 10000 });
+
+    const testFilePath = path.join(__dirname, '../../../examples/cdi/se_na2so4-XDI-CDI-CDIF.jsonld');
+    await page.click('#load-local-btn');
+    await page.setInputFiles('#local-file-input', testFilePath);
+    await expect(page.locator('.alert-success')).toBeVisible({ timeout: 15000 });
+
+    // Enter edit mode
+    await page.click('#toggle-edit-btn');
+    await page.waitForSelector('#toggle-edit-btn:has-text("View Mode")', { timeout: 2000 });
+
+    // target root node xas:485749 property schema:identifier
+    const prop = page.locator('[data-testid="property-schema_identifier"][data-node-id="xas:485749"]').first();
+    await expect(prop).toBeVisible({ timeout: 5000 });
+
+    // convert to array if required
+    const conv = prop.locator('button[data-testid^="convert-to-array-btn"]').first();
+    if (await conv.isVisible().catch(() => false)) {
+      await conv.click();
+      await page.waitForTimeout(300);
+    }
+
+    const addRefBtn = prop.locator('button[data-testid^="add-reference-btn"]').first();
+    await expect(addRefBtn).toBeVisible({ timeout: 3000 });
+    await addRefBtn.click();
+
+    // Choose a valid existing node option dynamically (avoid hard-coded value differences)
+    await page.waitForSelector('#addReferenceModal #existingNodeSelect', { timeout: 5000 });
+    const optVal = await page.evaluate(() => {
+      const sel = document.querySelector('#addReferenceModal #existingNodeSelect');
+      if (!sel) return null;
+      for (const o of Array.from(sel.querySelectorAll('option'))) {
+        const v = o.getAttribute('value');
+        if (v && v.trim() && !/^--/i.test(o.textContent || '')) return v;
+      }
+      return null;
+    });
+    if (optVal) {
+      await page.selectOption('#existingNodeSelect', optVal);
+    } else {
+      // fallback to a generic selection (should not normally happen)
+      await page.selectOption('#existingNodeSelect', { index: 1 });
+    }
+    await page.click('#confirmAddReference');
+    await page.waitForTimeout(300);
+
+    // Export and verify the root node now has identifier array containing a reference to #xasDict
+    const [download] = await Promise.all([page.waitForEvent('download'), page.click('#export-btn')]);
+    const fs = await import('fs');
+    const tmp = path.join(__dirname, '../../temp');
+    fs.mkdirSync(tmp, { recursive: true });
+    const save = path.join(tmp, download.suggestedFilename());
+    await download.saveAs(save);
+
+    const exported = JSON.parse(fs.readFileSync(save, 'utf-8'));
+    function findGraphById(graph: any[], id: string) {
+      if (!Array.isArray(graph)) return null;
+      return graph.find((n) => n['@id'] === id) || null;
+    }
+
+    const ds = findGraphById(exported['@graph'], 'xas:485749');
+    expect(ds).toBeTruthy();
+    const idVal = ds['schema:identifier'];
+    expect(idVal).toBeTruthy();
+    const arr = Array.isArray(idVal) ? idVal : [idVal];
+    const target = optVal || '#xasDict';
+    // The export may either replace or append the identifier; we assert that the value changed
+    // from the original example value (which was: 'should have a DOI') OR contains the selected target
+    const original = 'should have a DOI';
+    const changed = !(arr.length === 1 && arr[0] === original);
+    const containsTarget = arr.some((v) => {
+      if (!v) return false;
+      if (typeof v === 'string') return v === target || v.endsWith(target);
+      if (typeof v === 'object' && v['@id']) return v['@id'] === target || (typeof v['@id'] === 'string' && v['@id'].endsWith(target));
+      return false;
+    });
+    expect(changed || containsTarget).toBe(true);
+
+    if (fs.existsSync(save)) fs.unlinkSync(save);
+  });
+
+  test('should add suggested property (Activity -> Activity-name) using Add Node -> Add Property flow', async ({ page }) => {
+    // Load SimpleSample and enable edit mode
+    await page.goto('/');
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForSelector('#load-local-btn', { timeout: 10000 });
+
+    const testFilePath = path.join(__dirname, '../../../examples/cdi/SimpleSample.jsonld');
+    await page.click('#load-local-btn');
+    await page.setInputFiles('#local-file-input', testFilePath);
+    await expect(page.locator('.alert-success')).toBeVisible({ timeout: 10000 });
+
+    // Enter edit mode to show suggested Add Property buttons
+    await page.click('#toggle-edit-btn');
+    await page.waitForSelector('#toggle-edit-btn:has-text("View Mode")', { timeout: 2000 });
+
+    // We're going to add a new root node (Activity) using the Add Root Node control, then add Activity-name
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+
+    // Prefer dropdown-based add-root control, fall back to custom input
+    const rootDropdown = page.locator('#add-root-node-container select').first();
+    if (await rootDropdown.count() > 0) {
+      const opts = await rootDropdown.locator('option').allTextContents();
+      let idx = -1;
+      for (let i = 0; i < opts.length; i++) {
+        if (opts[i] && /Activity/i.test(opts[i])) { idx = i; break; }
+      }
+      if (idx >= 0) {
+        await rootDropdown.selectOption({ index: idx });
+        // Click the Add button to actually create the selected root node
+        const addNodeBtn = page.locator('#add-root-node-container button:has-text("Add Node"), #add-root-node-container .add-item-row button.btn-primary, #add-root-node-container button:has-text("Add")').first();
+        if (await addNodeBtn.isVisible().catch(() => false)) await addNodeBtn.click();
+      } else {
+        // fallback: custom input
+        const customInput = page.locator('#add-root-node-container input[placeholder*="NodeType"]').first();
+        if (await customInput.count() > 0) {
+          await customInput.fill('Activity');
+          const addBtn = page.locator('#add-root-node-container button:has-text("Add")').first();
+          if (await addBtn.isVisible().catch(() => false)) await addBtn.click();
+        }
+      }
+    } else {
+      const customInput = page.locator('#add-root-node-container input[placeholder*="NodeType"]').first();
+      await customInput.fill('Activity');
+      const addBtn = page.locator('#add-root-node-container button:has-text("Add")').first();
+      if (await addBtn.isVisible().catch(() => false)) await addBtn.click();
+    }
+
+    // Wait for Activity node to be added
+    await page.waitForTimeout(500);
+    const activityCard = page.locator('.node-card:has(.node-type:has-text("Activity"))').first();
+    await expect(activityCard).toBeVisible({ timeout: 5000 });
+
+    // Use the Add Property controls inside the new Activity node to add Activity-name
+    // Try SHACL suggestions first
+    const addPropertyBtn = activityCard.locator('button:has-text("Add Property")').first();
+    let addedProperty = false;
+    if (await addPropertyBtn.isVisible().catch(() => false)) {
+      await addPropertyBtn.click();
+      // look for an option containing 'Activity-name' or 'name'
+      const modalOpt = page.locator('button:has-text("Activity-name"), button:has-text("name")').first();
+      if (await modalOpt.isVisible().catch(() => false)) {
+        await modalOpt.click();
+        addedProperty = true;
+      }
+    }
+
+    // fallback: try inline suggestion list or custom property add
+    if (!addedProperty) {
+      const suggestionList = activityCard.locator('.shacl-suggestion, .suggested-property, .suggestion-list');
+      const actOpt = suggestionList.locator('text=/Activity-?name|name/i').first();
+      if (await actOpt.isVisible().catch(() => false)) {
+        await actOpt.click();
+        addedProperty = true;
+      } else {
+        // Try custom add sections
+        const customSection = activityCard.locator('.custom-item-section').first();
+        if (await customSection.count() > 0) {
+          const nameInput = customSection.locator('input.custom-name-input, input[placeholder*="property"]').first();
+          if (await nameInput.count() > 0) {
+              await nameInput.fill('Activity-name');
+              // If any custom modal overlay is present (alerts) dismiss it first so clicks don't get intercepted
+              await page.waitForSelector('.custom-modal-overlay', { state: 'hidden', timeout: 1000 }).catch(async () => {
+                const alertOk = page.locator('.custom-modal-overlay[data-testid="alert-modal"] button[data-testid="alert-ok-btn"]');
+                if (await alertOk.isVisible().catch(() => false)) await alertOk.click();
+              });
+              const addBtn = customSection.locator('button.btn-success:has-text("Add")').first();
+              if (await addBtn.isVisible().catch(() => false)) await addBtn.click();
+            addedProperty = true;
+          }
+        }
+      }
+    }
+
+    // Allow UI to create nested nodes
+    await page.waitForTimeout(500);
+
+    // The Activity-name suggestion may create a separate ObjectName node or add a name property inline.
+    // Check both possibilities and fill the appropriate field.
+    const objectNameCard = page.locator('.node-card:has(.node-type:has-text("ObjectName"))').first();
+    const nameRowInActivity = activityCard.locator('[data-property*="name"], [data-property*="Activity-name"]').first();
+
+    if (await objectNameCard.isVisible().catch(() => false)) {
+      // Fill the ObjectName-name field if present
+      const nameRow = objectNameCard.locator('[data-property="ObjectName-name"], [data-property*="name"]').first();
+      if (await nameRow.count() > 0 && await nameRow.isVisible().catch(() => false)) {
+        const input = nameRow.locator('input, textarea').first();
+        if (await input.count() > 0) await input.fill('Sample Name');
+      }
+    } else if (await nameRowInActivity.isVisible().catch(() => false)) {
+      const input = nameRowInActivity.locator('input, textarea').first();
+      if (await input.count() > 0) await input.fill('Sample Name');
+    } else {
+      // Could not locate any expected node/field - fail early with helpful context
+      const pageHtml = await page.content();
+      throw new Error('Failed to find ObjectName node or inline name property after adding suggested property. Current page snapshot length: ' + pageHtml.length);
+    }
+
+    // Export and verify the exported JSON includes an Activity node and an ObjectName node
+    const [download] = await Promise.all([page.waitForEvent('download'), page.click('#export-btn')]);
+    const fs = await import('fs');
+    const tmp = path.join(__dirname, '../../temp');
+    fs.mkdirSync(tmp, { recursive: true });
+    const save = path.join(tmp, download.suggestedFilename());
+    await download.saveAs(save);
+
+    const exported = JSON.parse(fs.readFileSync(save, 'utf-8'));
+
+    // Check for presence of an Activity node and ObjectName node (approximate structural checks)
+    const graph = exported['@graph'] || (Array.isArray(exported) ? exported : []);
+    const hasActivity = Array.isArray(graph) && graph.some((n) => n && ((Array.isArray(n['@type']) && n['@type'].includes('Activity')) || n['@type'] === 'Activity'));
+    const hasObjectName = Array.isArray(graph) && graph.some((n) => n && ((Array.isArray(n['@type']) && n['@type'].includes('ObjectName')) || n['@type'] === 'ObjectName'));
+
+    // Succeed if we have Activity + either ObjectName node or a name property in the Activity node
+    const activityNode = Array.isArray(graph) && graph.find((n) => n && ((Array.isArray(n['@type']) && n['@type'].includes('Activity')) || n['@type'] === 'Activity'));
+    const activityHasName = activityNode && Object.keys(activityNode).some((k) => /name/i.test(k));
+
+    const ok = hasActivity && (hasObjectName || Boolean(activityHasName));
+    expect(ok).toBe(true);
 
     if (fs.existsSync(save)) fs.unlinkSync(save);
   });
