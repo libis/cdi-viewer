@@ -26,8 +26,9 @@ test.describe('Error Handling', () => {
   });
 
   test('Handle network error when loading shapes', async ({ page }) => {
-    // Block network requests to shape URLs
+    // Block network requests to shape URLs and to the custom URL we'll try
     await page.route('**/shapes/**', route => route.abort());
+    await page.route('https://example.org/nonexistent-shapes.ttl', route => route.abort());
     
     // Try to select shapes that require network fetch
     await page.selectOption('#shape-selector', 'custom');

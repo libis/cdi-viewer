@@ -73,20 +73,30 @@ export function collectChangesFromDOM() {
             const inlineObj = {};
 
             // Preserve @id if present in the inline header
-            const idText = $inlineCard.find('.node-id').first().text();
+            const idText = $inlineCard.find(".node-id").first().text();
             if (idText) {
-              inlineObj['@id'] = idText;
+              inlineObj["@id"] = idText;
             }
 
             // Read nested property rows which live inside this inline card
-            $inlineCard.find('.node-body > .property-row').each(function () {
+            $inlineCard.find(".node-body > .property-row").each(function () {
               const $nestedRow = $(this);
-              const nestedKey = $nestedRow.attr('data-property');
-              if (!nestedKey) { return; }
+              const nestedKey = $nestedRow.attr("data-property");
+              if (!nestedKey) {
+                return;
+              }
 
               // Recurse using current value if available
-              const nestedCurrent = Array.isArray(currentValue) && currentValue[arrayIndex] && typeof currentValue[arrayIndex] === 'object' ? currentValue[arrayIndex][nestedKey] : undefined;
-              inlineObj[nestedKey] = collectValueFromPropertyRow($nestedRow, nestedCurrent);
+              const nestedCurrent =
+                Array.isArray(currentValue) &&
+                currentValue[arrayIndex] &&
+                typeof currentValue[arrayIndex] === "object"
+                  ? currentValue[arrayIndex][nestedKey]
+                  : undefined;
+              inlineObj[nestedKey] = collectValueFromPropertyRow(
+                $nestedRow,
+                nestedCurrent
+              );
             });
 
             values.push(inlineObj);
@@ -94,16 +104,19 @@ export function collectChangesFromDOM() {
           }
 
           // Reference-style (jump link) - preserve via original value if present
-          const $refContainer = $arrayValue.children('.reference-container');
+          const $refContainer = $arrayValue.children(".reference-container");
           if ($refContainer.length > 0) {
-            if (Array.isArray(currentValue) && arrayIndex < currentValue.length) {
+            if (
+              Array.isArray(currentValue) &&
+              arrayIndex < currentValue.length
+            ) {
               values.push(currentValue[arrayIndex]);
             }
             return;
           }
 
           // Simple scalar input
-          const $input = $arrayValue.find('input, textarea, select').first();
+          const $input = $arrayValue.find("input, textarea, select").first();
           if ($input.length > 0) {
             let val = $input.val();
             try {
@@ -124,18 +137,31 @@ export function collectChangesFromDOM() {
       }
 
       // Single value - first check for inline-node-card (nested object)
-      const $inlineSingle = $propertyRow.children('.property-value').children('.inline-node-card').first();
+      const $inlineSingle = $propertyRow
+        .children(".property-value")
+        .children(".inline-node-card")
+        .first();
       if ($inlineSingle.length > 0) {
         const inlineObj = {};
-        const idText = $inlineSingle.find('.node-id').first().text();
-        if (idText) { inlineObj['@id'] = idText; }
+        const idText = $inlineSingle.find(".node-id").first().text();
+        if (idText) {
+          inlineObj["@id"] = idText;
+        }
 
-        $inlineSingle.find('.node-body > .property-row').each(function () {
+        $inlineSingle.find(".node-body > .property-row").each(function () {
           const $nestedRow = $(this);
-              const nestedKey = $nestedRow.attr('data-property');
-              if (!nestedKey) { return; }
-          const nestedCurrent = currentValue && typeof currentValue === 'object' ? currentValue[nestedKey] : undefined;
-          inlineObj[nestedKey] = collectValueFromPropertyRow($nestedRow, nestedCurrent);
+          const nestedKey = $nestedRow.attr("data-property");
+          if (!nestedKey) {
+            return;
+          }
+          const nestedCurrent =
+            currentValue && typeof currentValue === "object"
+              ? currentValue[nestedKey]
+              : undefined;
+          inlineObj[nestedKey] = collectValueFromPropertyRow(
+            $nestedRow,
+            nestedCurrent
+          );
         });
 
         return inlineObj;
@@ -143,8 +169,8 @@ export function collectChangesFromDOM() {
 
       // Reference container (single) - preserve current value
       const $refContainer = $propertyRow
-        .children('.property-value')
-        .children('.reference-container')
+        .children(".property-value")
+        .children(".reference-container")
         .first();
       if ($refContainer.length > 0) {
         return currentValue; // preserve as-is
@@ -152,8 +178,8 @@ export function collectChangesFromDOM() {
 
       // Input field (single)
       const $input = $propertyRow
-        .children('.property-value')
-        .children('input, textarea, select')
+        .children(".property-value")
+        .children("input, textarea, select")
         .first();
 
       if ($input.length > 0) {
@@ -167,7 +193,7 @@ export function collectChangesFromDOM() {
       }
 
       // Fallback - try to read textual content
-      return $propertyRow.children('.property-value').text().trim();
+      return $propertyRow.children(".property-value").text().trim();
     };
 
     $propertyRows.each(function () {

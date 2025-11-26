@@ -158,15 +158,25 @@ export function isNodeReference(str) {
 // themselves may be single objects or elements of arrays). They operate on
 // the parent node's in-memory data structure and mark the parent property
 // changed so it will be saved.
-function convertNestedPropertyToArray(parentNodeId, parentPropertyKey, parentArrayIndex, nestedKey) {
+function convertNestedPropertyToArray(
+  parentNodeId,
+  parentPropertyKey,
+  parentArrayIndex,
+  nestedKey
+) {
   const parentNode = getNodeById(parentNodeId);
-  if (!parentNode) { return false; }
+  if (!parentNode) {
+    return false;
+  }
 
   const parentVal = parentNode[parentPropertyKey];
 
   if (Array.isArray(parentVal)) {
-    const index = parentArrayIndex !== null ? parseInt(parentArrayIndex, 10) : NaN;
-    if (isNaN(index) || index < 0 || index >= parentVal.length) { return false; }
+    const index =
+      parentArrayIndex !== null ? parseInt(parentArrayIndex, 10) : NaN;
+    if (isNaN(index) || index < 0 || index >= parentVal.length) {
+      return false;
+    }
     const nestedObj = parentVal[index];
     if (nestedObj && typeof nestedObj === "object") {
       const current = nestedObj[nestedKey];
@@ -189,15 +199,25 @@ function convertNestedPropertyToArray(parentNodeId, parentPropertyKey, parentArr
   return false;
 }
 
-function convertNestedPropertyToSingle(parentNodeId, parentPropertyKey, parentArrayIndex, nestedKey) {
+function convertNestedPropertyToSingle(
+  parentNodeId,
+  parentPropertyKey,
+  parentArrayIndex,
+  nestedKey
+) {
   const parentNode = getNodeById(parentNodeId);
-  if (!parentNode) { return false; }
+  if (!parentNode) {
+    return false;
+  }
 
   const parentVal = parentNode[parentPropertyKey];
 
   if (Array.isArray(parentVal)) {
-    const index = parentArrayIndex !== null ? parseInt(parentArrayIndex, 10) : NaN;
-    if (isNaN(index) || index < 0 || index >= parentVal.length) { return false; }
+    const index =
+      parentArrayIndex !== null ? parseInt(parentArrayIndex, 10) : NaN;
+    if (isNaN(index) || index < 0 || index >= parentVal.length) {
+      return false;
+    }
     const nestedObj = parentVal[index];
     if (nestedObj && typeof nestedObj === "object") {
       const current = nestedObj[nestedKey];
@@ -220,15 +240,27 @@ function convertNestedPropertyToSingle(parentNodeId, parentPropertyKey, parentAr
   return false;
 }
 
-function addReferenceToNestedProperty(parentNodeId, parentPropertyKey, parentArrayIndex, targetPropertyKey, referenceId, forArray = false, replaceMode = false) {
+function addReferenceToNestedProperty(
+  parentNodeId,
+  parentPropertyKey,
+  parentArrayIndex,
+  targetPropertyKey,
+  referenceId,
+  forArray = false,
+  replaceMode = false
+) {
   const parentNode = getNodeById(parentNodeId);
-  if (!parentNode) { return false; }
+  if (!parentNode) {
+    return false;
+  }
 
   const parentVal = parentNode[parentPropertyKey];
   const reference = { "@id": referenceId };
 
   const applyToNested = (nestedObj) => {
-    if (!nestedObj || typeof nestedObj !== "object") return false;
+    if (!nestedObj || typeof nestedObj !== "object") {
+      return false;
+    }
     const current = nestedObj[targetPropertyKey];
     if (replaceMode) {
       nestedObj[targetPropertyKey] = reference;
@@ -247,8 +279,11 @@ function addReferenceToNestedProperty(parentNodeId, parentPropertyKey, parentArr
   };
 
   if (Array.isArray(parentVal)) {
-    const index = parentArrayIndex !== null ? parseInt(parentArrayIndex, 10) : NaN;
-    if (isNaN(index) || index < 0 || index >= parentVal.length) { return false; }
+    const index =
+      parentArrayIndex !== null ? parseInt(parentArrayIndex, 10) : NaN;
+    if (isNaN(index) || index < 0 || index >= parentVal.length) {
+      return false;
+    }
     const nestedObj = parentVal[index];
     if (applyToNested(nestedObj)) {
       addChangedElement(`${parentNodeId}.${parentPropertyKey}`);
@@ -496,7 +531,12 @@ export function renderPropertyTree(
 
 // Top-level helper: render a nested inline object as a small inline node card.
 // Accepts optional parent node id for context when rendering nested properties.
-function renderInlineObject(val, parentNodeId, parentPropertyKey = null, parentArrayIndex = null) {
+function renderInlineObject(
+  val,
+  parentNodeId,
+  parentPropertyKey = null,
+  parentArrayIndex = null
+) {
   if (!val || typeof val !== "object" || Array.isArray(val)) {
     return null;
   }
@@ -569,7 +609,7 @@ function renderInlineObject(val, parentNodeId, parentPropertyKey = null, parentA
     // the per-property `nodeId` used for nested rows is often the inline
     // object's @id (if present) and not the parent node id.
     if (parentNodeId) {
-      nestedRow.attr('data-parent-node-id', parentNodeId);
+      nestedRow.attr("data-parent-node-id", parentNodeId);
     }
     body.append(nestedRow);
   });
@@ -578,7 +618,14 @@ function renderInlineObject(val, parentNodeId, parentPropertyKey = null, parentA
   return inlineCard;
 }
 
-function renderProperty(key, value, nodeId, nodeTypes, parentPropertyKey = null, parentArrayIndex = null) {
+function renderProperty(
+  key,
+  value,
+  nodeId,
+  nodeTypes,
+  parentPropertyKey = null,
+  parentArrayIndex = null
+) {
   const row = $("<div>")
     .addClass("property-row")
     .attr("data-property", key)
@@ -737,7 +784,7 @@ function renderProperty(key, value, nodeId, nodeTypes, parentPropertyKey = null,
             ? {
                 parentPropertyKey,
                 parentArrayIndex: parentArrayIndex,
-                parentNodeId: row.attr('data-parent-node-id'),
+                parentNodeId: row.attr("data-parent-node-id"),
               }
             : null;
           showAddReferenceModal(nodeId, key, true, false, nestedCtx);
@@ -762,9 +809,14 @@ function renderProperty(key, value, nodeId, nodeTypes, parentPropertyKey = null,
             )
           ) {
             collectChangesFromDOM();
-            const effectiveParentId = row.attr('data-parent-node-id') || nodeId;
+            const effectiveParentId = row.attr("data-parent-node-id") || nodeId;
             if (parentPropertyKey) {
-              convertNestedPropertyToSingle(effectiveParentId, parentPropertyKey, parentArrayIndex, key);
+              convertNestedPropertyToSingle(
+                effectiveParentId,
+                parentPropertyKey,
+                parentArrayIndex,
+                key
+              );
             } else {
               convertPropertyToSingle(nodeId, key);
             }
@@ -820,17 +872,22 @@ function renderProperty(key, value, nodeId, nodeTypes, parentPropertyKey = null,
         .append(document.createTextNode(" Convert to Array"))
         .css({ "margin-left": "5px" })
         .click(function () {
-          const row = $(this).closest('.property-row');
-          const parentKey = row.attr('data-parent-property');
-          const parentIndex = row.attr('data-parent-array-index');
-          const parentNodeAttr = row.attr('data-parent-node-id');
+          const row = $(this).closest(".property-row");
+          const parentKey = row.attr("data-parent-property");
+          const parentIndex = row.attr("data-parent-array-index");
+          const parentNodeAttr = row.attr("data-parent-node-id");
 
           collectChangesFromDOM();
           if (parentKey) {
             // Use the explicit parent node id if set on the row; otherwise
             // fall back to the current nodeId from the closure (older behavior).
             const effectiveParentId = parentNodeAttr || nodeId;
-            convertNestedPropertyToArray(effectiveParentId, parentKey, parentIndex, key);
+            convertNestedPropertyToArray(
+              effectiveParentId,
+              parentKey,
+              parentIndex,
+              key
+            );
           } else {
             convertPropertyToArray(nodeId, key);
           }
@@ -846,12 +903,16 @@ function renderProperty(key, value, nodeId, nodeTypes, parentPropertyKey = null,
         .append(document.createTextNode(" Add Reference/Object"))
         .css({ "margin-left": "5px" })
         .click(function () {
-          const row = $(this).closest('.property-row');
-          const parentKey = row.attr('data-parent-property');
-          const parentIndex = row.attr('data-parent-array-index');
-          const parentNode = row.attr('data-parent-node-id');
+          const row = $(this).closest(".property-row");
+          const parentKey = row.attr("data-parent-property");
+          const parentIndex = row.attr("data-parent-array-index");
+          const parentNode = row.attr("data-parent-node-id");
           const nestedCtx = parentKey
-            ? { parentPropertyKey: parentKey, parentArrayIndex: parentIndex, parentNodeId: parentNode }
+            ? {
+                parentPropertyKey: parentKey,
+                parentArrayIndex: parentIndex,
+                parentNodeId: parentNode,
+              }
             : null;
           showAddReferenceModal(nodeId, key, false, false, nestedCtx);
         });
@@ -991,7 +1052,7 @@ function showAddReferenceModal(
       const existingNodeId = $("#existingNodeSelect").val();
       const newNodeType = $("#newNodeType").val().trim();
 
-        if (existingNodeId) {
+      if (existingNodeId) {
         // Add reference to existing node
         collectChangesFromDOM();
         if (nestedContext && nestedContext.parentPropertyKey) {

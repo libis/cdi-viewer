@@ -1,0 +1,72 @@
+{
+  "@context": {
+    "@vocab": "https://ddialliance.org/Specification/DDI-CDI/1.0/RDF/DDI-CDI_canonical.jsonld",
+    "schema": "http://schema.org"
+  },
+  "@graph": [
+    {
+      "@id": "#NewNode_Activity_1764065703786",
+      "@type": "Activity",
+      "schema:Test": {
+        "@id": "#NewNode_LinkedNode_1764065748893"
+      }
+    },
+    {
+      "@id": "#NewNode_LinkedNode_1764065748893",
+      "@type": "LinkedNode",
+      "schema:TestArray": [
+        "a",
+        "b",
+        "c"
+      ],
+      "TestValue": "X"
+    },
+    {
+      "@id": "#NewNode_schema:Test1_1764066507498",
+      "@type": "schema:Test1",
+      "schema:Test2": [
+        "",
+        {
+          "@id": "#NewNode_schema:Test4_1764066546078"
+        },
+        {
+          "@id": "#NewNode_schema:Test3_1764066531452"
+        }
+      ]
+    },
+    {
+      "@id": "#NewNode_schema:Test3_1764066531452",
+      "@type": "schema:Test3",
+      "schema:Value3": "A",
+      "schema:Value4": "B"
+    },
+    {
+      "@id": "#NewNode_schema:Test4_1764066546078",
+      "@type": "schema:Test4",
+      "schema:Value1": "X",
+      "schema:Value2": "Y"
+    },
+    {
+      "@id": "#NewNode_schema:Test5_1764066585727",
+      "@type": "schema:Test5",
+      "schema:LinkArray": [
+        {
+          "@id": "#NewNode_schema:Test3_1764066531452"
+        },
+        {
+          "@id": "#NewNode_schema:Test4_1764066546078"
+        }
+      ]
+    },
+    {
+      "@id": "#NewNode_OneMoreNode_1764067001597",
+      "@type": "OneMoreNode",
+      "schema:LinkedObject": {
+        "@id": "#NewNode_schema:Test3_1764066531452"
+      },
+      "has": {
+        "@id": "#NewNode_schema:Test3_1764066531452"
+      }
+    }
+  ]
+}
