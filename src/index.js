@@ -63,5 +63,10 @@ if (typeof window !== "undefined") {
 
 logInfo("CDI Viewer application loaded");
 
+// Ensure embed helpers are included in the bundle so host pages can call
+// `loadBody()` (and use `injectCdiViewerCss()` if desired) without needing
+// to copy the full HTML.
+import "./embed.js";
+
 // Export for potential Node.js use
 export { validateData };
