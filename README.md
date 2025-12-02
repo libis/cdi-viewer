@@ -10,6 +10,40 @@ Provides real-time validation, property classification, complex object editing, 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![GitHub Topics](https://img.shields.io/badge/topics-json--ld%20%7C%20rdf%20%7C%20shacl-blue)](https://github.com/libis/cdi-viewer)
 
+## 📚 What is DDI-CDI?
+
+- **[DDI Alliance](https://ddialliance.org/)** = International membership organization (since 2003) including:
+  - Major statistical agencies ([Eurostat](https://ec.europa.eu/eurostat), [US Census Bureau](https://www.census.gov/), [Statistics Canada](https://www.statcan.gc.ca/), etc.)
+  - Research institutions ([ICPSR](https://www.icpsr.umich.edu/), [GESIS](https://www.gesis.org/), [UK Data Archive](https://www.data-archive.ac.uk/), etc.)
+  - Academic organizations worldwide
+- **DDI** = Data Documentation Initiative - the metadata standard they maintain
+- **[CDI](https://ddi-cdi.github.io/)** = Cross Domain Integration - the newest DDI specification (released 2023)
+  - Designed for **cross-domain interoperability** (not just social sciences anymore)
+  - Built on **semantic web technologies** (RDF, JSON-LD) - machine-readable and linkable
+  - Enables data from different domains to be combined and compared
+
+### Why DDI-CDI Matters
+
+- **Authoritative standard** - backed by major institutions who actually use it
+- **[FAIR data principles](https://www.go-fair.org/fair-principles/)** - helps make data Findable, Accessible, Interoperable, Reusable
+- **Future-proof** - semantic web approach means data stays meaningful over time
+- **Growing adoption** - increasingly required by funders and data repositories
+
+### The Problem This Solves
+
+- JSON-LD files are complex nested structures - hard to edit manually
+- SHACL validation typically requires command-line tools or enterprise software
+- No easy way to visually see if your metadata is valid
+- Existing tools are either too simple (text editors) or too complex (enterprise RDF tools)
+- **Dataverse gap** - While Dataverse supports the [DDI Codebook](https://guides.dataverse.org/en/latest/user/dataset-management.html#supported-metadata) metadata standard, there's no built-in support for the newer DDI-CDI semantic web format
+
+### What is CDI-Viewer?
+
+- **Browser-based** JSON-LD editor with real-time SHACL validation
+- Works with **any vocabulary** (DDI-CDI, schema.org, DCAT, SKOS, etc.)
+- No installation required - runs entirely in the browser
+- Can integrate with [Dataverse](https://dataverse.org/) or work standalone
+
 ## 🎯 Why This Tool?
 
 **The problem:** Most JSON-LD editors are either too simple (plain text editors) or too complex (enterprise RDF tooling). Validating against SHACL shapes often requires command-line tools or separate validation services.
