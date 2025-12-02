@@ -17,7 +17,7 @@ Provides real-time validation, property classification, complex object editing, 
   - Research institutions ([ICPSR](https://www.icpsr.umich.edu/), [GESIS](https://www.gesis.org/), [UK Data Archive](https://www.data-archive.ac.uk/), etc.)
   - Academic organizations worldwide
 - **DDI** = Data Documentation Initiative - the metadata standard they maintain
-- **[CDI](https://ddi-cdi.github.io/)** = Cross Domain Integration - the newest DDI specification (released 2023)
+- **[CDI](https://ddialliance.org/ddi-cdi)** = Cross Domain Integration - the newest DDI specification ([Version 1.0 released January 2025](https://ddialliance.org/ddi-cdi_v1.0))
   - Designed for **cross-domain interoperability** (not just social sciences anymore)
   - Built on **semantic web technologies** (RDF, JSON-LD) - machine-readable and linkable
   - Enables data from different domains to be combined and compared
@@ -778,7 +778,7 @@ Part of the broader Dataverse ecosystem:
 
 - [Dataverse Project](https://dataverse.org/)
 - [GDCC Dataverse Previewers](https://github.com/gdcc/dataverse-previewers)
-- [DDI-CDI Specification](https://ddi-cdi.github.io/)
+- [DDI-CDI Specification](https://ddialliance.org/ddi-cdi)
 
 ## 📧 Support
 
@@ -794,7 +794,7 @@ Part of the broader Dataverse ecosystem:
 - **JSON-LD Specification:** https://json-ld.org/
 - **SHACL Specification:** https://www.w3.org/TR/shacl/
 - **Semantic Web Resources:** [JSON-LD Playground](https://json-ld.org/playground/) | [SHACL Playground](https://shacl.org/playground/)
-- **DDI-CDI Specification:** https://ddi-cdi.github.io/
+- **DDI-CDI Specification:** https://ddialliance.org/ddi-cdi
 - **LIBIS:** https://www.libis.be/
 
 ---
