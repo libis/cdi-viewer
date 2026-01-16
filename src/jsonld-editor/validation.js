@@ -5,7 +5,10 @@
 import rdfDataModel from "@rdfjs/data-model";
 import rdfDataset from "@rdfjs/dataset";
 import Validator from "shacl-engine/Validator.js";
-import { validations as sparqlValidations, targetResolvers as sparqlTargetResolvers } from "shacl-engine/sparql.js";
+import {
+  validations as sparqlValidations,
+  targetResolvers as sparqlTargetResolvers,
+} from "shacl-engine/sparql.js";
 import {
   getShaclShapesStore,
   getJsonData,

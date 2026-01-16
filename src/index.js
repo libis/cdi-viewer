@@ -56,6 +56,9 @@ import "./jsonld-editor/advanced-search.js";
 // Event handlers
 import "./jsonld-editor/event-handlers.js";
 
+// PostMessage handler for embedded mode
+import "./jsonld-editor/postmessage-handler.js";
+
 // Export validation for window access
 if (typeof window !== "undefined") {
   window.validateData = validateData;
