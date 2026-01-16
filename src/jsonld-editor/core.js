@@ -109,7 +109,27 @@ $(document).ready(async function () {
     const fileId = getFileId();
     const siteUrl = getSiteUrl();
 
+    // Check if we're in embedded mode (loaded in an iframe with mode=embedded parameter)
+    const modeParam = urlParams.get("mode");
+    const isEmbeddedMode = modeParam === "embedded" || window.parent !== window;
+
     if (!fileId || !siteUrl) {
+      if (isEmbeddedMode) {
+        // In embedded mode, wait for data from parent via postMessage
+        setIsEmbeddedMode(true);
+        $("#content")
+          .empty()
+          .append(
+            quickEl("div", { class: "alert alert-info" }, [
+              quickEl("strong", {}, ["Waiting for data..."]),
+              document.createTextNode(
+                " The viewer is ready to receive data from the parent application."
+              ),
+            ])
+          );
+        setupEventHandlers();
+        return;
+      }
       // Show load local file button instead of error
       $("#load-local-btn").show();
       $("#load-dataverse-btn").show();
