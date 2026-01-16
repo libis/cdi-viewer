@@ -109,80 +109,13 @@ $(document).ready(async function () {
     const fileId = getFileId();
     const siteUrl = getSiteUrl();
 
-    // Check if we're in embedded mode (loaded in an iframe with mode=embedded parameter)
-    const modeParam = urlParams.get("mode");
-    const isEmbeddedMode = modeParam === "embedded" || window.parent !== window;
-
-    // Check for storageKey parameter (data passed via localStorage from external app)
-    const storageKeyParam = urlParams.get("storageKey");
+    // Check if we're in embedded mode (loaded in an iframe)
+    const isEmbeddedMode = window.parent !== window;
+    if (isEmbeddedMode) {
+      setIsEmbeddedMode(true);
+    }
 
     if (!fileId || !siteUrl) {
-      // Check if we have data in localStorage from storageKey parameter
-      if (storageKeyParam) {
-        const storedData = localStorage.getItem(storageKeyParam);
-        if (storedData) {
-          // Clean up localStorage immediately after reading
-          localStorage.removeItem(storageKeyParam);
-
-          try {
-            const jsonData = JSON.parse(storedData);
-            logInfo("Loaded data from localStorage via storageKey parameter");
-
-            // Set original filename
-            setOriginalFileName("ddi-cdi-metadata.jsonld");
-
-            // Normalize and prepare the data
-            const normalizedData = await normalizeToGraphFormat(jsonData);
-            const migratedData = await migrateContextFormat(normalizedData);
-            const expanded = await jsonld.expand(migratedData);
-
-            setJsonData(migratedData);
-            setOriginalData(JSON.parse(JSON.stringify(migratedData)));
-            setExpandedJsonLd(expanded);
-
-            // Pre-populate Dataverse URL field if provided
-            const dataverseUrlParam = urlParams.get("dataverseUrl");
-            const datasetPidParam = urlParams.get("datasetPid");
-            if (dataverseUrlParam && datasetPidParam) {
-              // Build the dataset URL for the Dataverse URL input field
-              // The persistentId must be URL-encoded in the query parameter
-              const fullUrl = `${dataverseUrlParam}/dataset.xhtml?persistentId=${encodeURIComponent(datasetPidParam)}`;
-              $("#dataverseUrlInput").val(fullUrl);
-              logInfo(
-                `Pre-populated Dataverse URL: ${fullUrl} (dataset PID: ${datasetPidParam})`
-              );
-            }
-
-            // Show the Save to Dataverse button in standalone mode
-            $("#load-local-btn").show();
-            $("#load-dataverse-btn").show();
-
-            setupEventHandlers();
-            await renderData();
-
-            return;
-          } catch (error) {
-            logError("Failed to parse data from localStorage:", error);
-          }
-        }
-      }
-
-      if (isEmbeddedMode) {
-        // In embedded mode, wait for data from parent via postMessage
-        setIsEmbeddedMode(true);
-        $("#content")
-          .empty()
-          .append(
-            quickEl("div", { class: "alert alert-info" }, [
-              quickEl("strong", {}, ["Waiting for data..."]),
-              document.createTextNode(
-                " The viewer is ready to receive data from the parent application."
-              ),
-            ])
-          );
-        setupEventHandlers();
-        return;
-      }
       // Show load local file button instead of error
       $("#load-local-btn").show();
       $("#load-dataverse-btn").show();
