@@ -62,7 +62,7 @@
     "@rdfjs/dataset": "^2.0.2",
     "jsonld": "^8.3.2",
     "n3": "^1.16.4",
-    "shacl-engine": "file:./vendor/shacl-engine"
+    "shacl-engine": "^1.1.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.1",
