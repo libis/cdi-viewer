@@ -64,12 +64,6 @@ global.fetch = jest.fn();
 beforeEach(() => {
   jest.clearAllMocks();
   
-  // Reset window.location
-  delete window.location;
-  window.location = {
-    href: 'http://localhost/',
-    search: '',
-    pathname: '/',
-    origin: 'http://localhost',
-  };
+  // Reset window.location using jsdom's reconfigure API
+  window.location.href = 'http://localhost/';
 });

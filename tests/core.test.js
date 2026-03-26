@@ -20,18 +20,14 @@ describe('Core - Logging System', () => {
   };
 
   test('debug mode should be disabled by default', () => {
-    // Simulate page load without ?debug=true
-    window.location.search = '';
-    const urlParams = new URLSearchParams(window.location.search);
+    const urlParams = new URLSearchParams('');
     const logLevel = urlParams.get('debug') === 'true' ? LOG_LEVEL.DEBUG : LOG_LEVEL.WARN;
     
     expect(logLevel).toBe(LOG_LEVEL.WARN);
   });
 
   test('debug mode should be enabled with ?debug=true', () => {
-    // Simulate page load with ?debug=true
-    window.location.search = '?debug=true';
-    const urlParams = new URLSearchParams(window.location.search);
+    const urlParams = new URLSearchParams('?debug=true');
     const logLevel = urlParams.get('debug') === 'true' ? LOG_LEVEL.DEBUG : LOG_LEVEL.WARN;
     
     expect(logLevel).toBe(LOG_LEVEL.DEBUG);
@@ -40,23 +36,20 @@ describe('Core - Logging System', () => {
 
 describe('Core - URL Parameter Parsing', () => {
   test('should parse fileId from URL parameters', () => {
-    window.location.search = '?fileid=123&siteUrl=http://example.com';
-    const urlParams = new URLSearchParams(window.location.search);
+    const urlParams = new URLSearchParams('?fileid=123&siteUrl=http://example.com');
     
     expect(urlParams.get('fileid')).toBe('123');
     expect(urlParams.get('siteUrl')).toBe('http://example.com');
   });
 
   test('should parse testfile parameter', () => {
-    window.location.search = '?testfile=SimpleSample.jsonld';
-    const urlParams = new URLSearchParams(window.location.search);
+    const urlParams = new URLSearchParams('?testfile=SimpleSample.jsonld');
     
     expect(urlParams.get('testfile')).toBe('SimpleSample.jsonld');
   });
 
   test('should handle missing parameters gracefully', () => {
-    window.location.search = '';
-    const urlParams = new URLSearchParams(window.location.search);
+    const urlParams = new URLSearchParams('');
     
     expect(urlParams.get('fileid')).toBeNull();
     expect(urlParams.get('siteUrl')).toBeNull();
