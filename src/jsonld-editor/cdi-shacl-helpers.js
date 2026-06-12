@@ -187,15 +187,33 @@ export function classifyProperty(nodeTypes, propertyKey, nodeId = null) {
           return;
         }
       } else {
-        // No prefix - check if default namespace is configured
+        // No prefix: per JSON-LD, bare terms resolve against the context's
+        // @vocab (e.g. Croissant's "PropertyValue" -> https://schema.org/
+        // PropertyValue); fall back to the configured default namespace.
+        const context = jsonData && jsonData["@context"];
+        const contextEntries = Array.isArray(context) ? context : [context];
+        let vocab = null;
+        for (const entry of contextEntries) {
+          if (
+            entry &&
+            typeof entry === "object" &&
+            typeof entry["@vocab"] === "string"
+          ) {
+            vocab = entry["@vocab"];
+            break;
+          }
+        }
         const defaultTypeNamespace = getDefaultTypeNamespace();
-        if (defaultTypeNamespace) {
+        if (vocab) {
+          typeUri = vocab + type;
+          log(LOG_LEVEL.DEBUG, `Expanded type via @vocab: ${typeUri}`);
+        } else if (defaultTypeNamespace) {
           typeUri = defaultTypeNamespace + type;
           log(LOG_LEVEL.DEBUG, `Using default namespace for type: ${typeUri}`);
         } else {
           log(
             LOG_LEVEL.WARN,
-            `Type "${type}" has no prefix and no default namespace configured - skipping`
+            `Type "${type}" has no prefix, no @vocab in context, and no default namespace configured - skipping`
           );
           return;
         }
