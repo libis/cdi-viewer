@@ -135,19 +135,23 @@ Provides real-time validation, property classification, complex object editing, 
 
 **Live demo:** [https://libis.github.io/cdi-viewer/](https://libis.github.io/cdi-viewer/)
 
-**Quick workflow (DDI-CDI mode - default):**
+**Quick workflow:**
 
 1. Click **"Load Local File"** → select any JSON-LD file
-2. DDI-CDI shapes are preloaded automatically
+2. Matching SHACL shapes are selected automatically from the document
+   content (Croissant `conformsTo` → bundled Croissant shapes; DDI-CDI
+   context or node types → official DDI-CDI shapes; otherwise the DDI-CDI
+   default applies)
 3. Click **"Enable Edit Mode"** to start editing
 4. Add/edit/delete properties with visual feedback
 5. Click **"Export JSON-LD"** to download your changes
 
-**For other vocabularies:**
+**For other vocabularies, or to override the automatic choice:**
 
 - Visit [https://libis.github.io/cdi-viewer/?shacl=generic](https://libis.github.io/cdi-viewer/?shacl=generic)
 - Select your vocabulary's SHACL shapes from the dropdown
 - Or enter a custom SHACL URL
+- The `?shacl=` parameter always wins over content-based auto-selection
 
 ### Common Use Cases
 
@@ -187,6 +191,24 @@ The demo includes DDI-CDI examples in the `examples/cdi/` directory:
 - `ESS11-subset_DDICDI.jsonld` - Comprehensive example
 
 ## Configuration
+
+### Automatic shape selection
+
+When a document loads and no shapes were chosen explicitly (via the
+`?shacl=` parameter or the dropdown), the viewer picks shapes from the
+document content:
+
+- `conformsTo` containing `mlcommons.org/croissant` → bundled **Croissant
+  1.0 shapes** (`shapes/croissant-core.ttl` — structural core plus the
+  CDIF 1.1 Discovery dataset checks; authored here, as no official
+  Croissant SHACL shapes exist)
+- a DDI-CDI context URL or distinctive node types (InstanceVariable,
+  WideDataSet, ...) → **official DDI-CDI 1.0 shapes**
+- otherwise the DDI-CDI default applies
+
+Validation results are reported by severity: violations, warnings
+(`sh:Warning`), and hints (`sh:Info`) are counted separately, and only true
+violations mark a document invalid.
 
 ### Automatic DDI-CDI Mode
 
@@ -266,6 +288,9 @@ http://localhost:8000/?shacl=generic
 
 # CDIF mode (CDIF Discovery shapes preloaded)
 http://localhost:8000/?shacl=cdif-core
+
+# Croissant mode (Croissant 1.0 + CDIF Discovery shapes preloaded)
+http://localhost:8000/?shacl=croissant
 
 # DCAT-AP mode (EU DCAT Application Profile)
 http://localhost:8000/?shacl=dcat-ap-3.0
