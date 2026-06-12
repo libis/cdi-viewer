@@ -204,10 +204,21 @@ export async function validateData() {
           // NamedNode path
           path = result.path.value.split("/").pop().split("#").pop();
         } else if (Array.isArray(result.path)) {
-          // Fallback for complex paths: take last named node if available
+          // shacl-engine reports the path as an array of segments
+          // ({quantifier, start, end, predicates}); take the last predicate.
           const lastSegment = result.path[result.path.length - 1];
           if (lastSegment && lastSegment.value) {
             path = lastSegment.value.split("/").pop().split("#").pop();
+          } else if (
+            lastSegment &&
+            Array.isArray(lastSegment.predicates) &&
+            lastSegment.predicates.length > 0
+          ) {
+            const predicate =
+              lastSegment.predicates[lastSegment.predicates.length - 1];
+            if (predicate && predicate.value) {
+              path = predicate.value.split("/").pop().split("#").pop();
+            }
           }
         }
       }
@@ -308,6 +319,33 @@ export async function validateData() {
         // Convert the full URI back to compact node ID (e.g., "xas:485749")
         const nodeId = getCompactNodeId(v.focusNode);
         const $listItem = $("<li>");
+
+        // Blank-node labels are relabeled on every RDF serialization, so a
+        // focus node without a matching rendered card cannot be linked —
+        // show a plain label instead of a dead button.
+        const targetExists =
+          $(`.node-card[data-node-id="${nodeId}"]`).length > 0;
+        if (!targetExists) {
+          $listItem.append(
+            $("<span>")
+              .css({ marginRight: "8px", fontStyle: "italic" })
+              .attr(
+                "title",
+                "This result applies to an unnamed (blank) node; give the node an @id to make it linkable"
+              )
+              .text(String(nodeId))
+          );
+          const sevLabelNoTarget = ["violation", "warning", "hint"][
+            severityRank(v.severity)
+          ];
+          $listItem.append(
+            $("<span>").text(
+              " - [" + sevLabelNoTarget + "] " + v.path + ": " + v.message
+            )
+          );
+          $list.append($listItem);
+          return;
+        }
 
         // Create clickable node ID button (matching reference button style)
         const $nodeBtn = $("<button>")
