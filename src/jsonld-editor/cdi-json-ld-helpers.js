@@ -231,7 +231,16 @@ export async function normalizeToGraphFormat(data) {
       dataForViewer["@context"] = viewerContext;
     }
 
-    const flattened = await jsonld.flatten(dataForViewer);
+    // jsonld.flatten() without a context argument returns the flattened
+    // document in EXPANDED form: a plain array with no @graph key, which the
+    // viewer then renders as an empty document. Passing the context makes it
+    // return the compacted {@context, @graph} shape the viewer expects —
+    // this is what makes single-node documents (e.g. Croissant files)
+    // renderable.
+    const flattened = await jsonld.flatten(
+      dataForViewer,
+      dataForViewer["@context"] ?? {}
+    );
 
     log(
       LOG_LEVEL.DEBUG,
