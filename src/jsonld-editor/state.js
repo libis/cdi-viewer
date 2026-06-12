@@ -116,6 +116,9 @@ export const state = {
   /** @type {string|null} Currently selected SHACL shape source ID (e.g., "ddi-cdi-official", "cdif-core") */
   currentShapeSource: null,
 
+  /** @type {boolean} Shapes chosen explicitly (?shacl= parameter or dropdown) — content-based auto-selection then stays out of the way */
+  shapesUserSelected: false,
+
   /** @type {boolean} Whether the loaded document originally had a @graph array (vs single object) */
   hadOriginalGraph: true,
 
@@ -239,6 +242,14 @@ export function getCurrentShapeSource() {
   return state.currentShapeSource;
 }
 
+export function getShapesUserSelected() {
+  return state.shapesUserSelected;
+}
+
+export function setShapesUserSelected(value) {
+  state.shapesUserSelected = value;
+}
+
 export function setCurrentShapeSource(source) {
   state.currentShapeSource = source;
 }
@@ -266,6 +277,12 @@ export function getDefaultTypeNamespace() {
 export function setDefaultTypeNamespace(namespace) {
   state.defaultTypeNamespace = namespace;
 }
+
+// Base URI used when converting JSON-LD documents to RDF (relative @ids
+// resolve against it). Shared so validation results can be mapped back to
+// the compact node ids used in the rendered document.
+export const JSONLD_BASE_URI =
+  "http://ddialliance.org/Specification/DDI-CDI/1.0/RDF/";
 
 // SHACL shape URLs
 export const SHAPE_URLS = {

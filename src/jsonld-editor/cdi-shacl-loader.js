@@ -9,6 +9,9 @@ import {
   logWarn,
   logError,
   SHAPE_URLS,
+  JSONLD_BASE_URI,
+  getShapesUserSelected,
+  getCurrentShapeSource,
   setShaclShapes,
   setShaclShapesStore,
   setCurrentShapeSource,
@@ -249,8 +252,9 @@ export async function jsonLdToN3Store(jsonLdData) {
     };
 
     // Convert JSON-LD to N-Quads format
-    // Use DDI-CDI base URI for resolving relative IDs (fragments like #Mass)
-    const baseUri = "http://ddialliance.org/Specification/DDI-CDI/1.0/RDF/";
+    // Relative IDs (fragments like #Mass, paths like variable/age) resolve
+    // against the shared base URI.
+    const baseUri = JSONLD_BASE_URI;
 
     const nquads = await jsonld.toRDF(jsonLdData, {
       format: "application/n-quads",
@@ -277,4 +281,90 @@ export async function jsonLdToN3Store(jsonLdData) {
     logError("Error converting JSON-LD to N3 Store:", error);
     throw error;
   }
+}
+
+// === Content-based shape selection ===
+
+// Node @type values that identify a DDI-CDI document (local names).
+const DDI_CDI_TYPES = new Set([
+  "InstanceVariable",
+  "WideDataSet",
+  "WideDataStructure",
+  "LogicalRecord",
+  "PhysicalSegmentLayout",
+  "PhysicalDataSet",
+  "DataStore",
+  "SubstantiveValueDomain",
+]);
+
+// Detect which bundled SHACL shapes match a loaded JSON-LD document.
+// Returns a SHAPE_URLS key or null when the document type is not recognized.
+// Works on both the original (possibly nested) document and the normalized
+// @graph form.
+export function detectShapesForDocument(doc) {
+  if (!doc || typeof doc !== "object") {
+    return null;
+  }
+  const nodes = [doc].concat(Array.isArray(doc["@graph"]) ? doc["@graph"] : []);
+
+  // Croissant: a node declaring conformsTo mlcommons.org/croissant
+  for (const node of nodes) {
+    if (!node || typeof node !== "object") continue;
+    const conformsTo = node["conformsTo"] ?? node["dct:conformsTo"];
+    const values = Array.isArray(conformsTo)
+      ? conformsTo
+      : conformsTo
+        ? [conformsTo]
+        : [];
+    for (const v of values) {
+      const iri = typeof v === "string" ? v : v && v["@id"];
+      if (typeof iri === "string" && iri.includes("mlcommons.org/croissant")) {
+        return "croissant";
+      }
+    }
+  }
+
+  // DDI-CDI: context URL or distinctive node types
+  const contexts = Array.isArray(doc["@context"])
+    ? doc["@context"]
+    : [doc["@context"]];
+  for (const c of contexts) {
+    if (typeof c === "string" && /ddi-?cdi/i.test(c)) {
+      return "ddi-cdi-official";
+    }
+  }
+  for (const node of nodes) {
+    if (!node || typeof node !== "object") continue;
+    const types = node["@type"];
+    const typeList = Array.isArray(types) ? types : types ? [types] : [];
+    for (const t of typeList) {
+      if (typeof t === "string") {
+        const localName = t.split(":").pop().split("/").pop().split("#").pop();
+        if (DDI_CDI_TYPES.has(localName)) {
+          return "ddi-cdi-official";
+        }
+      }
+    }
+  }
+  return null;
+}
+
+// Auto-select shapes matching the loaded document, unless the user chose
+// shapes explicitly (?shacl= parameter or the dropdown). Returns true when
+// shapes were switched (and loaded).
+export async function maybeAutoSelectShapes(doc) {
+  if (getShapesUserSelected()) {
+    return false;
+  }
+  const key = detectShapesForDocument(doc);
+  if (!key || !SHAPE_URLS[key]) {
+    return false;
+  }
+  if (getCurrentShapeSource() === key) {
+    return false;
+  }
+  log(LOG_LEVEL.INFO, `Auto-selecting SHACL shapes for document type: ${key}`);
+  $("#shape-selector").val(key);
+  await loadShapes(key);
+  return true;
 }

@@ -31,7 +31,7 @@ import {
   normalizeToGraphFormat,
   migrateContextFormat,
 } from "./cdi-json-ld-helpers.js";
-import { loadShapes } from "./cdi-shacl-loader.js";
+import { loadShapes, maybeAutoSelectShapes } from "./cdi-shacl-loader.js";
 import { renderData } from "./render.js";
 import { validateDataImmediate, setValidationStatus } from "./validation.js";
 import {
@@ -97,6 +97,14 @@ export function setupEventHandlers() {
         } catch (expandError) {
           logWarn("Could not expand JSON-LD:", expandError);
           setExpandedJsonLd(null);
+        }
+
+        // Prefer shapes matching the loaded document (no-op when shapes
+        // were chosen explicitly via ?shacl= or the dropdown).
+        try {
+          await maybeAutoSelectShapes(jsonData);
+        } catch (autoError) {
+          logWarn("Shape auto-selection failed:", autoError);
         }
 
         // Load SHACL shapes if not already loaded
@@ -310,6 +318,14 @@ export function setupEventHandlers() {
         } catch (expandError) {
           logWarn("Could not expand JSON-LD:", expandError);
           setExpandedJsonLd(null);
+        }
+
+        // Prefer shapes matching the loaded document (no-op when shapes
+        // were chosen explicitly via ?shacl= or the dropdown).
+        try {
+          await maybeAutoSelectShapes(jsonData);
+        } catch (autoError) {
+          logWarn("Shape auto-selection failed:", autoError);
         }
 
         // Load SHACL shapes if not already loaded
@@ -547,6 +563,8 @@ export function setupEventHandlers() {
   // Shape selector change handler
   $("#shape-selector").on("change", async function () {
     const selectedSource = $(this).val();
+    // Manual choice: content-based auto-selection must not override it.
+    setShapesUserSelected(true);
 
     if (selectedSource === "custom") {
       // Show custom URL input

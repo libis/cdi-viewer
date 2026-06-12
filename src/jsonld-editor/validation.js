@@ -225,6 +225,18 @@ export async function validateData() {
       });
     }
 
+    // Order results by severity and count them: SHACL warnings and info
+    // results must not be presented as violations.
+    const severityRank = (severity) =>
+      typeof severity === "string" && severity.endsWith("Warning")
+        ? 1
+        : typeof severity === "string" && severity.endsWith("Info")
+          ? 2
+          : 0;
+    violations.sort((a, b) => severityRank(a.severity) - severityRank(b.severity));
+    const severityCounts = [0, 0, 0];
+    violations.forEach((v) => severityCounts[severityRank(v.severity)]++);
+
     // Log violations to console in debug mode
     if (violations.length > 0 && getCurrentLogLevel() >= LOG_LEVEL.DEBUG) {
       logDebug("Validation violations:");
@@ -236,7 +248,7 @@ export async function validateData() {
     }
 
     // Update UI
-    if (report.conforms) {
+    if (violations.length === 0) {
       const $validBadge = $("<span>").addClass("validation-badge valid");
       $validBadge.append($("<span>").addClass("glyphicon glyphicon-ok-circle"));
       $validBadge.append(document.createTextNode(" Valid"));
@@ -247,13 +259,30 @@ export async function validateData() {
       // Build validation status using safe DOM nodes (avoid string concatenation with variables)
       const $statusContainer = $("<span>");
 
-      const $badge = $("<span>").addClass("validation-badge invalid");
-      $badge.append(
-        $("<span>").addClass("glyphicon glyphicon-exclamation-sign")
-      );
+      const badgeParts = [];
+      if (severityCounts[0] > 0) {
+        badgeParts.push(String(severityCounts[0]) + " violation(s)");
+      }
+      if (severityCounts[1] > 0) {
+        badgeParts.push(String(severityCounts[1]) + " warning(s)");
+      }
+      if (severityCounts[2] > 0) {
+        badgeParts.push(String(severityCounts[2]) + " hint(s)");
+      }
+      // Only true violations make the document invalid.
+      const badgeClass =
+        severityCounts[0] > 0
+          ? "validation-badge invalid"
+          : "validation-badge valid";
+      const badgeIcon =
+        severityCounts[0] > 0
+          ? "glyphicon glyphicon-exclamation-sign"
+          : "glyphicon glyphicon-ok-circle";
+      const $badge = $("<span>").addClass(badgeClass);
+      $badge.append($("<span>").addClass(badgeIcon));
       $badge.append(
         document.createTextNode(
-          " " + String(violations.length) + " violation(s)"
+          (severityCounts[0] > 0 ? " " : " Valid — ") + badgeParts.join(", ")
         )
       );
 
@@ -306,7 +335,14 @@ export async function validateData() {
           });
 
         $listItem.append($nodeBtn);
-        $listItem.append($("<span>").text(" - " + v.path + ": " + v.message));
+        const sevLabel = ["violation", "warning", "hint"][
+          severityRank(v.severity)
+        ];
+        $listItem.append(
+          $("<span>").text(
+            " - [" + sevLabel + "] " + v.path + ": " + v.message
+          )
+        );
         $list.append($listItem);
       });
 
@@ -341,8 +377,11 @@ export async function validateData() {
       });
     }
 
-    // Update property rows with validation results
-    updatePropertyValidation(violations);
+    // Update property rows with validation results (true violations only:
+    // warnings and hints must not paint properties red)
+    updatePropertyValidation(
+      violations.filter((v) => severityRank(v.severity) === 0)
+    );
   } catch (error) {
     logError("Validation error:", error);
 

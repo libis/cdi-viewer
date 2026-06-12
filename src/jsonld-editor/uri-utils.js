@@ -5,7 +5,8 @@
 // Functions for working with URIs, node IDs, and property expansion.
 // Extracted to break circular dependencies.
 
-import { getJsonData, getExpandedJsonLd } from "./state.js";
+import {
+  JSONLD_BASE_URI, getJsonData, getExpandedJsonLd } from "./state.js";
 import { expandCompactIri } from "./cdi-json-ld-helpers.js";
 import { getNodeById } from "./graph-structure.js";
 
@@ -134,6 +135,18 @@ export function getCompactNodeId(fullUri) {
             return compactId;
           }
         }
+      }
+    }
+  }
+
+  // Relative @ids (e.g. Croissant's "variable/age") are resolved against
+  // JSONLD_BASE_URI during RDF conversion; strip the base and look the
+  // remainder up in @graph so validation results link back to their nodes.
+  if (fullUri.startsWith(JSONLD_BASE_URI) && jsonData && jsonData["@graph"]) {
+    const relative = fullUri.substring(JSONLD_BASE_URI.length);
+    for (const node of jsonData["@graph"]) {
+      if (node["@id"] === relative) {
+        return node["@id"];
       }
     }
   }

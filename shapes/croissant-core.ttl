@@ -128,16 +128,4 @@ crsh:VariableMeasuredShape a sh:NodeShape ;
         sh:path schema:name ;
         sh:minCount 1 ;
         sh:message "CDIF Discovery: a variableMeasured entry must have a name." ;
-    ] ;
-    sh:property [
-        sh:path schema:description ;
-        sh:minCount 1 ;
-        sh:severity sh:Info ;
-        sh:message "CDIF Discovery: a description for each variable is recommended." ;
-    ] ;
-    sh:property [
-        sh:path schema:propertyID ;
-        sh:minCount 1 ;
-        sh:severity sh:Info ;
-        sh:message "CDIF Discovery: a propertyID with a concept URI provides the semantic meaning of the variable." ;
     ] .

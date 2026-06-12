@@ -22,12 +22,13 @@ import {
   getFileId,
   getSiteUrl,
   getJsonData,
+  setShapesUserSelected,
 } from "./state.js";
 import {
   normalizeToGraphFormat,
   migrateContextFormat,
 } from "./cdi-json-ld-helpers.js";
-import { loadShapes } from "./cdi-shacl-loader.js";
+import { loadShapes, maybeAutoSelectShapes } from "./cdi-shacl-loader.js";
 import { renderData } from "./render.js";
 import { setupEventHandlers } from "./event-handlers.js";
 import { updateNamespaceSectionVisibility } from "./namespace-manager.js";
@@ -45,9 +46,11 @@ $(document).ready(async function () {
 
     if (shaclParam === "generic") {
       // Generic mode: No shapes preloaded, leave dropdown at default
+      setShapesUserSelected(true);
       log(LOG_LEVEL.INFO, "Generic mode: No shapes preloaded");
     } else if (shaclParam && SHAPE_URLS[shaclParam]) {
       // Specific shape requested via URL parameter
+      setShapesUserSelected(true);
       $("#shape-selector").val(shaclParam);
       try {
         await loadShapes(shaclParam);
@@ -235,9 +238,20 @@ $(document).ready(async function () {
       setExpandedJsonLd(null);
     }
 
+    // Prefer shapes matching the loaded document; no-op when shapes were
+    // chosen explicitly (?shacl= parameter or the dropdown).
+    let autoSelected = false;
+    try {
+      autoSelected = await maybeAutoSelectShapes(getJsonData());
+    } catch (autoError) {
+      logWarn("Shape auto-selection failed:", autoError);
+    }
+
     // Load SHACL shapes - use the selected shape from dropdown
     const selectedShape = $("#shape-selector").val();
-    if (selectedShape) {
+    if (autoSelected) {
+      log(LOG_LEVEL.INFO, "SHACL shapes auto-selected for document type");
+    } else if (selectedShape) {
       try {
         await loadShapes(selectedShape);
         log(LOG_LEVEL.INFO, "SHACL shapes loaded for validation");
