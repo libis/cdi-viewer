@@ -5,6 +5,7 @@
 // Main initialization logic for loading data from Dataverse or local files.
 
 import {
+  getNormalizedSearchParams,
   LOG_LEVEL,
   log,
   logInfo,
@@ -36,7 +37,7 @@ import { quickEl } from "./dom-utils.js";
 $(document).ready(async function () {
   try {
     // Get file URL from query parameters
-    const urlParams = new URLSearchParams(window.location.search);
+    const urlParams = getNormalizedSearchParams();
     let datasetMetadataUrl = null;
 
     // Check for shacl parameter

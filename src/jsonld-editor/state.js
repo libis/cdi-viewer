@@ -15,8 +15,21 @@ export const LOG_LEVEL = {
   DEBUG: 3,
 };
 
+// Dataverse appends its query parameters to the registered toolUrl with a
+// bare "?". When the toolUrl itself already carries a query string (e.g.
+// index.html?shacl=croissant), the browser receives
+// "?shacl=croissant?fileid=...&siteUrl=..." — one mangled parameter.
+// Normalize every "?" after the first to "&" so all parameters survive.
+export function getNormalizedSearchParams() {
+  const search = window.location.search;
+  if (search.length <= 1) {
+    return new URLSearchParams(search);
+  }
+  return new URLSearchParams("?" + search.slice(1).replace(/\?/g, "&"));
+}
+
 // Check URL parameter for debug mode
-const urlParams = new URLSearchParams(window.location.search);
+const urlParams = getNormalizedSearchParams();
 export const currentLogLevel =
   urlParams.get("debug") === "true" ? LOG_LEVEL.DEBUG : LOG_LEVEL.WARN;
 
