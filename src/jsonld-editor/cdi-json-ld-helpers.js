@@ -19,7 +19,7 @@ import {
 const LEGACY_CONTEXT_URLS = {
   // DDI-CDI legacy context (optional - only if working with DDI-CDI data)
   "https://ddi-alliance.bitbucket.io/DDI-CDI/DDI-CDI_v1.0-rc1/encoding/json-ld/ddi-cdi.jsonld":
-    "shapes/ddi-cdi.jsonld",
+    "public/shapes/ddi-cdi.jsonld",
 };
 
 /**

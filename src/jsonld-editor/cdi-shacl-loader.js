@@ -156,7 +156,10 @@ export async function jsonLdToN3Store(jsonLdData) {
       const WORKING_URL =
         "https://ddi-cdi.github.io/m2t-ng/DDI-CDI_1-0/encoding/json-ld/ddi-cdi.jsonld";
 
-      const LOCAL_FALLBACK = "shapes/ddi-cdi.jsonld";
+      // Vendored copy of the DDI-CDI context (the hosted copies are not
+      // always reachable or parseable). Lives in public/shapes/, which is
+      // served as-is alongside the site.
+      const LOCAL_FALLBACK = "public/shapes/ddi-cdi.jsonld";
 
       // If this is a DDI-CDI context URL, try working URL first, then local fallback
       if (DDI_CDI_URLS.includes(url)) {
@@ -178,21 +181,22 @@ export async function jsonLdToN3Store(jsonLdData) {
           );
         }
 
-        // Fallback to local copy
+        // Fallback to local copy. A non-ok response must fail here too:
+        // falling through would re-fetch the (broken) remote URL and end up
+        // in the empty-context fallback below, which silently drops every
+        // property and produces misleading SHACL violations.
         try {
           const response = await fetch(LOCAL_FALLBACK);
-          if (response.ok) {
-            const doc = await response.json();
-            log(
-              LOG_LEVEL.INFO,
-              `Using local DDI-CDI context: ${LOCAL_FALLBACK}`
-            );
-            return {
-              contextUrl: null,
-              document: doc,
-              documentUrl: url,
-            };
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
           }
+          const doc = await response.json();
+          log(LOG_LEVEL.INFO, `Using local DDI-CDI context: ${LOCAL_FALLBACK}`);
+          return {
+            contextUrl: null,
+            document: doc,
+            documentUrl: url,
+          };
         } catch (error) {
           logError(`Failed to load local fallback ${LOCAL_FALLBACK}:`, error);
           throw new Error(
@@ -224,8 +228,15 @@ export async function jsonLdToN3Store(jsonLdData) {
           documentUrl: url,
         };
       } catch (error) {
-        logWarn(`Failed to load context from ${url}:`, error);
-        // Return empty context rather than failing completely
+        // Proceeding with an empty context drops every term defined by the
+        // unreachable context: affected properties disappear from the RDF
+        // graph and SHACL reports missing-value violations that are NOT
+        // present in the document. Log loudly so this is diagnosable.
+        logError(
+          `Failed to load context from ${url}; continuing with an empty ` +
+            `context — validation results may be unreliable:`,
+          error
+        );
         return {
           contextUrl: null,
           document: { "@context": {} },
