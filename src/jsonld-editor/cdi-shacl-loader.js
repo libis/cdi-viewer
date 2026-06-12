@@ -153,8 +153,11 @@ export async function jsonLdToN3Store(jsonLdData) {
         "https://ddi-cdi.github.io/m2t-ng/DDI-CDI_1-0/encoding/json-ld/ddi-cdi.jsonld",
       ];
 
+      // Prefer the released encoding on the DDI Alliance documentation site.
+      // The m2t-ng GitHub Pages copy is a build-tooling artifact and currently
+      // serves invalid JSON (unresolved merge-conflict markers).
       const WORKING_URL =
-        "https://ddi-cdi.github.io/m2t-ng/DDI-CDI_1-0/encoding/json-ld/ddi-cdi.jsonld";
+        "https://docs.ddialliance.org/DDI-CDI/1.0/model/encoding/json-ld/ddi-cdi.jsonld";
 
       // Vendored copy of the DDI-CDI context (the hosted copies are not
       // always reachable or parseable). Lives in public/shapes/, which is
