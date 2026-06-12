@@ -61,7 +61,19 @@ crsh:CroissantDatasetShape a sh:NodeShape ;
         sh:minCount 1 ;
         sh:severity sh:Warning ;
         sh:message "Croissant recommends a dataset version." ;
-    ] .
+    ] ;
+    # Declaration-only properties (no constraints): lets viewers recognize
+    # the rest of the Croissant dataset vocabulary.
+    sh:property [ sh:path schema:datePublished ; sh:description "Publication date (ISO 8601)." ] ;
+    sh:property [ sh:path schema:variableMeasured ; sh:description "Variable-level metadata (CDIF Discovery PropertyValue entries)." ] ;
+    sh:property [ sh:path cr:recordSet ; sh:description "Croissant record sets describing the tabular structure." ] ;
+    sh:property [ sh:path cr:citeAs ; sh:description "Citation for the dataset." ] ;
+    sh:property [ sh:path schema:url ; sh:description "Landing page of the dataset." ] ;
+    sh:property [ sh:path schema:creator ; sh:description "Creator(s) of the dataset." ] ;
+    sh:property [ sh:path schema:publisher ; sh:description "Publisher of the dataset." ] ;
+    sh:property [ sh:path schema:keywords ; sh:description "Keywords describing the dataset." ] ;
+    sh:property [ sh:path schema:sameAs ; sh:description "Other identifiers/URLs of this dataset." ] ;
+    sh:property [ sh:path cr:isLiveDataset ; sh:description "Whether the dataset changes over time." ] .
 
 ##################################################################
 # FileObject (distribution entries)
@@ -87,7 +99,12 @@ crsh:FileObjectShape a sh:NodeShape ;
         [ sh:property [ sh:path cr:md5 ; sh:minCount 1 ; ] ]
         [ sh:property [ sh:path schema:sha256 ; sh:minCount 1 ; ] ]
     ) ;
-    sh:message "A FileObject must carry a checksum (md5 or sha256)." .
+    sh:message "A FileObject must carry a checksum (md5 or sha256)." ;
+    sh:property [ sh:path cr:md5 ; sh:description "MD5 checksum of the file." ] ;
+    sh:property [ sh:path schema:sha256 ; sh:description "SHA-256 checksum of the file." ] ;
+    sh:property [ sh:path schema:description ; sh:description "Description of the file." ] ;
+    sh:property [ sh:path schema:contentSize ; sh:description "File size." ] ;
+    sh:property [ sh:path schema:containedIn ; sh:description "Archive this file is extracted from." ] .
 
 ##################################################################
 # RecordSet and Field (CSV column descriptions)
@@ -99,7 +116,11 @@ crsh:RecordSetShape a sh:NodeShape ;
         sh:minCount 1 ;
         sh:class cr:Field ;
         sh:message "A RecordSet must contain at least one Field." ;
-    ] .
+    ] ;
+    sh:property [ sh:path schema:name ; sh:description "Name of the record set." ] ;
+    sh:property [ sh:path schema:description ; sh:description "Description of the record set." ] ;
+    sh:property [ sh:path cr:key ; sh:description "Field(s) forming the unique key of each record." ] ;
+    sh:property [ sh:path cr:data ; sh:description "Inline data for enumerations." ] .
 
 crsh:FieldShape a sh:NodeShape ;
     sh:targetClass cr:Field ;
@@ -117,15 +138,41 @@ crsh:FieldShape a sh:NodeShape ;
         sh:path cr:source ;
         sh:minCount 1 ;
         sh:message "A Field must declare its source (fileObject/fileSet + extraction)." ;
-    ] .
+    ] ;
+    sh:property [ sh:path schema:description ; sh:description "Description of the field (e.g. the variable label)." ] ;
+    sh:property [ sh:path cr:references ; sh:description "Foreign-key style reference to another field." ] ;
+    sh:property [ sh:path cr:subField ; sh:description "Nested sub-fields." ] ;
+    sh:property [ sh:path cr:repeated ; sh:description "Whether the field holds multiple values." ] .
 
 ##################################################################
 # variableMeasured (CDIF 1.1 Discovery profile variable shape)
 ##################################################################
 crsh:VariableMeasuredShape a sh:NodeShape ;
+    sh:targetClass schema:PropertyValue ;
     sh:targetObjectsOf schema:variableMeasured ;
     sh:property [
         sh:path schema:name ;
         sh:minCount 1 ;
         sh:message "CDIF Discovery: a variableMeasured entry must have a name." ;
-    ] .
+    ] ;
+    sh:property [ sh:path schema:description ; sh:description "Description of the variable (label, anonymization notes)." ] ;
+    sh:property [ sh:path schema:alternateName ; sh:description "Alternative name (e.g. the human-readable label)." ] ;
+    sh:property [ sh:path schema:propertyID ; sh:description "Concept URI giving the semantic meaning of the variable (CDIF Discovery)." ] ;
+    sh:property [ sh:path schema:minValue ; sh:description "Minimum allowed value." ] ;
+    sh:property [ sh:path schema:maxValue ; sh:description "Maximum allowed value." ] ;
+    sh:property [ sh:path schema:unitText ; sh:description "Unit of measurement (text)." ] ;
+    sh:property [ sh:path schema:unitCode ; sh:description "Unit of measurement (code/URI)." ] ;
+    sh:property [ sh:path schema:value ; sh:description "Value of the property." ] ;
+    sh:property [ sh:path schema:valueReference ; sh:description "Enumerated values (code list) as DefinedTerms." ] ;
+    sh:property [ sh:path schema:measurementTechnique ; sh:description "How the variable was measured." ] ;
+    sh:property [ sh:path schema:url ; sh:description "Reference URL for the variable." ] .
+
+##################################################################
+# DefinedTerm (code list entries referenced via valueReference)
+##################################################################
+crsh:DefinedTermShape a sh:NodeShape ;
+    sh:targetClass schema:DefinedTerm ;
+    sh:property [ sh:path schema:termCode ; sh:description "The code as it appears in the data." ] ;
+    sh:property [ sh:path schema:name ; sh:description "Human-readable label of the code." ] ;
+    sh:property [ sh:path schema:inDefinedTermSet ; sh:description "The code list this term belongs to." ] ;
+    sh:property [ sh:path schema:identifier ; sh:description "Identifier of the term." ] .
