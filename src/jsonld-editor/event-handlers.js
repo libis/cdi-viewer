@@ -5,6 +5,7 @@
 // Handles all user interactions: file loading, shape selection, edit mode, validation, etc.
 
 import {
+  setShapesUserSelected,
   LOG_LEVEL,
   log,
   logWarn,

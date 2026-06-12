@@ -309,7 +309,9 @@ export function detectShapesForDocument(doc) {
 
   // Croissant: a node declaring conformsTo mlcommons.org/croissant
   for (const node of nodes) {
-    if (!node || typeof node !== "object") continue;
+    if (!node || typeof node !== "object") {
+      continue;
+    }
     const conformsTo = node["conformsTo"] ?? node["dct:conformsTo"];
     const values = Array.isArray(conformsTo)
       ? conformsTo
@@ -334,7 +336,9 @@ export function detectShapesForDocument(doc) {
     }
   }
   for (const node of nodes) {
-    if (!node || typeof node !== "object") continue;
+    if (!node || typeof node !== "object") {
+      continue;
+    }
     const types = node["@type"];
     const typeList = Array.isArray(types) ? types : types ? [types] : [];
     for (const t of typeList) {
