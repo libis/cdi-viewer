@@ -1,0 +1,143 @@
+@prefix sh:     <http://www.w3.org/ns/shacl#> .
+@prefix xsd:    <http://www.w3.org/2001/XMLSchema#> .
+@prefix schema: <https://schema.org/> .
+@prefix cr:     <http://mlcommons.org/croissant/> .
+@prefix dct:    <http://purl.org/dc/terms/> .
+@prefix crsh:   <https://libis.github.io/cdi-viewer/shapes/croissant#> .
+
+# SHACL shapes for MLCommons Croissant 1.0 dataset descriptions
+# (https://docs.mlcommons.org/croissant/docs/croissant-spec.html).
+# No official Croissant SHACL shapes exist (the reference validator is the
+# mlcroissant Python package); these cover the structural core plus the
+# dataset-level requirements of the CDIF 1.1 Discovery profile.
+# Note: Croissant uses the https://schema.org/ vocabulary (not http://).
+
+##################################################################
+# Dataset (the document root)
+##################################################################
+crsh:CroissantDatasetShape a sh:NodeShape ;
+    sh:targetClass schema:Dataset ;
+    sh:property [
+        sh:path schema:name ;
+        sh:minCount 1 ;
+        sh:message "A Croissant dataset must have a name." ;
+    ] ;
+    sh:property [
+        sh:path schema:description ;
+        sh:minCount 1 ;
+        sh:message "A Croissant dataset must have a description." ;
+    ] ;
+    sh:property [
+        sh:path dct:conformsTo ;
+        sh:minCount 1 ;
+        sh:message "A Croissant dataset must declare conformsTo (e.g. http://mlcommons.org/croissant/1.0)." ;
+    ] ;
+    sh:property [
+        sh:path schema:distribution ;
+        sh:minCount 1 ;
+        sh:class cr:FileObject ;
+        sh:message "A Croissant dataset must distribute at least one FileObject (or FileSet)." ;
+    ] ;
+    # CDIF 1.1 Discovery profile: mandatory dataset-level properties.
+    sh:property [
+        sh:path schema:identifier ;
+        sh:minCount 1 ;
+        sh:message "CDIF Discovery: an identifier for the dataset is required." ;
+    ] ;
+    sh:property [
+        sh:path schema:dateModified ;
+        sh:minCount 1 ;
+        sh:pattern "^[0-9]{4}-[0-9]{2}" ;
+        sh:message "CDIF Discovery: dateModified (ISO 8601, at least year and month) is required." ;
+    ] ;
+    sh:property [
+        sh:path schema:license ;
+        sh:minCount 1 ;
+        sh:severity sh:Warning ;
+        sh:message "CDIF Discovery and Croissant recommend a license (rights/usage information)." ;
+    ] ;
+    sh:property [
+        sh:path schema:version ;
+        sh:minCount 1 ;
+        sh:severity sh:Warning ;
+        sh:message "Croissant recommends a dataset version." ;
+    ] .
+
+##################################################################
+# FileObject (distribution entries)
+##################################################################
+crsh:FileObjectShape a sh:NodeShape ;
+    sh:targetClass cr:FileObject ;
+    sh:property [
+        sh:path schema:name ;
+        sh:minCount 1 ;
+        sh:message "A FileObject must have a name." ;
+    ] ;
+    sh:property [
+        sh:path schema:contentUrl ;
+        sh:minCount 1 ;
+        sh:message "A FileObject must have a contentUrl." ;
+    ] ;
+    sh:property [
+        sh:path schema:encodingFormat ;
+        sh:minCount 1 ;
+        sh:message "A FileObject must declare its encodingFormat (mime type)." ;
+    ] ;
+    sh:or (
+        [ sh:property [ sh:path cr:md5 ; sh:minCount 1 ; ] ]
+        [ sh:property [ sh:path schema:sha256 ; sh:minCount 1 ; ] ]
+    ) ;
+    sh:message "A FileObject must carry a checksum (md5 or sha256)." .
+
+##################################################################
+# RecordSet and Field (CSV column descriptions)
+##################################################################
+crsh:RecordSetShape a sh:NodeShape ;
+    sh:targetClass cr:RecordSet ;
+    sh:property [
+        sh:path cr:field ;
+        sh:minCount 1 ;
+        sh:class cr:Field ;
+        sh:message "A RecordSet must contain at least one Field." ;
+    ] .
+
+crsh:FieldShape a sh:NodeShape ;
+    sh:targetClass cr:Field ;
+    sh:property [
+        sh:path schema:name ;
+        sh:minCount 1 ;
+        sh:message "A Field must have a name." ;
+    ] ;
+    sh:property [
+        sh:path cr:dataType ;
+        sh:minCount 1 ;
+        sh:message "A Field must declare a dataType." ;
+    ] ;
+    sh:property [
+        sh:path cr:source ;
+        sh:minCount 1 ;
+        sh:message "A Field must declare its source (fileObject/fileSet + extraction)." ;
+    ] .
+
+##################################################################
+# variableMeasured (CDIF 1.1 Discovery profile variable shape)
+##################################################################
+crsh:VariableMeasuredShape a sh:NodeShape ;
+    sh:targetObjectsOf schema:variableMeasured ;
+    sh:property [
+        sh:path schema:name ;
+        sh:minCount 1 ;
+        sh:message "CDIF Discovery: a variableMeasured entry must have a name." ;
+    ] ;
+    sh:property [
+        sh:path schema:description ;
+        sh:minCount 1 ;
+        sh:severity sh:Info ;
+        sh:message "CDIF Discovery: a description for each variable is recommended." ;
+    ] ;
+    sh:property [
+        sh:path schema:propertyID ;
+        sh:minCount 1 ;
+        sh:severity sh:Info ;
+        sh:message "CDIF Discovery: a propertyID with a concept URI provides the semantic meaning of the variable." ;
+    ] .
